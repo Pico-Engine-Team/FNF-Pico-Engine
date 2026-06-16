@@ -1,6 +1,6 @@
 package funkin.states;
 
-import funkin.data.Bar;
+import funkin.data.objects.Bar;
 import flixel.FlxObject;
 import flixel.util.FlxSort;
 

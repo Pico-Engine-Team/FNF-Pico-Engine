@@ -5,17 +5,15 @@ import funkin.menus.MainMenuState;
 import funkin.states.options.*;
 import funkin.states.options.data.*;
 
-class OptionsState extends MusicBeatState
-{
-	var options:Array<String> =
-	[
+class OptionsState extends MusicBeatState {
+	var options:Array<String> = [
 		'Note Colors',
 		'Controls',
 		'Adjust Delay and Combo',
 		'Graphics',
 		'Visuals',
 		'Gameplay',
-		#if PICO_ALLOWED 'Pico Engine Options', #end
+		#if PICO_ALLOWED 'Engine Setting', #end
 		#if TRANSLATIONS_ALLOWED  'Language' #end
 	];
 
@@ -24,8 +22,7 @@ class OptionsState extends MusicBeatState
 	public static var menuBG:FlxSprite;
 	public static var onPlayState:Bool = false;
 
-	function openSelectedSubstate(label:String)
-	{
+	function openSelectedSubstate(label:String) {
 		switch(label)
 		{
 			case 'Note Colors':
@@ -42,15 +39,14 @@ class OptionsState extends MusicBeatState
 				MusicBeatState.switchState(new NoteOffsetState());
 			case 'Language':
 				openSubState(new LanguageSubState());
-			case 'Pico Engine Options':
+			case 'Engine Setting':
 				openSubState(new PicoEngineSubState());
 		}
 	}
-
+ 
 	var selectorLeft:Alphabet;
 	var selectorRight:Alphabet;
-	override function create()
-	{
+	override function create() {
 		#if DISCORD_ALLOWED
 		DiscordClient.changePresence("Options Menu", null);
 		#end
@@ -59,15 +55,13 @@ class OptionsState extends MusicBeatState
 		bg.antialiasing = ClientPrefs.data.antialiasing;
 		bg.color = 0xFFea71fd;
 		bg.updateHitbox();
-
 		bg.screenCenter();
 		add(bg);
 
 		grpOptions = new FlxTypedGroup<Alphabet>();
 		add(grpOptions);
 
-		for (num => option in options)
-		{
+		for (num => option in options) {
 			var optionText:Alphabet = new Alphabet(0, 0, Language.getPhrase('options_$option', option), true);
 			optionText.screenCenter();
 			optionText.y += (92 * (num - (options.length / 2))) + 45;
@@ -76,18 +70,15 @@ class OptionsState extends MusicBeatState
 
 		selectorLeft = new Alphabet(0, 0, '>', true);
 		add(selectorLeft);
-		
 		selectorRight = new Alphabet(0, 0, '<', true);
 		add(selectorRight);
 
 		changeSelection();
 		ClientPrefs.saveSettings();
-
 		super.create();
 	}
 
-	override function closeSubState()
-	{
+	override function closeSubState() {
 		super.closeSubState();
 		ClientPrefs.saveSettings();
 		#if DISCORD_ALLOWED
@@ -137,8 +128,7 @@ class OptionsState extends MusicBeatState
 		FlxG.sound.play(Paths.sound('scrollMenu'));
 	}
 
-	override function destroy()
-	{
+	override function destroy() {
 		ClientPrefs.loadPrefs();
 		super.destroy();
 	}

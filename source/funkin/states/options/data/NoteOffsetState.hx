@@ -1,10 +1,10 @@
 package funkin.states.options.data;
 
-import funkin.data.characters.Character;
+import funkin.data.objects.game.characters.Character;
 import funkin.data.objects.Bar;
 import funkin.states.options.OptionsState;
 import funkin.stages.StageData;
-import funkin.stages.data.weeks.week1.MainStage as BackgroundStage;
+import funkin.stages.data.levels.week1.StageWeek1 as BackgroundStage;
 
 import flixel.addons.display.shapes.FlxShapeCircle;
 
@@ -64,7 +64,7 @@ class NoteOffsetState extends MusicBeatState
 		gf.y += gf.positionArray[1];
 		gf.scrollFactor.set(0.95, 0.95);
 
-		boyfriend = new Character(770.0, 100.0, 'darnell', true);
+		boyfriend = new Character(770.0, 100.0, 'bf', true);
 		boyfriend.x += boyfriend.positionArray[0];
 		boyfriend.y += boyfriend.positionArray[1];
 
@@ -85,7 +85,6 @@ class NoteOffsetState extends MusicBeatState
 		rating.antialiasing = ClientPrefs.data.antialiasing;
 		rating.setGraphicSize(Std.int(rating.width * 0.7));
 		rating.updateHitbox();
-		
 		add(rating);
 
 		comboNums = new FlxSpriteGroup();

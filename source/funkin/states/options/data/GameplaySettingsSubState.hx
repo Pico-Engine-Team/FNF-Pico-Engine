@@ -66,7 +66,7 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 		option.onChange = onChangeHitsoundVolume;
 
 		var option:Option = new Option('Rating Offset',
-			'Changes how late/early you have to hit for a "Sick!"\nHigher values mean you have to hit later.',
+			'Changes how late/early you have to hit for a "Sick"\nHigher values mean you have to hit later.',
 			'ratingOffset',
 			INT);
 		option.displayFormat = '%vms';
@@ -75,14 +75,20 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 		option.maxValue = 30;
 		addOption(option);
 
+		var option:Option = new Option('Use Marvelous Ratings', // Name
+			'If checked, adds Marvelous as a bonus judgement above Sick.', // Description
+			'useEpicRankings', // Save data variable name
+			BOOL); // Variable type
+		addOption(option);
+
 		var option:Option = new Option('Marvelous Hit Window',
-			'Changes the amount of time you have\nfor hitting a "Marvelous!" in milliseconds.',
-			'marvelousWindow',
+			'Changes the amount of time you have\nfor hitting a "Marvelous" in milliseconds.',
+			'epicRankings',
 			FLOAT);
 		option.displayFormat = '%vms';
-		option.scrollSpeed = 5;
-		option.minValue = 5.0;
-		option.maxValue = 25.0;
+		option.scrollSpeed = 15;
+		option.minValue = 15.0;
+		option.maxValue = 45.0;
 		option.changeValue = 0.1;
 		addOption(option);
 

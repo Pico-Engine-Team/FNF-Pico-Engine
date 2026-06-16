@@ -1,8 +1,8 @@
 package funkin.states;
 
-import funkin.menus.FreeplayState;
+import funkin.menus.freeplay.FreeplayMenuState;
 import funkin.data.WeekData;
-import funkin.data.characters.Character;
+import funkin.data.objects.game.characters.Character;
 // import StoryModeState and other mode classes from appropriate locations
 
 import flixel.FlxObject;
@@ -168,7 +168,7 @@ class GameOverState extends MusicBeatSubstate
 				if (PlayState.isStoryMode)
 					MusicBeatState.switchState(new StoryModeState());
 				else
-					MusicBeatState.switchState(new FreeplayState());
+					MusicBeatState.switchState(new FreeplayMenuState());
 	
 				FlxG.sound.playMusic(Paths.music('freakyMenu'));
 				PlayState.instance.callOnScripts('onGameOverConfirm', [false]);

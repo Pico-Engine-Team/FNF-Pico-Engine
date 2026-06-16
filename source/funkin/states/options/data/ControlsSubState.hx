@@ -45,14 +45,15 @@ class ControlsSubState extends MusicBeatSubstate
 		[true, 'Favorites', 'favorites_ui', 'Favorites Menu'],
 		[false],
 		[false, 'VOLUME'],
-		[false, 'Mute', 'volume_mute', 'Volume Mute'],
 		[false, 'Up', 'volume_up', 'Volume Up'],
 		[false, 'Down', 'volume_down', 'Volume Down'],
+		[false, 'Mute', 'volume_mute', 'Volume Mute'],
 		[false],
 		[false, 'DEBUG'],
-		[false, 'Key 0', 'debug_0', 'Debug Key #0'],
-		[false, 'Key 1', 'debug_1', 'Debug Key #1'],
-		[false, 'Key 2', 'debug_2', 'Debug Key #2']
+		[false, 'Menu', 'debug_0', 'Debug Menu'],
+		[false, 'Chart', 'debug_1', 'Chart Editor'],
+		[false, 'Stage', 'debug_2', 'Stage Editor'],
+		[false, 'Display', 'fps_display_toggle', 'FPS Display']
 	];
 	static var defaultKey:String = 'Reset to Default Keys';
 	var curOptions:Array<Int>;
@@ -250,6 +251,7 @@ class ControlsSubState extends MusicBeatSubstate
 		}
 	}
 
+
 	function updateBind(num:Int, text:String)
 	{
 		var bind:Alphabet = grpBinds.members[num];
@@ -305,7 +307,8 @@ class ControlsSubState extends MusicBeatSubstate
 
 			if(FlxG.keys.justPressed.ENTER || FlxG.gamepads.anyJustPressed(START) || FlxG.gamepads.anyJustPressed(A))
 			{
-				if(options[curOptions[curSelected]][1] != defaultKey)
+				var selectedOption:Array<Dynamic> = options[curOptions[curSelected]];
+				if(selectedOption[1] != defaultKey)
 				{
 					bindingBlack = new FlxSprite().makeGraphic(1, 1, /*FlxColor.BLACK*/ FlxColor.WHITE);
 					bindingBlack.scale.set(FlxG.width, FlxG.height);
@@ -314,7 +317,7 @@ class ControlsSubState extends MusicBeatSubstate
 					FlxTween.tween(bindingBlack, {alpha: 0.6}, 0.35, {ease: FlxEase.linear});
 					add(bindingBlack);
 
-					bindingText = new Alphabet(FlxG.width / 2, 160, Language.getPhrase('controls_rebinding', 'Rebinding {1}', [options[curOptions[curSelected]][3]]), false);
+					bindingText = new Alphabet(FlxG.width / 2, 160, Language.getPhrase('controls_rebinding', 'Rebinding {1}', [selectedOption[3]]), false);
 					bindingText.alignment = CENTERED;
 					add(bindingText);
 					

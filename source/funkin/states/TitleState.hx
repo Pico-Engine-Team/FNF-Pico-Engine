@@ -16,8 +16,7 @@ import openfl.Assets;
 import openfl.display.Bitmap;
 import openfl.display.BitmapData;
 
-typedef TitleData =
-{
+typedef TitleData = {
 	var titlex:Float;
 	var titley:Float;
 	var startx:Float;
@@ -30,7 +29,20 @@ typedef TitleData =
 	@:optional var animation:String;
 	@:optional var dance_left:Array<Int>;
 	@:optional var dance_right:Array<Int>;
+	@:optional var hey_animation:String;
+	@:optional var hey_frames:Array<Int>;
+	@:optional var extra_characters:Array<TitleCharacterData>;
 	@:optional var idle:Bool;
+}
+
+typedef TitleCharacterData = {
+	var image:String;
+	var x:Float;
+	var y:Float;
+
+	@:optional var scale:Float;
+	@:optional var dance_animation:String;
+	@:optional var hey_animation:String;
 }
 
 class TitleState extends MusicBeatState
@@ -54,10 +66,7 @@ class TitleState extends MusicBeatState
 	var wackyImage:FlxSprite;
 
 	#if TITLE_SCREEN_EASTER_EGG
-	final easterEggKeys:Array<String> =
-	[
-		'SHADOW', 'RIVEREN', 'BBPANZU', 'PESSY'
-	];
+	final easterEggKeys:Array<String> = ['SHADOW', 'RIVEREN', 'BBPANZU', 'PESSY'];
 	final allowedKeys:String = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 	var easterEggKeysBuffer:String = '';
 	#end
@@ -94,7 +103,7 @@ class TitleState extends MusicBeatState
 
 		FlxG.mouse.visible = false;
 		#if FREEPLAY
-		MusicBeatState.switchState(new FreeplayState());
+		MusicBeatState.switchState(new FreeplayMenuState());
 		#elseif CHARTING
 		MusicBeatState.switchState(new ChartingState());
 		#else
@@ -109,8 +118,9 @@ class TitleState extends MusicBeatState
 		#end
 	}
 
-	var logoBl:FlxSprite;
+	var logo:FlxSprite;
 	var gfDance:FlxSprite;
+	var extraTitleCharacters:Array<FlxSprite> = [];
 	var danceLeft:Bool = false;
 	var titleText:FlxSprite;
 	var swagShader:ColorSwap = null;
@@ -125,12 +135,12 @@ class TitleState extends MusicBeatState
 		#if TITLE_SCREEN_EASTER_EGG easterEggData(); #end
 		Conductor.bpm = musicBPM;
 
-		logoBl = new FlxSprite(logoPosition.x, logoPosition.y);
-		logoBl.frames = Paths.getSparrowAtlas('title/logoBumpin');
-		logoBl.antialiasing = ClientPrefs.data.antialiasing;
-		logoBl.animation.addByPrefix('bump', 'logo bumpin', 24, false);
-		logoBl.animation.play('bump');
-		logoBl.updateHitbox();
+		logo = new FlxSprite(logoPosition.x, logoPosition.y);
+		logo.frames = Paths.getSparrowAtlas('title/Funkin-Pico-banner');
+		logo.antialiasing = ClientPrefs.data.antialiasing;
+		logo.animation.addByPrefix('bump', 'logo bumpin', 24, false);
+		logo.animation.play('bump');
+		logo.updateHitbox();
 
 		gfDance = new FlxSprite(gfPosition.x, gfPosition.y);
 		gfDance.antialiasing = ClientPrefs.data.antialiasing;
@@ -139,7 +149,7 @@ class TitleState extends MusicBeatState
 		{
 			swagShader = new ColorSwap();
 			gfDance.shader = swagShader.shader;
-			logoBl.shader = swagShader.shader;
+			logo.shader = swagShader.shader;
 		}
 		
 		gfDance.frames = Paths.getSparrowAtlas(characterImage);
@@ -154,6 +164,7 @@ class TitleState extends MusicBeatState
 			gfDance.animation.addByPrefix('idle', animationName, 24, false);
 			gfDance.animation.play('idle');
 		}
+		gfDance.animation.addByIndices('hey', heyAnimationName, heyFrames, "", 24, false);
 
 		var animFrames:Array<FlxFrame> = [];
 		titleText = new FlxSprite(enterPosition.x, enterPosition.y);
@@ -193,8 +204,10 @@ class TitleState extends MusicBeatState
 		ngSpr.screenCenter(X);
 		ngSpr.antialiasing = ClientPrefs.data.antialiasing;
 
+		for (character in extraTitleCharacters)
+			add(character);
 		add(gfDance);
-		add(logoBl); //FNF Logo
+		add(logo); //FNF Logo
 		add(titleText); //"Press Enter to Begin" text
 		add(credGroup);
 		add(ngSpr);
@@ -219,6 +232,9 @@ class TitleState extends MusicBeatState
 	var musicBPM:Float = 102;
 	var danceLeftFrames:Array<Int> = [15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29];
 	var danceRightFrames:Array<Int> = [30, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
+	var heyAnimationName:String = 'gfHey';
+	var heyFrames:Array<Int> = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+	var extraCharacterData:Array<TitleCharacterData> = [];
 
 	function loadJsonData()
 	{
@@ -238,7 +254,13 @@ class TitleState extends MusicBeatState
 					if(titleJSON.animation != null && titleJSON.animation.length > 0) animationName = titleJSON.animation;
 					if(titleJSON.dance_left != null && titleJSON.dance_left.length > 0) danceLeftFrames = titleJSON.dance_left;
 					if(titleJSON.dance_right != null && titleJSON.dance_right.length > 0) danceRightFrames = titleJSON.dance_right;
+					if(titleJSON.hey_animation != null && titleJSON.hey_animation.length > 0) heyAnimationName = titleJSON.hey_animation;
+					if(titleJSON.hey_frames != null && titleJSON.hey_frames.length > 0) heyFrames = titleJSON.hey_frames;
+					if(titleJSON.extra_characters != null) extraCharacterData = titleJSON.extra_characters;
 					useIdle = (titleJSON.idle == true);
+
+					for (characterData in extraCharacterData)
+						createExtraTitleCharacter(characterData);
 	
 					if (titleJSON.backgroundSprite != null && titleJSON.backgroundSprite.trim().length > 0)
 					{
@@ -255,6 +277,31 @@ class TitleState extends MusicBeatState
 			else trace('[WARN] No Title JSON detected, using default values.');
 		}
 		//else trace('[WARN] No Title JSON detected, using default values.');
+	}
+
+	function createExtraTitleCharacter(data:TitleCharacterData):Void
+	{
+		if(data == null || data.image == null || data.image.length < 1)
+			return;
+
+		var character:FlxSprite = new FlxSprite(data.x, data.y);
+		character.frames = Paths.getSparrowAtlas(data.image);
+		character.antialiasing = ClientPrefs.data.antialiasing;
+
+		var scale:Float = data.scale != null ? data.scale : 1;
+		character.scale.set(scale, scale);
+		character.updateHitbox();
+
+		if(data.dance_animation != null && data.dance_animation.length > 0)
+		{
+			character.animation.addByPrefix('dance', data.dance_animation, 24, false);
+			character.animation.play('dance');
+		}
+
+		if(data.hey_animation != null && data.hey_animation.length > 0)
+			character.animation.addByPrefix('hey', data.hey_animation, 24, false);
+
+		extraTitleCharacters.push(character);
 	}
 
 	function easterEggData()
@@ -374,6 +421,11 @@ class TitleState extends MusicBeatState
 				titleText.alpha = 1;
 				
 				if(titleText != null) titleText.animation.play('press');
+				if(gfDance != null && gfDance.animation.getByName('hey') != null)
+					gfDance.animation.play('hey', true);
+				for (character in extraTitleCharacters)
+					if(character.animation.getByName('hey') != null)
+						character.animation.play('hey', true);
 
 				FlxG.camera.flash(ClientPrefs.data.flashing ? FlxColor.WHITE : 0x4CFFFFFF, 1);
 				FlxG.sound.play(Paths.sound('confirmMenu'), 0.7);
@@ -426,9 +478,9 @@ class TitleState extends MusicBeatState
 								}
 							});
 							FlxG.sound.music.fadeOut();
-							if(FreeplayState.vocals != null)
+							if(FreeplayMenuState.vocals != null)
 							{
-								FreeplayState.vocals.fadeOut();
+								FreeplayMenuState.vocals.fadeOut();
 							}
 							closedState = true;
 							transitioning = true;
@@ -497,10 +549,10 @@ class TitleState extends MusicBeatState
 	{
 		super.beatHit();
 
-		if(logoBl != null)
-			logoBl.animation.play('bump', true);
+		if(logo != null)
+			logo.animation.play('bump', true);
 
-		if(gfDance != null)
+		if(gfDance != null && !transitioning)
 		{
 			danceLeft = !danceLeft;
 			if(!useIdle)
@@ -511,6 +563,13 @@ class TitleState extends MusicBeatState
 					gfDance.animation.play('danceLeft');
 			}
 			else if(curBeat % 2 == 0) gfDance.animation.play('idle', true);
+		}
+
+		if(!transitioning)
+		{
+			for (character in extraTitleCharacters)
+				if(character.animation.getByName('dance') != null)
+					character.animation.play('dance', true);
 		}
 
 		if(!closedState)
@@ -630,9 +689,9 @@ class TitleState extends MusicBeatState
 				if(easteregg == 'SHADOW')
 				{
 					FlxG.sound.music.fadeOut();
-					if(FreeplayState.vocals != null)
+					if(FreeplayMenuState.vocals != null)
 					{
-						FreeplayState.vocals.fadeOut();
+						FreeplayMenuState.vocals.fadeOut();
 					}
 				}
 				#end

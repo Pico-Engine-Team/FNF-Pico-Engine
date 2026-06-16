@@ -1,6 +1,6 @@
 package funkin.states.options.data;
 
-import funkin.data.characters.Character;
+import funkin.data.objects.game.characters.Character;
 import funkin.states.options.config.*;
 
 class GraphicsSettingsSubState extends BaseOptionsMenu
@@ -57,7 +57,7 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 		final refreshRate:Int = FlxG.stage.application.window.displayMode.refreshRate;
 		option.minValue = 30;
 		option.maxValue = 240;
-		option.maxValue = 999;
+		option.maxValue = 1000;
 		option.defaultValue = Std.int(FlxMath.bound(refreshRate, option.minValue, option.maxValue));
 		option.displayFormat = '%v FPS';
 		option.onChange = onChangeFramerate;

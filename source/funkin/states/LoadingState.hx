@@ -1,8 +1,8 @@
 package funkin.states;
 
-import funkin.play.songs.Song;
+import funkin.play.Song;
 import funkin.stages.StageData;
-import funkin.data.characters.Character;
+import funkin.data.objects.game.characters.Character;
 import funkin.data.notes.Note;
 import funkin.data.notes.NoteSplash;
 

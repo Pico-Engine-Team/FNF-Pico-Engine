@@ -1,6 +1,6 @@
 package funkin.states;
 
-import funkin.utils.psych.PsychCamera;
+import funkin.utils.engines.psych.PsychCamera;
 import flixel.FlxState;
 
 class MusicBeatState extends FlxState
@@ -80,6 +80,9 @@ class MusicBeatState extends FlxState
 			reloadState(true);
 			return;
 		}
+
+		if(subState == null && Controls.instance != null && controls.justPressed('fps_display_toggle'))
+			ClientPrefs.toggleFPSDisplay();
 		
 		stagesFunc(function(stage:BaseStage) {
 			stage.update(elapsed);

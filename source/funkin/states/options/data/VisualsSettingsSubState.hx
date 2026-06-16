@@ -7,7 +7,8 @@ import funkin.data.notes.StrumNote;
 import funkin.data.notes.NoteSplash;
 
 import funkin.states.options.config.*;
-import funkin.utils.substates.MusicBeatSubstate;
+import funkin.states.PauseState;
+import funkin.substates.MusicBeatSubstate;
 
 class VisualsSettingsSubState extends BaseOptionsMenu
 {
@@ -87,12 +88,19 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 			'hideHud',
 			BOOL);
 		addOption(option);
+
+		var option:Option = new Option('Combo Camera:',
+			'Choose a style for the Rank Combo.\nOffset usage will not be applied if you choose CamGame.',
+			'comboCam',
+			STRING,
+			['camGame', 'camHud']);
+		addOption(option);
 		
 		var option:Option = new Option('Time Bar:',
 			"What should the Time Bar display?",
 			'timeBarType',
 			STRING,
-			['Time Left', 'Time Elapsed', 'Song Name', 'Disabled']);
+			['Disabled','Time Left', 'Time Elapsed', 'Song Name', 'Combined', 'Percentage']);
 		addOption(option);
 
 		var option:Option = new Option('Flashing Lights',
@@ -137,11 +145,11 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 			'How visible the background behind the FPS display should be.',
 			'debugDisplayBG',
 			PERCENT);
-		option.scrollSpeed = 1.6;
+		option.scrollSpeed = 1;
 		option.minValue = 0;
 		option.maxValue = 1;
 		option.changeValue = 0.1;
-		option.decimals = 2;
+		option.decimals = 1;
 		addOption(option);
 		option.onChange = onChangeDebugDisplayBG;
 		#end
@@ -169,12 +177,6 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 			BOOL);
 		addOption(option);
 		#end
-
-		var option:Option = new Option('Combo Stacking',
-			"If unchecked, Ratings and Combo won't stack, saving on System Memory and making them easier to read",
-			'comboStacking',
-			BOOL);
-		addOption(option);
 
 		super();
 		add(notes);
@@ -219,7 +221,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		if(ClientPrefs.data.pauseMusic == 'None')
 			FlxG.sound.music.volume = 0;
 		else
-			FlxG.sound.playMusic(Paths.music(Paths.formatToSongPath(ClientPrefs.data.pauseMusic)));
+			FlxG.sound.playMusic(Paths.music(PauseState.resolvePauseMusicKey(ClientPrefs.data.pauseMusic)));
 
 		changedMusic = true;
 	}

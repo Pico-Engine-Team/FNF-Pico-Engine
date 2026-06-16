@@ -1,6 +1,6 @@
 package funkin.states.options.data;
 
-import funkin.data.characters.Character;
+import funkin.data.objects.game.characters.Character;
 import funkin.states.options.config.*;
 import funkin.states.options.config.Option.OptionType;
 
