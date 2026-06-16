@@ -7,7 +7,7 @@ import lime.system.System;
 import flixel.util.FlxColor;
 
 // Pico Engine
-import funkin.utils.Main;
+import funkin.utils.windows.Main;
 
 #if (cpp && windows)
 @:buildXml('

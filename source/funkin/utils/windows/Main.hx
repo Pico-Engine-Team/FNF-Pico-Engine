@@ -18,7 +18,7 @@ import lime.app.Application;
 
 import funkin.play.Highscore;
 import funkin.states.TitleState;
-import funkin.utils.DebugDisplay as FPSCounter; // By Betadciu and Nightmare Vision,
+import funkin.utils.windows.DebugDisplay as FPSCounter; // By Betadciu and Nightmare Vision,
 import funkin.utils.Native;
 
 #if HSCRIPT_ALLOWED
@@ -213,10 +213,7 @@ class Main extends Sprite
 		var errMsg:String = "";
 		var path:String;
 		var callStack:Array<StackItem> = CallStack.exceptionStack(true);
-		var dateNow:String = Date.now().toString();
-
-		dateNow = dateNow.replace(" ", "");
-		dateNow = dateNow.replace("_", "()");
+		var dateNow:String = sanitizeCrashFileName(Date.now().toString());
 
 		path = "./content/logs/" + "PicoCrashLog-" + dateNow + ".txt";
 
@@ -239,19 +236,35 @@ class Main extends Sprite
 		#end
 		errMsg += "\n\n> Crash Handler written by: sqirra-rng";
 
-		if (!FileSystem.exists("./content/logs/"))
-			FileSystem.createDirectory("./content/logs/");
+		try
+		{
+			if (!FileSystem.exists("./content/"))
+				FileSystem.createDirectory("./content/");
+			if (!FileSystem.exists("./content/logs/"))
+				FileSystem.createDirectory("./content/logs/");
 
-		File.saveContent(path, errMsg + "\n");
+			File.saveContent(path, errMsg + "\n");
+		}
+		catch (saveError:Dynamic)
+		{
+			Sys.println('Failed to save crash dump at ${Path.normalize(path)}: $saveError');
+		}
 
 		Sys.println(errMsg);
 		Sys.println("Crash dump saved in " + Path.normalize(path));
 
-		Application.current.window.alert(errMsg, "Error!");
+		if (Application.current != null && Application.current.window != null)
+			Application.current.window.alert(errMsg, "Error!");
 		#if DISCORD_ALLOWED
 		DiscordClient.shutdown();
 		#end
 		Sys.exit(1);
+	}
+
+	static function sanitizeCrashFileName(value:String):String
+	{
+		var invalidChars:EReg = ~/[:*?"<>|\\\/]/g;
+		return invalidChars.replace(value.replace(" ", "_"), "-");
 	}
 	#end
 }

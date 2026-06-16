@@ -1,10 +1,11 @@
 package funkin.utils;
 
 import funkin.data.WeekData;
-import funkin.data.characters.Character;
+import funkin.data.objects.game.characters.Character;
 import funkin.data.editors.*;
+import funkin.menus.*;
+import funkin.menus.freeplay.FreeplayMenuState;
 import funkin.menus.MainMenuState;
-import funkin.menus.FreeplayState;
 
 class EditorsMenus extends MusicBeatState
 {
@@ -102,7 +103,7 @@ class EditorsMenus extends MusicBeatState
 
 		if (controls.BACK)
 		{
-			MusicBeatState.switchState(new funkin.states.data.menus.MainMenuState());
+			MusicBeatState.switchState(new MainMenuState());
 		}
 
 		if (controls.ACCEPT)
@@ -131,7 +132,7 @@ class EditorsMenus extends MusicBeatState
 					MusicBeatState.switchState(new funkin.utils.states.ConvertersState());
 			}
 			FlxG.sound.music.volume = 0;
-			FreeplayState.destroyFreeplayVocals();
+			FreeplayMenuState.destroyFreeplayVocals();
 		}
 		
 		for (num => item in grpTexts.members)

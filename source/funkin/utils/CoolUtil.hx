@@ -3,13 +3,11 @@ package funkin.utils;
 import openfl.utils.Assets;
 import lime.utils.Assets as LimeAssets;
 
-class CoolUtil
-{
-	public static function checkForUpdates(url:String = null):String
-	{
+class CoolUtil {
+	public static function checkForUpdates(url:String = null):String {
 		if (url == null || url.length == 0)
-			url = "https://raw.githubusercontent.com/Pico-Engine-Team/FNF-Pico-Funkin/refs/heads/master/gitVersion.txt";
-		var version:String = funkin.states.data.menus.MainMenuState.PicoVersion.trim();
+			url = "https://raw.githubusercontent.com/Pico-Engine-Team/FNF-Pico-Engine/refs/heads/master/gitVersion.txt";
+		var version:String =funkin.menus.MainMenuState.PicoVersion.trim();
 		if(ClientPrefs.data.checkForUpdates) {
 			trace('checking for updates');
 			var http = new haxe.Http(url);

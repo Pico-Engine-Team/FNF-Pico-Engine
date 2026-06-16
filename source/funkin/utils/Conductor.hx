@@ -1,7 +1,7 @@
 package funkin.utils;
 
+import funkin.play.Song;
 import funkin.play.Rating;
-import funkin.play.songs.Song;
 import funkin.data.notes.Note;
 
 typedef BPMChangeEvent =

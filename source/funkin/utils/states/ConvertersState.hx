@@ -2,15 +2,13 @@ package funkin.utils.states;
 
 import funkin.data.editors.content.FileDialogHandler;
 import funkin.data.editors.content.VSlice;
-import funkin.data.editors.ChartingState;
 import funkin.play.Song;
 import funkin.stages.StageData;
-import funkin.utils.engine.psych.PsychJsonPrinter;
+import funkin.utils.engines.psych.PsychJsonPrinter;
 
 import flash.net.FileFilter;
 import haxe.Json;
 import haxe.Exception;
-import haxe.ds.StringMap;
 
 class ConvertersState extends MusicBeatState
 {
@@ -21,6 +19,7 @@ class ConvertersState extends MusicBeatState
 
 	static inline var SOURCE_GODOT:String = 'godot';
 	static inline var SOURCE_CODENAME:String = 'codename';
+	static inline var SOURCE_NIGHTMAREVISION:String = 'nightmarevision';
 	static inline var SOURCE_VSLICE:String = 'vslice';
 	static inline var SOURCE_FOREVER:String = 'forever';
 	static inline var STAGE_FILTER_ALL:Int = 3;
@@ -82,24 +81,24 @@ class ConvertersState extends MusicBeatState
 		{
 			case PAGE_CHARTS:
 				[
-					'Godot Chart > Pico/Psych',
-					'Codename Engine Chart > Pico/Psych',
-					'Pico/Psych Chart > V-Slice',
-					'V-Slice Chart > Pico/Psych',
+					'Godot Chart',
+					'NightmareVision Chart',
+					'Codename Engine Chart',
+					'V-Slice Chart',
 					'Back'
 				];
 			case PAGE_CHARACTERS:
 				[
-					'Godot Character > Pico/Psych',
-					'Codename Engine Character > Pico/Psych',
-					'V-Slice Character > Pico/Psych',
-					'Forever Engine Character > Pico/Psych',
+					'Godot Character',
+					'Codename Engine Character',
+					'V-Slice Character',
+					'Forever Engine Character',
 					'Back'
 				];
 			case PAGE_STAGES:
 				[
-					'Codename Engine Stage XML > Pico/Psych',
-					'V-Slice Stage JSON > Pico/Psych',
+					'Codename Engine Stage XML',
+					'V-Slice Stage JSON',
 					'Back'
 				];
 			default:
@@ -107,7 +106,6 @@ class ConvertersState extends MusicBeatState
 					'Charts Converter',
 					'Characters Converter',
 					'Stages Converter',
-					'Open Chart Editor',
 					'Back'
 				];
 		}
@@ -158,7 +156,7 @@ class ConvertersState extends MusicBeatState
 			var item = menuItems[i];
 			item.alpha = i == curSelected ? 1 : 0.45;
 			item.x = 90;
-			item.text = (i == curSelected ? '> ' : '  ') + options[i];
+			item.text = options[i];
 		}
 
 		description.text = getDescription(options[curSelected]);
@@ -169,33 +167,31 @@ class ConvertersState extends MusicBeatState
 		return switch(option)
 		{
 			case 'Charts Converter':
-				'Convert chart JSONs from Godot, Codename Engine, V-Slice and Pico/Psych formats.';
+				'Convert chart JSONs from Godot, NightmareVision, Codename Engine and V-Slice formats.';
 			case 'Characters Converter':
-				'Convert character data from Godot, Codename Engine, V-Slice or Forever Engine to Pico/Psych JSON.';
+				'Convert character data from Godot, Codename Engine, V-Slice or Forever Engine.';
 			case 'Stages Converter':
-				'Convert Codename Engine stage XML or V-Slice stage JSON to Pico/Psych stage JSON.';
-			case 'Open Chart Editor':
-				'Open the Pico Engine chart editor.';
-			case 'Pico/Psych Chart > V-Slice':
-				'Open one Pico/Psych chart JSON and export V-Slice chart + metadata JSON files.';
-			case 'Godot Chart > Pico/Psych':
-				'Convert one Another FNF Engine Made In Godot chart JSON to Pico/Psych format.';
-			case 'Codename Engine Chart > Pico/Psych':
-				'Open Codename Engine chart.json + meta.json, then export one Pico/Psych chart JSON.';
-			case 'V-Slice Chart > Pico/Psych':
-				'Open a V-Slice chart JSON and metadata JSON, then export Pico/Psych chart JSON files.';
-			case 'Godot Character > Pico/Psych':
+				'Convert Codename Engine stage XML or V-Slice stage JSON.';
+			case 'Godot Chart':
+				'Convert one Another FNF Engine Made In Godot chart JSON.';
+			case 'NightmareVision Chart':
+				'Convert one NightmareVision chart JSON.';
+			case 'Codename Engine Chart':
+				'Open Codename Engine chart.json + meta.json, then export one chart JSON.';
+			case 'V-Slice Chart':
+				'Open a V-Slice chart JSON and metadata JSON, then export chart JSON files.';
+			case 'Godot Character':
 				'Convert one Another FNF Engine Made In Godot character JSON.';
-			case 'Codename Engine Character > Pico/Psych':
+			case 'Codename Engine Character':
 				'Convert one Codename Engine character XML or JSON.';
-			case 'V-Slice Character > Pico/Psych':
+			case 'V-Slice Character':
 				'Convert one Friday Night Funkin V-Slice character JSON.';
-			case 'Forever Engine Character > Pico/Psych':
+			case 'Forever Engine Character':
 				'Convert one Forever Engine character JSON.';
-			case 'Codename Engine Stage XML > Pico/Psych':
-				'Convert one Codename Engine stage XML to Pico/Psych stage JSON.';
-			case 'V-Slice Stage JSON > Pico/Psych':
-				'Convert one V-Slice stage JSON to Pico/Psych stage JSON.';
+			case 'Codename Engine Stage XML':
+				'Convert one Codename Engine stage XML.';
+			case 'V-Slice Stage JSON':
+				'Convert one V-Slice stage JSON.';
 			default:
 				page == PAGE_MAIN ? 'Return to the editor menu.' : 'Return to the previous converter menu.';
 		}
@@ -211,27 +207,25 @@ class ConvertersState extends MusicBeatState
 				setPage(PAGE_CHARACTERS);
 			case 'Stages Converter':
 				setPage(PAGE_STAGES);
-			case 'Open Chart Editor':
-				LoadingState.loadAndSwitchState(new ChartingState(), false);
-			case 'Godot Chart > Pico/Psych':
+			case 'Godot Chart':
 				openGodotChartToPico();
-			case 'Codename Engine Chart > Pico/Psych':
+			case 'NightmareVision Chart':
+				openNightmareVisionChartToPico();
+			case 'Codename Engine Chart':
 				openCodenameChartToPico();
-			case 'Pico/Psych Chart > V-Slice':
-				openPicoChartToVSlice();
-			case 'V-Slice Chart > Pico/Psych':
+			case 'V-Slice Chart':
 				openVSliceChartToPico();
-			case 'Godot Character > Pico/Psych':
+			case 'Godot Character':
 				openCharacter(SOURCE_GODOT);
-			case 'Codename Engine Character > Pico/Psych':
+			case 'Codename Engine Character':
 				openCharacter(SOURCE_CODENAME);
-			case 'V-Slice Character > Pico/Psych':
+			case 'V-Slice Character':
 				openCharacter(SOURCE_VSLICE);
-			case 'Forever Engine Character > Pico/Psych':
+			case 'Forever Engine Character':
 				openCharacter(SOURCE_FOREVER);
-			case 'Codename Engine Stage XML > Pico/Psych':
+			case 'Codename Engine Stage XML':
 				openStage(SOURCE_CODENAME);
-			case 'V-Slice Stage JSON > Pico/Psych':
+			case 'V-Slice Stage JSON':
 				openStage(SOURCE_VSLICE);
 			default:
 				back();
@@ -258,6 +252,30 @@ class ConvertersState extends MusicBeatState
 			catch(e:Dynamic)
 			{
 				setStatus('Failed to convert Godot chart: $e', true);
+			}
+		}, onCancel, onError);
+	}
+
+	function openNightmareVisionChartToPico()
+	{
+		fileDialog.open('song.json', 'Open NightmareVision Chart JSON', null, function()
+		{
+			try
+			{
+				var filePath = fileDialog.path.replace('\\', '/');
+				var converted = convertNightmareVisionChart(fileDialog.data, getFileBase(filePath));
+				fileDialog.save(Paths.formatToSongPath(getFileBase(filePath)) + '.json', converted, function()
+				{
+					setStatus('Saved converted NightmareVision chart to: ${fileDialog.path}');
+				}, onCancel, onError);
+			}
+			catch(e:Exception)
+			{
+				setStatus('Failed to convert NightmareVision chart: ${e.message}', true);
+			}
+			catch(e:Dynamic)
+			{
+				setStatus('Failed to convert NightmareVision chart: $e', true);
 			}
 		}, onCancel, onError);
 	}
@@ -339,54 +357,6 @@ class ConvertersState extends MusicBeatState
 		}, onCancel, onError);
 	}
 
-	function openPicoChartToVSlice()
-	{
-		fileDialog.open('song.json', 'Open Pico/Psych Chart JSON', null, function()
-		{
-			try
-			{
-				var filePath = fileDialog.path.replace('\\', '/');
-				var loadedChart = Song.parseJSON(fileDialog.data, getFileBase(filePath));
-				if(loadedChart == null || !Reflect.hasField(loadedChart, 'song'))
-				{
-					setStatus('Loaded file is not a valid Pico/Psych chart.', true);
-					return;
-				}
-
-				var pack:VSlicePackage = VSlice.export(loadedChart);
-				ensureVSliceDifficulties(pack);
-				var songName = Paths.formatToSongPath(pack.metadata.songName);
-
-				fileDialog.openDirectory('Save V-Slice Chart/Metadata JSONs', function()
-				{
-					try
-					{
-						var path = cleanFolderPath(fileDialog.path);
-						File.saveContent('$path/$songName-chart.json', PsychJsonPrinter.print(pack.chart, ['events', 'notes', 'scrollSpeed']));
-						File.saveContent('$path/$songName-metadata.json', PsychJsonPrinter.print(pack.metadata, ['characters', 'difficulties', 'timeChanges']));
-						setStatus('Saved V-Slice chart and metadata to: $path');
-					}
-					catch(e:Exception)
-					{
-						setStatus('Failed to save V-Slice files: ${e.message}', true);
-					}
-					catch(e:Dynamic)
-					{
-						setStatus('Failed to save V-Slice files: $e', true);
-					}
-				}, onCancel, onError);
-			}
-			catch(e:Exception)
-			{
-				setStatus('Failed to convert chart: ${e.message}', true);
-			}
-			catch(e:Dynamic)
-			{
-				setStatus('Failed to convert chart: $e', true);
-			}
-		}, onCancel, onError);
-	}
-
 	function openVSliceChartToPico()
 	{
 		fileDialog.open('chart.json', 'Open V-Slice Chart JSON', null, function()
@@ -412,7 +382,7 @@ class ConvertersState extends MusicBeatState
 						}
 
 						var pack:PsychPackage = VSlice.convertToPsych(chart, metadata);
-						fileDialog.openDirectory('Save Converted Pico/Psych JSONs', function()
+						fileDialog.openDirectory('Save Converted Chart JSONs', function()
 						{
 							try
 							{
@@ -437,15 +407,15 @@ class ConvertersState extends MusicBeatState
 									saved++;
 								}
 
-								setStatus('Saved $saved Pico/Psych JSON file(s) to: $path');
+								setStatus('Saved $saved chart JSON file(s) to: $path');
 							}
 							catch(e:Exception)
 							{
-								setStatus('Failed to save Pico/Psych files: ${e.message}', true);
+								setStatus('Failed to save chart files: ${e.message}', true);
 							}
 							catch(e:Dynamic)
 							{
-								setStatus('Failed to save Pico/Psych files: $e', true);
+								setStatus('Failed to save chart files: $e', true);
 							}
 						}, onCancel, onError);
 					}
@@ -748,6 +718,12 @@ class ConvertersState extends MusicBeatState
 		return PsychJsonPrinter.print(songData, ['sectionNotes', 'events']);
 	}
 
+	public static function convertNightmareVisionChart(raw:String, fileName:String):String
+	{
+		var songData = parseNightmareVisionChart(raw, fileName);
+		return PsychJsonPrinter.print(songData, ['sectionNotes', 'events']);
+	}
+
 	static function parseGodotChart(raw:String, fileName:String):SwagSong
 	{
 		var songData:SwagSong = Song.parseJSON(raw, fileName);
@@ -782,6 +758,11 @@ class ConvertersState extends MusicBeatState
 
 		cleanGodotSections(songData.notes);
 		return songData;
+	}
+
+	static function parseNightmareVisionChart(raw:String, fileName:String):SwagSong
+	{
+		return parseGodotChart(raw, fileName);
 	}
 
 	public static function convertCodenameChart(chartRaw:String, metaRaw:String, chartPath:String):String
@@ -1372,29 +1353,6 @@ class ConvertersState extends MusicBeatState
 	static function printCharacter(character:Dynamic):String
 	{
 		return PsychJsonPrinter.print(character, ['offsets', 'position', 'healthbar_colors', 'camera_position', 'indices']);
-	}
-
-	static function ensureVSliceDifficulties(pack:VSlicePackage)
-	{
-		if(pack == null || pack.metadata == null || pack.metadata.playData == null) return;
-		if(pack.metadata.playData.difficulties != null && pack.metadata.playData.difficulties.length > 0) return;
-
-		var diffs:Array<String> = [];
-		if(Std.isOfType(pack.chart.notes, StringMap))
-		{
-			var noteMap:StringMap<Dynamic> = cast pack.chart.notes;
-			for (key in noteMap.keys())
-				if(key != null && key.length > 0 && !diffs.contains(key)) diffs.push(key);
-		}
-
-		if(diffs.length < 1 && Difficulty.list != null && Difficulty.list.length > 0)
-		{
-			for (diff in Difficulty.list)
-				diffs.push(Paths.formatToSongPath(diff));
-		}
-		if(diffs.length < 1) diffs.push(Paths.formatToSongPath(Difficulty.getDefault()));
-
-		pack.metadata.playData.difficulties = diffs;
 	}
 
 	static function animationId(animData:Dynamic, source:String):String
