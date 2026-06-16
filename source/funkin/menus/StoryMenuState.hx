@@ -4,10 +4,10 @@ import funkin.data.WeekData;
 import funkin.play.Highscore;
 import funkin.stages.StageData;
 
-import funkin.utils.vslice.VsliceOptions;
+import funkin.utils.engines.vslice.VsliceOptions;
 import funkin.data.objects.story.MenuItem;
 import funkin.data.objects.story.MenuCharacter;
-import funkin.utils.substates.ResetScoreSubState;
+import funkin.substates.ResetScoreSubState;
 
 import flixel.group.FlxGroup;
 import flixel.graphics.FlxGraphic;
@@ -16,6 +16,7 @@ class StoryMenuState extends MusicBeatState
 {
 	public static var weekCompleted:Map<String, Bool> = new Map<String, Bool>();
 	private static var lastDifficultyName:String = '';
+	private static var lastDifficultyByWeek:Map<String, String> = new Map<String, String>();
 	private static var curWeek:Int = 0;
 
 	var scoreText:FlxText;
@@ -45,7 +46,7 @@ class StoryMenuState extends MusicBeatState
 
 		#if DISCORD_ALLOWED
 		// Updating Discord Rich Presence
-		DiscordClient.changePresence("In the Story Mode", null);
+		DiscordClient.changePresence("In the Story Menu", null);
 		#end
 
 		if(WeekData.weeksList.length < 1)
@@ -199,7 +200,6 @@ class StoryMenuState extends MusicBeatState
 			return;
 		}
 
-		// scoreText.setFormat(Paths.font("vcr.ttf"), 32);
 		if(intendedScore != lerpScore)
 		{
 			lerpScore = Math.floor(FlxMath.lerp(intendedScore, lerpScore, Math.exp(-elapsed * 30)));
@@ -343,7 +343,7 @@ class StoryMenuState extends MusicBeatState
 			{
 				#if !SHOW_LOADING_SCREEN FlxG.sound.music.stop(); #end
 				LoadingState.loadAndSwitchState(new PlayState(), true);
-				funkin.menus.FreeplayState.destroyFreeplayVocals();
+				funkin.menus.freeplay.FreeplayMenuState.destroyFreeplayVocals();
 			});
 			
 			#if (MODS_ALLOWED && DISCORD_ALLOWED)
@@ -398,6 +398,7 @@ class StoryMenuState extends MusicBeatState
 			}
 		}
 		lastDifficultyName = diff;
+		lastDifficultyByWeek.set(loadedWeeks[curWeek].fileName, diff);
 
 		#if !switch
 		intendedScore = Highscore.getWeekScore(loadedWeeks[curWeek].fileName, curDifficulty);
@@ -442,18 +443,35 @@ class StoryMenuState extends MusicBeatState
 		Difficulty.loadFromWeek(leWeek, false);
 		difficultySelectors.visible = unlocked;
 
-		if(Difficulty.list.contains(Difficulty.getDefault()))
-			curDifficulty = Math.round(Math.max(0, Difficulty.list.indexOf(Difficulty.getDefault())));
-		else
-			curDifficulty = 0;
-
-		var newPos:Int = Difficulty.list.indexOf(lastDifficultyName);
-		//trace('Pos of ' + lastDifficultyName + ' is ' + newPos);
-		if(newPos > -1)
-		{
-			curDifficulty = newPos;
-		}
+		curDifficulty = getWeekDifficultyIndex(leWeek);
 		updateText();
+	}
+
+	function getWeekDifficultyIndex(week:WeekData):Int
+	{
+		var saved:String = lastDifficultyByWeek.get(week.fileName);
+		var savedIndex:Int = getDifficultyIndex(saved);
+		if(savedIndex > -1)
+			return savedIndex;
+
+		var lastIndex:Int = getDifficultyIndex(lastDifficultyName);
+		if(lastIndex > -1)
+			return lastIndex;
+
+		var defaultIndex:Int = getDifficultyIndex(Difficulty.getDefault());
+		return defaultIndex > -1 ? defaultIndex : 0;
+	}
+
+	function getDifficultyIndex(?name:String):Int
+	{
+		if(name == null || name.length < 1)
+			return -1;
+
+		var cleanName:String = Difficulty.getSuffixName(name);
+		for (i in 0...Difficulty.list.length)
+			if(Difficulty.getSuffixName(Difficulty.list[i]) == cleanName)
+				return i;
+		return -1;
 	}
 
 	function weekIsLocked(name:String):Bool {

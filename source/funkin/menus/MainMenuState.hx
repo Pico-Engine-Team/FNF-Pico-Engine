@@ -3,13 +3,15 @@ package funkin.menus;
 import funkin.utils.EditorsMenus;
 import funkin.states.AchievementsMenuState;
 import funkin.states.options.OptionsState;
+import funkin.menus.freeplay.*;
+import funkin.menus.*;
+import funmin.states.*;
 
 import flixel.FlxObject;
 import flixel.effects.FlxFlicker;
 import lime.app.Application;
 
-enum MainMenuColumn
-{
+enum MainMenuColumn {
 	LEFT;
 	CENTER;
 	RIGHT;
@@ -17,20 +19,18 @@ enum MainMenuColumn
 
 class MainMenuState extends MusicBeatState
 {
-	public static var PicoVersion:String = '2.26.6'; // As Pico Engine Mod Version And mobilie Version 
-	public static var PsychVersion:String = '1.0.4 Custom Build'; // Psych Engine Version New Souce Code
-	public static var FunkinVersion:String = '0.8.4'; // V-Slice version of Friday Night Funkin'
-
+	public static var PicoVersion:String = '2.7.26'; // Pico Engine Mod Version And mobilie Version 
+	public static var PsychVersion:String = '1.0.0 Custom Build'; // Psych Engine v1.0.4
+	public static var FunkinVersion:String = '0.8.4'; // V Slice Version of Friday Night Funkin'
 	public static var curSelected:Int = 0;
 	public static var curColumn:MainMenuColumn = CENTER;
-	var allowMouse:Bool = true; //Turn this off to block mouse movement in menus
 
+	var allowMouse:Bool = true; //Turn this off to block mouse movement in menus
 	var menuItems:FlxTypedGroup<FlxSprite>;
 	var leftItem:FlxSprite;
 	var rightItem:FlxSprite;
 
 	var optionShit:Array<String> = ['story_mode', 'freeplay', 'credits', #if MODS_ALLOWED 'mods', #end #if ACHIEVEMENTS_ALLOWED 'awards' #end];
-
 	var leftOption:String = null;
 	var rightOption:String = 'options';
 
@@ -131,19 +131,16 @@ class MainMenuState extends MusicBeatState
 		#end
 
 		#if CHECK_FOR_UPDATES
-		if (showOutdatedWarning && ClientPrefs.data.checkForUpdates && substates.OutdatedSubState.updateVersion != PicoVersion)
-		{
+		if (showOutdatedWarning && ClientPrefs.data.checkForUpdates && funkin.substates.OutdatedSubState.updateVersion != PicoVersion) {
 			persistentUpdate = false;
 			showOutdatedWarning = false;
-			openSubState(new substates.OutdatedSubState());
+			openSubState(new funkin.substates.OutdatedSubState());
 		}
 		#end
-
 		FlxG.camera.follow(camFollow, null, 0.15);
 	}
 
-	function createMenuItem(name:String, x:Float, y:Float):FlxSprite
-	{
+	function createMenuItem(name:String, x:Float, y:Float):FlxSprite {
 		var menuItem:FlxSprite = new FlxSprite(x, y);
 		menuItem.frames = Paths.getSparrowAtlas('menus/mainmenu/menu_$name');
 		menuItem.animation.addByPrefix('idle', '$name idle', 24, true);
@@ -311,13 +308,13 @@ class MainMenuState extends MusicBeatState
 						case 'story_mode':
 							MusicBeatState.switchState(new StoryModeState());
 						case 'freeplay':
-							MusicBeatState.switchState(new funkin.menus.FreeplayState());
+							MusicBeatState.switchState(new FreeplayMenuState());
 						#if MODS_ALLOWED
 						case 'mods':
 							MusicBeatState.switchState(new ModsMenuState());
 						#end
 						case 'credits':
-							MusicBeatState.switchState(new CreditsState());
+							MusicBeatState.switchState(new funkin.states.CreditsState());
 						#if ACHIEVEMENTS_ALLOWED
 						case 'awards':
 							MusicBeatState.switchState(new AchievementsMenuState());
