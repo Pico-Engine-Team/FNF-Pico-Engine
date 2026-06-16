@@ -1,17 +1,16 @@
-package funkin.data.notes;
+package funkin.data.objects.game.notes.data;
 
-import funkin.data.notes.config.NoteTypesConfig;
+import funkin.play.PlayState;
 import funkin.data.notes.StrumNote;
 import funkin.play.shaders.RGBPalette;
+import funkin.data.notes.config.NoteTypesConfig;
+import funkin.data.objects.game.characters.Character;
 import funkin.play.shaders.RGBPalette.RGBShaderReference;
 import funkin.utils.engines.psych.PsychAnimationController;
 
 import flixel.math.FlxMath;
 import flixel.math.FlxRect;
 import flixel.animation.FlxAnimationController;
-import flixel.graphics.FlxGraphic;
-import flixel.graphics.frames.FlxAtlasFrames;
-import openfl.display.BitmapData;
 using StringTools;
 
 typedef EventNote = {
@@ -64,6 +63,7 @@ typedef HoldNoteCoverConfig = {
 typedef NoteSkinConfig = {
 	var animations:Map<String, NoteSkinAnim>;
 	var uiAssets:Map<String, NoteSkinUiAsset>;
+	var directory:String;
 	var scale:Float;
 	var noteScale:Float;
 	var holdScale:Float;
@@ -155,6 +155,8 @@ class Note extends FlxSprite
 	public static var swagWidth:Float = 160 * 0.7;
 	public static var colArray:Array<String> = ['purple', 'blue', 'green', 'red'];
 	public static var defaultNoteSkin(default, never):String = 'noteSkins/NOTE_assets';
+	static inline var PICO_NOTE_STYLE_DIR:String = 'game/custom-notes';
+	static inline var PICO_NOTE_IMAGE_PARENT:String = 'pico_assets/game';
 
 	public var noteSplashData:NoteSplashData = {
 		disabled: false,
@@ -255,7 +257,7 @@ class Note extends FlxSprite
 		if(noteData > -1 && noteType != value) {
 			switch(value) {
 				case 'Hurt Note':
-					ignoreNote = mustPress;
+					ignoreNote = PlayState.isPlayerNote(this);
 					//reloadNote('HURTNOTE_assets');
 					//this used to change the note texture to HURTNOTE_assets.png,
 					//but i've changed it to something more optimized with the implementation of RGBPalette:
@@ -293,7 +295,33 @@ class Note extends FlxSprite
 
 	public static function songArrowSkinForMustPress(mustPress:Bool):String
 	{
-		return songNoteStyle();
+		var characterStyle:String = characterNoteStyleForMustPress(mustPress);
+		return characterStyle != null && characterStyle.length > 0 ? characterStyle : songNoteStyle();
+	}
+
+	static function characterNoteStyleForMustPress(mustPress:Bool):String
+	{
+		if(PlayState.instance == null || ClientPrefs.data.noteskinsCharacters == null)
+			return null;
+
+		var mode:String = ClientPrefs.data.noteskinsCharacters.toLowerCase().trim();
+		if(mode == 'disabled' || mode == 'off' || mode == 'none')
+			return null;
+
+		var playerNote:Bool = PlayState.isPlayerNoteSide(mustPress);
+		if(mode == 'player' && !playerNote)
+			return null;
+		if(mode == 'opponent' && playerNote)
+			return null;
+		if(mode != 'player' && mode != 'opponent' && mode != 'both')
+			return null;
+
+		var character:Character = mustPress ? PlayState.instance.boyfriend : PlayState.instance.dad;
+		if(character == null || character.noteStyle == null)
+			return null;
+
+		var clean:String = normalizeNoteStyleName(character.noteStyle);
+		return clean.length > 0 ? clean : null;
 	}
 
 	public static function songNoteStyle():String
@@ -306,9 +334,7 @@ class Note extends FlxSprite
 				skin = PlayState.SONG.arrowSkin;
 		}
 		var clean:String = normalizeNoteStyleName(skin);
-		if(clean.length < 1 && PlayState.isPixelStage)
-			clean = defaultSongNoteStyle();
-		return clean;
+		return clean.length < 1 ? defaultSongNoteStyle() : clean;
 	}
 
 	public static function normalizeNoteStyleName(skin:String):String
@@ -342,8 +368,11 @@ class Note extends FlxSprite
 			}
 		}
 
+		if(clean.indexOf('/') >= 0 && imageAssetExists('noteSkins/$clean'))
+			return 'noteSkins/$clean';
+
 		var styleKey:String = noteStyleKey(clean);
-		if(styleKey.length > 0 && textAssetExists('data/notestyles/$styleKey.json'))
+		if(styleKey.length > 0 && noteStyleJsonExists(styleKey))
 			return styleKey;
 
 		if(clean.indexOf('/') < 0 && (imageAssetExists('noteSkins/$clean') || textAssetExists('images/noteSkins/$clean.json')))
@@ -354,11 +383,7 @@ class Note extends FlxSprite
 
 	public static function defaultSongNoteStyle():String
 	{
-		if(PlayState.isPixelStage && textAssetExists('data/notestyles/pixel.json'))
-			return 'pixel';
-		if(PlayState.isPixelStage && textAssetExists('images/noteSkins/pixel.json'))
-			return 'noteSkins/pixel';
-		if(textAssetExists('data/notestyles/funkin.json'))
+		if(noteStyleJsonExists('funkin'))
 			return 'funkin';
 		return defaultNoteSkin;
 	}
@@ -393,22 +418,30 @@ class Note extends FlxSprite
 
 	public static function resolveNoteStyleUiAsset(assetName:String, fallback:String):String
 	{
-		return NoteData.noteStyle.ui(assetName, fallback);
+		var asset:NoteSkinUiAsset = getNoteStyleUiAsset(assetName);
+		if(asset != null && imageAssetExists(asset.assetPath))
+			return asset.assetPath;
+		return fallback;
 	}
 
 	public static function resolveNoteStyleUiSound(assetName:String, fallback:String):String
 	{
-		return NoteData.noteStyle.uiSound(assetName, fallback);
+		var asset:NoteSkinUiAsset = getNoteStyleUiAsset(assetName);
+		if(asset != null && asset.audioPath != null && asset.audioPath.length > 0 && Paths.fileExists('sounds/${asset.audioPath}.${Paths.SOUND_EXT}', SOUND))
+			return asset.audioPath;
+		return fallback;
 	}
 
 	public static function noteStyleUiScale(assetName:String, fallback:Float):Float
 	{
-		return NoteData.noteStyle.uiScale(assetName, fallback);
+		var asset:NoteSkinUiAsset = getNoteStyleUiAsset(assetName);
+		return (asset != null && asset.scale != null) ? asset.scale : fallback;
 	}
 
 	public static function noteStyleUiIsPixel(assetName:String, fallback:Bool):Bool
 	{
-		return NoteData.noteStyle.uiIsPixel(assetName, fallback);
+		var asset:NoteSkinUiAsset = getNoteStyleUiAsset(assetName);
+		return (asset != null && asset.isPixel != null) ? asset.isPixel : fallback;
 	}
 
 	static function getNoteStyleUiAsset(assetName:String):NoteSkinUiAsset
@@ -549,7 +582,7 @@ class Note extends FlxSprite
 		var skin:String = texture + postfix;
 		if(texture.length < 1)
 		{
-			skin = PlayState.SONG != null ? songNoteStyle() : null;
+			skin = PlayState.SONG != null ? songArrowSkinForMustPress(mustPress) : null;
 			if(skin == null || skin.length < 1)
 				skin = defaultSongNoteStyle() + postfix;
 		}
@@ -572,27 +605,28 @@ class Note extends FlxSprite
 		else skinPostfix = '';
 
 		noteSkinConfig = getNoteSkinConfig(skin);
-		if(PlayState.isPixelStage) {
+		rgbShader.enabled = (noteSkinConfig == null || noteSkinConfig.allowRGB) && (PlayState.SONG == null || !PlayState.SONG.disableNoteRGB);
+		var usePixelSkin:Bool = PlayState.isPixelStage && (noteSkinConfig == null || noteSkinConfig.allowPixel);
+		if(usePixelSkin) {
 			var assetType:String = isSustainNote ? 'holdNotePixel' : 'notePixel';
 			var pixelAsset:String = resolveNoteSkinAsset(skin, noteSkinConfig, assetType);
-			if(noteSkinAtlasExists(pixelAsset))
+			if(tryLoadNoteSkinAtlas(pixelAsset, noteSkinConfig != null ? noteSkinConfig.directory : null))
 			{
-				frames = getNoteSkinAtlas(pixelAsset);
 			}
 			else
 			{
-				if(!noteSkinImageExists(pixelAsset))
+				if(!noteSkinImageExists(pixelAsset, noteSkinConfig != null ? noteSkinConfig.directory : null))
 				{
 					var fallbackAsset:String = fallbackNoteSkinAsset(skin, assetType);
-					if(noteSkinImageExists(fallbackAsset))
+					if(noteSkinImageExists(fallbackAsset, noteSkinConfig != null ? noteSkinConfig.directory : null))
 						pixelAsset = fallbackAsset;
 				}
 
-				var graphic = getNoteSkinGraphic(pixelAsset);
+				var graphic = loadNoteSkinGraphic(pixelAsset, noteSkinConfig != null ? noteSkinConfig.directory : null);
 				if(graphic == null)
 				{
-					var defaultPixelAsset:String = isSustainNote ? 'noteSkins/pixel/NOTE_assetsENDS' : 'noteSkins/pixel/NOTE_assets';
-					graphic = getNoteSkinGraphic(defaultPixelAsset);
+					var defaultPixelAsset:String = isSustainNote ? 'ui/notes/noteSkins/NOTE_assetsENDS' : 'ui/notes/noteSkins/NOTE_assets';
+					graphic = loadNoteSkinGraphic(defaultPixelAsset, noteSkinConfig != null ? noteSkinConfig.directory : null);
 					if(graphic != null)
 						pixelAsset = defaultPixelAsset;
 				}
@@ -619,9 +653,10 @@ class Note extends FlxSprite
 			}
 		} else {
 			var noteAsset:String = resolveNoteSkinAsset(skin, noteSkinConfig, isSustainNote ? 'sustain' : 'note');
-			if(!noteSkinAtlasExists(noteAsset))
+			if(!noteSkinAtlasExists(noteAsset, noteSkinConfig != null ? noteSkinConfig.directory : null))
 				noteAsset = 'noteSkins/NOTE_assets';
-			frames = noteSkinAtlasExists(noteAsset) ? getNoteSkinAtlas(noteAsset) : null;
+			if(!tryLoadNoteSkinAtlas(noteAsset, noteSkinConfig != null ? noteSkinConfig.directory : null) && noteAsset != 'noteSkins/NOTE_assets')
+				tryLoadNoteSkinAtlas('noteSkins/NOTE_assets');
 			if(frames == null)
 				return;
 			loadNoteAnims(isSustainNote ? 'sustain' : 'note');
@@ -671,59 +706,52 @@ class Note extends FlxSprite
 		if(texture == null || texture.length < 1) return createNoteSkinConfig();
 
 		var styleKey:String = noteStyleKey(texture);
-		var styleJsonPath:String = 'data/notestyles/$styleKey.json';
-		var picoJsonPath:String = styleKey.length > 0 ? picoCustomNoteJsonPath(styleKey) : null;
-		var hasPicoJson:Bool = picoJsonPath != null && textAssetExists(picoJsonPath);
-		var hasStyleJson:Bool = styleKey.length > 0 && textAssetExists(styleJsonPath);
-		var cachePath:String = hasPicoJson ? picoJsonPath : (hasStyleJson ? 'data/notestyles/$styleKey' : 'images/$texture');
+		var styleJsonPath:String = styleKey.length > 0 ? getNoteStyleJsonPath(styleKey) : null;
+		var hasStyleJson:Bool = styleKey.length > 0 && noteStyleJsonExists(styleKey);
+		var cachePath:String = hasStyleJson ? getNoteStyleCachePath(styleKey) : 'images/$texture';
 		if(noteSkinConfigs.exists(cachePath))
 			return noteSkinConfigs.get(cachePath);
 
 		var config:NoteSkinConfig = createNoteSkinConfig();
 		var loadedPath:String = null;
-		if(hasPicoJson)
+		if(hasStyleJson)
 		{
 			try
 			{
-				var raw:Dynamic = haxe.Json.parse(readNoteSkinText(picoJsonPath));
+				var raw:Dynamic = haxe.Json.parse(getNoteStyleJsonText(styleKey));
 				if(isNoteStyleJson(raw))
 				{
-					config = parseNoteSkinConfig(raw);
-					loadedPath = picoJsonPath;
+					config = parseNoteSkinConfig(raw, noteStyleJsonIsPico(styleKey) ? 'ui/notes' : 'noteSkins/$styleKey');
+					applyNoteStyleFallback(config, raw, styleKey);
+					loadedPath = getNoteStyleCachePath(styleKey);
 				}
 			}
 			catch(e:Dynamic)
 			{
-				trace('[NoteSkin] Failed to parse $picoJsonPath: $e');
+				trace('[NoteSkin] Failed to parse $styleJsonPath: $e');
 			}
 		}
 
-		if(loadedPath == null && hasStyleJson)
+		var imagePaths:Array<String> = ['images/$texture'];
+		if(styleKey.length > 0 && texture.indexOf('/') < 0)
 		{
-			try
-			{
-				var raw:Dynamic = haxe.Json.parse(Paths.getTextFromFile(styleJsonPath));
-				if(isNoteStyleJson(raw))
-				{
-					config = parseNoteSkinConfig(raw);
-					loadedPath = 'data/notestyles/$styleKey';
-				}
-			}
-			catch(e:Dynamic)
-			{
-				trace('[NoteSkin] Failed to parse data/notestyles/$styleKey.json: $e');
-			}
+			imagePaths.push('images/noteSkins/$styleKey');
+			imagePaths.push('images/noteSkins/$styleKey/Note');
+			imagePaths.push('images/noteSkins/$styleKey/note');
 		}
+		imagePaths.push('images/$texture/Note');
+		imagePaths.push('images/$texture/note');
 
-		var imagePath:String = 'images/$texture';
-		if(loadedPath == null && styleKey.length > 0 && texture.indexOf('/') < 0 && textAssetExists('images/noteSkins/$styleKey.json'))
-			imagePath = 'images/noteSkins/$styleKey';
-		if(loadedPath == null && textAssetExists('$imagePath.json'))
+		for(imagePath in imagePaths)
 		{
+			if(loadedPath != null || !textAssetExists('$imagePath.json'))
+				continue;
+
 			try
 			{
 				var raw:Dynamic = haxe.Json.parse(Paths.getTextFromFile('$imagePath.json'));
-				config = parseNoteSkinConfig(raw);
+				config = parseNoteSkinConfig(raw, noteStyleBasePath(imagePath));
+				applyNoteStyleFallback(config, raw, styleKey);
 				loadedPath = imagePath;
 			}
 			catch(e:Dynamic)
@@ -749,6 +777,18 @@ class Note extends FlxSprite
 			key = key.substr('data/notestyles/'.length);
 		else if(key.startsWith('notestyles/'))
 			key = key.substr('notestyles/'.length);
+		else if(key.startsWith('data/images/custom-notes/notestyles/'))
+			key = key.substr('data/images/custom-notes/notestyles/'.length);
+		else if(key.startsWith('images/custom-notes/notestyles/'))
+			key = key.substr('images/custom-notes/notestyles/'.length);
+		else if(key.startsWith('custom-notes/notestyles/'))
+			key = key.substr('custom-notes/notestyles/'.length);
+		else if(key.startsWith('game/custom-notes/'))
+			key = key.substr('game/custom-notes/'.length);
+		else if(key.startsWith('custom-notes/'))
+			key = key.substr('custom-notes/'.length);
+		else if(key.startsWith('data/characters/') || key.startsWith('data/charts/'))
+			key = key.substr(key.lastIndexOf('/') + 1);
 
 		for (extension in ['.json', '.png', '.xml'])
 		{
@@ -766,11 +806,111 @@ class Note extends FlxSprite
 		return raw != null && !Std.isOfType(raw, Array) && (Reflect.hasField(raw, 'assets') || Reflect.hasField(raw, 'animations'));
 	}
 
+	public static function noteStyleJsonExists(styleKey:String):Bool
+	{
+		if(styleKey == null || styleKey.length < 1)
+			return false;
+
+		#if sys
+		for(path in noteStyleJsonFileCandidates(styleKey))
+			if(sys.FileSystem.exists(path))
+				return true;
+		#end
+		return noteStyleTextAssetExists(styleKey) || picoNoteStyleTextAssetExists(styleKey);
+	}
+
+	static function getNoteStyleJsonText(styleKey:String):String
+	{
+		#if sys
+		for(path in noteStyleJsonFileCandidates(styleKey))
+			if(sys.FileSystem.exists(path))
+				return sys.io.File.getContent(path);
+		#end
+
+		for(asset in noteStyleJsonTextCandidates(styleKey))
+			if(textAssetExists(asset))
+				return Paths.getTextFromFile(asset);
+
+		for(asset in picoNoteStyleJsonTextCandidates(styleKey))
+			if(picoAssetExists(asset, TEXT))
+				return openfl.utils.Assets.getText(Paths.getPicoFunkinPath(asset));
+
+		return openfl.utils.Assets.getText(picoNoteStyleJsonPath(styleKey));
+	}
+
+	static function getNoteStyleJsonPath(styleKey:String):String
+	{
+		#if sys
+		for(path in noteStyleJsonFileCandidates(styleKey))
+			if(sys.FileSystem.exists(path))
+				return path;
+		#end
+		return noteStyleJsonIsPico(styleKey) ? picoNoteStyleJsonPath(styleKey) : Paths.notestyleJson(styleKey);
+	}
+
+	static function getNoteStyleCachePath(styleKey:String):String
+	{
+		return noteStyleJsonIsPico(styleKey) ? '$PICO_NOTE_STYLE_DIR/$styleKey' : 'data/notestyles/$styleKey';
+	}
+
+	static function noteStyleJsonIsPico(styleKey:String):Bool
+	{
+		if(styleKey == null || styleKey.length < 1)
+			return false;
+		if(noteStyleTextAssetExists(styleKey))
+			return false;
+		return picoNoteStyleTextAssetExists(styleKey);
+	}
+
+	static function picoNoteStyleJsonPath(styleKey:String):String
+		return Paths.getPicoFunkinPath('$PICO_NOTE_STYLE_DIR/$styleKey.json');
+
+	static function noteStyleJsonTextCandidates(styleKey:String):Array<String>
+		return [
+			'data/notestyles/$styleKey.json',
+			'data/notestyles/$styleKey/notes.json',
+			'data/notestyles/$styleKey/note.json'
+		];
+
+	static function picoNoteStyleJsonTextCandidates(styleKey:String):Array<String>
+		return [
+			'$PICO_NOTE_STYLE_DIR/$styleKey.json',
+			'$PICO_NOTE_STYLE_DIR/$styleKey/notes.json',
+			'$PICO_NOTE_STYLE_DIR/$styleKey/note.json'
+		];
+
+	static function noteStyleJsonFileCandidates(styleKey:String):Array<String>
+	{
+		var candidates:Array<String> = [];
+		for(asset in noteStyleJsonTextCandidates(styleKey))
+			candidates.push(Paths.getPath(asset, TEXT, null, true));
+		for(asset in picoNoteStyleJsonTextCandidates(styleKey))
+			candidates.push(Paths.getPicoFunkinPath(asset));
+		return candidates;
+	}
+
+	static function noteStyleTextAssetExists(styleKey:String):Bool
+	{
+		for(asset in noteStyleJsonTextCandidates(styleKey))
+			if(textAssetExists(asset))
+				return true;
+		return false;
+	}
+
+	static function picoNoteStyleTextAssetExists(styleKey:String):Bool
+	{
+		for(asset in picoNoteStyleJsonTextCandidates(styleKey))
+			if(picoAssetExists(asset, TEXT))
+				return true;
+		return false;
+	}
+
 	public static function createNoteSkinConfig():NoteSkinConfig
 	{
 		return {
 			animations: new Map(),
 			uiAssets: new Map(),
+			directory: 'shared',
 			scale: 0.7,
 			noteScale: 0.7,
 			holdScale: 0.7,
@@ -814,7 +954,7 @@ class Note extends FlxSprite
 		};
 	}
 
-	static function parseNoteSkinConfig(raw:Dynamic):NoteSkinConfig
+	static function parseNoteSkinConfig(raw:Dynamic, ?baseAssetPath:String):NoteSkinConfig
 	{
 		var config:NoteSkinConfig = createNoteSkinConfig();
 		if(raw == null) return config;
@@ -828,6 +968,7 @@ class Note extends FlxSprite
 		config.pixelStrumScale = PlayState.daPixelZoom;
 		config.allowRGB = noteSkinBool(Reflect.field(raw, 'allowRGB'), config.allowRGB);
 		config.allowPixel = noteSkinBool(Reflect.field(raw, 'allowPixel'), config.allowPixel);
+		config.directory = normalizeNoteSkinDirectory(firstNoteSkinField(raw, ['directory', 'folder']), config.directory);
 		parseNoteSplashAsset(config, firstNoteSkinField(raw, ['noteSplashes', 'noteSplash', 'splashSkin']));
 
 		var assets:Dynamic = Reflect.field(raw, 'assets');
@@ -846,16 +987,20 @@ class Note extends FlxSprite
 			else
 				parseHoldNoteCoverAsset(config, firstNoteSkinField(assets, ['holdNoteCover', 'holdCover']));
 			parseNoteStyleUiAssets(config, assets);
-
-			if(config.strumAssetPath == null && config.noteAssetPath != null)
-				config.strumAssetPath = config.noteAssetPath;
-			if(config.strumScale == config.scale)
-				config.strumScale = config.noteScale;
-			if(config.holdAssetPath == null && config.noteAssetPath != null)
-				config.holdAssetPath = config.noteAssetPath;
-			if(config.holdScale == config.scale)
-				config.holdScale = config.noteScale;
 		}
+		else
+		{
+			parseFunkinNoteStyleAsset(config, firstNoteSkinField(raw, ['note', 'notes', 'noteSkin']), 'note');
+			parseFunkinNoteStyleAsset(config, firstNoteSkinField(raw, ['sustain', 'sustainNote', 'holdNote']), 'sustain');
+			parseFunkinNoteStyleAsset(config, firstNoteSkinField(raw, ['strum', 'strumline', 'noteStrumline']), 'noteStrumline');
+			parseFunkinNoteStyleAsset(config, firstNoteSkinField(raw, ['notePixel', 'pixelNote']), 'notePixel');
+			parseFunkinNoteStyleAsset(config, firstNoteSkinField(raw, ['holdNotePixel', 'pixelHoldNote', 'sustainPixel', 'pixelSustain', 'sustainNotePixel']), 'holdNotePixel');
+			parseFunkinNoteStyleAsset(config, firstNoteSkinField(raw, ['strumPixel', 'pixelStrum', 'noteStrumlinePixel', 'pixelNoteStrumline']), 'noteStrumlinePixel');
+			parseNoteSplashAsset(config, firstNoteSkinField(raw, ['noteSplashes', 'noteSplash', 'splash', 'splashSkin']));
+			parseHoldNoteCoverAsset(config, firstNoteSkinField(raw, ['holdNoteCover', 'holdCover']));
+		}
+
+		applyPsychNoteDefaults(config, raw, baseAssetPath);
 
 		var animations:Dynamic = Reflect.field(raw, 'animations');
 		if(animations != null)
@@ -868,6 +1013,132 @@ class Note extends FlxSprite
 			}
 		}
 		return config;
+	}
+
+	static function applyNoteStyleFallback(config:NoteSkinConfig, raw:Dynamic, ?currentStyleKey:String)
+	{
+		if(config == null || raw == null)
+			return;
+
+		var fallbackValue:Dynamic = firstNoteSkinField(raw, ['fallback', 'fallbackStyle', 'parent']);
+		if(fallbackValue == null)
+			return;
+
+		var fallbackStyle:String = normalizeNoteStyleName(Std.string(fallbackValue));
+		if(fallbackStyle.length < 1)
+			return;
+
+		var current:String = currentStyleKey == null ? '' : normalizeNoteStyleName(currentStyleKey);
+		if(fallbackStyle == current)
+			return;
+
+		var fallbackConfig:NoteSkinConfig = getNoteSkinConfig(fallbackStyle);
+		if(fallbackConfig == null)
+			return;
+
+		mergeNoteSkinFallback(config, fallbackConfig);
+	}
+
+	static function mergeNoteSkinFallback(config:NoteSkinConfig, fallback:NoteSkinConfig)
+	{
+		if(config.noteAssetPath == null) config.noteAssetPath = fallback.noteAssetPath;
+		if(config.holdAssetPath == null) config.holdAssetPath = fallback.holdAssetPath;
+		if(config.strumAssetPath == null) config.strumAssetPath = fallback.strumAssetPath;
+		if(config.pixelNoteAssetPath == null) config.pixelNoteAssetPath = fallback.pixelNoteAssetPath;
+		if(config.pixelHoldAssetPath == null) config.pixelHoldAssetPath = fallback.pixelHoldAssetPath;
+		if(config.pixelStrumAssetPath == null) config.pixelStrumAssetPath = fallback.pixelStrumAssetPath;
+		if(config.noteSplashAssetPath == null) config.noteSplashAssetPath = fallback.noteSplashAssetPath;
+		if((config.directory == null || config.directory == 'shared') && fallback.directory != null)
+			config.directory = fallback.directory;
+
+		if(config.noteAssetPath == fallback.noteAssetPath) config.noteScale = fallback.noteScale;
+		if(config.holdAssetPath == fallback.holdAssetPath) config.holdScale = fallback.holdScale;
+		if(config.strumAssetPath == fallback.strumAssetPath) config.strumScale = fallback.strumScale;
+		if(config.pixelNoteAssetPath == fallback.pixelNoteAssetPath) config.pixelNoteScale = fallback.pixelNoteScale;
+		if(config.pixelHoldAssetPath == fallback.pixelHoldAssetPath) config.pixelHoldScale = fallback.pixelHoldScale;
+		if(config.pixelStrumAssetPath == fallback.pixelStrumAssetPath) config.pixelStrumScale = fallback.pixelStrumScale;
+
+		config.pixelNoteColumns = config.pixelNoteColumns > 0 ? config.pixelNoteColumns : fallback.pixelNoteColumns;
+		config.pixelNoteRows = config.pixelNoteRows > 0 ? config.pixelNoteRows : fallback.pixelNoteRows;
+		config.pixelHoldColumns = config.pixelHoldColumns > 0 ? config.pixelHoldColumns : fallback.pixelHoldColumns;
+		config.pixelHoldRows = config.pixelHoldRows > 0 ? config.pixelHoldRows : fallback.pixelHoldRows;
+		config.pixelStrumColumns = config.pixelStrumColumns > 0 ? config.pixelStrumColumns : fallback.pixelStrumColumns;
+		config.pixelStrumRows = config.pixelStrumRows > 0 ? config.pixelStrumRows : fallback.pixelStrumRows;
+
+		for(key in fallback.animations.keys())
+			if(!config.animations.exists(key))
+				config.animations.set(key, fallback.animations.get(key));
+
+		for(key in fallback.uiAssets.keys())
+			if(!config.uiAssets.exists(key))
+				config.uiAssets.set(key, fallback.uiAssets.get(key));
+
+		mergeHoldNoteCoverFallback(config.holdNoteCover, fallback.holdNoteCover);
+	}
+
+	static function mergeHoldNoteCoverFallback(config:HoldNoteCoverConfig, fallback:HoldNoteCoverConfig)
+	{
+		if(config == null || fallback == null)
+			return;
+
+		if(!config.enabled && fallback.enabled)
+		{
+			config.enabled = fallback.enabled;
+			config.isPixel = fallback.isPixel;
+			config.offsets = fallback.offsets.copy();
+			config.scale = fallback.scale;
+			config.centerOnStrum = fallback.centerOnStrum;
+			config.columns = fallback.columns;
+			config.rows = fallback.rows;
+		}
+
+		for(i in 0...4)
+		{
+			if(config.assetPaths[i] == null) config.assetPaths[i] = fallback.assetPaths[i];
+			if(config.startAnims[i] == null) config.startAnims[i] = fallback.startAnims[i];
+			if(config.holdAnims[i] == null) config.holdAnims[i] = fallback.holdAnims[i];
+			if(config.endAnims[i] == null) config.endAnims[i] = fallback.endAnims[i];
+		}
+	}
+
+	static function applyPsychNoteDefaults(config:NoteSkinConfig, raw:Dynamic, ?baseAssetPath:String)
+	{
+		if(baseAssetPath == null || baseAssetPath.length < 1)
+			return;
+
+		var defaultAsset:String = cleanFunkinAssetPath(firstNoteSkinField(raw, ['assetPath', 'path', 'texture']));
+		if(defaultAsset == null || defaultAsset.length < 1)
+			defaultAsset = '$baseAssetPath/note';
+
+		if(config.noteAssetPath == null && imageAssetExists(defaultAsset, config.directory))
+			config.noteAssetPath = defaultAsset;
+		if(config.holdAssetPath == null && imageAssetExists(defaultAsset, config.directory))
+			config.holdAssetPath = defaultAsset;
+		if(config.strumAssetPath == null && imageAssetExists(defaultAsset, config.directory))
+			config.strumAssetPath = defaultAsset;
+
+		var pixelAsset:String = '$baseAssetPath/note-pixel';
+		if(config.allowPixel && imageAssetExists(pixelAsset, config.directory))
+		{
+			if(config.pixelNoteAssetPath == null)
+				config.pixelNoteAssetPath = pixelAsset;
+			if(config.pixelHoldAssetPath == null)
+				config.pixelHoldAssetPath = pixelAsset;
+			if(config.pixelStrumAssetPath == null)
+				config.pixelStrumAssetPath = pixelAsset;
+		}
+	}
+
+	static function noteStyleBasePath(imagePath:String):String
+	{
+		var path:String = imagePath;
+		if(path.startsWith('images/'))
+			path = path.substr('images/'.length);
+		if(path.endsWith('/Note'))
+			path = path.substr(0, path.length - '/Note'.length);
+		else if(path.endsWith('/note'))
+			path = path.substr(0, path.length - '/note'.length);
+		return path;
 	}
 
 	static function parseNoteStyleUiAssets(config:NoteSkinConfig, assets:Dynamic)
@@ -929,23 +1200,6 @@ class Note extends FlxSprite
 	{
 		if(asset == null) return;
 		assetType = normalizeNoteSkinAssetType(assetType);
-
-		var isPixel:Bool = noteSkinBool(Reflect.field(asset, 'isPixel'), false);
-		if(isPixel)
-		{
-			switch(assetType)
-			{
-				case 'note':
-					parseFunkinNoteStyleAsset(config, asset, 'notePixel');
-					return;
-				case 'holdNote':
-					parseFunkinNoteStyleAsset(config, asset, 'holdNotePixel');
-					return;
-				case 'noteStrumline':
-					parseFunkinNoteStyleAsset(config, asset, 'noteStrumlinePixel');
-					return;
-			}
-		}
 
 		var assetPath = cleanFunkinAssetPath(Reflect.field(asset, 'assetPath'));
 		var assetScale = noteSkinFloat(Reflect.field(asset, 'scale'), config.scale);
@@ -1112,12 +1366,17 @@ class Note extends FlxSprite
 		cover.rows = noteSkinInt(firstNoteSkinField(asset, ['rows', 'frameRows']), cover.rows);
 
 		var defaultAsset:String = cleanFunkinAssetPath(firstNoteSkinField(asset, ['assetPath', 'path', 'texture']));
-		var directionFields:Array<String> = ['left', 'down', 'up', 'right'];
+		var directionFields:Array<Array<String>> = [
+			['left', 'purple'],
+			['down', 'blue'],
+			['up', 'green'],
+			['right', 'red']
+		];
 		var fallbackAssets:Array<String> = cover.isPixel ? [null, null, null, null] : ['holdCover/holdCoverPurple', 'holdCover/holdCoverBlue', 'holdCover/holdCoverGreen', 'holdCover/holdCoverRed'];
 
 		for (i in 0...directionFields.length)
 		{
-			var rawDirection:Dynamic = data != null ? Reflect.field(data, directionFields[i]) : null;
+			var rawDirection:Dynamic = data != null ? firstNoteSkinField(data, directionFields[i]) : null;
 			var directionAsset:String = rawDirection != null ? cleanFunkinAssetPath(firstNoteSkinField(rawDirection, ['assetPath', 'path', 'texture'])) : null;
 			cover.assetPaths[i] = directionAsset != null && directionAsset.length > 0 ? directionAsset : (defaultAsset != null && defaultAsset.length > 0 ? defaultAsset : fallbackAssets[i]);
 
@@ -1166,7 +1425,7 @@ class Note extends FlxSprite
 	{
 		if(raw == null) return null;
 
-		var prefixValue:Dynamic = Reflect.field(raw, 'prefix');
+		var prefixValue:Dynamic = firstNoteSkinField(raw, ['prefix', 'animation', 'anim', 'name']);
 		var indices:Array<Int> = noteSkinIntArray(firstNoteSkinField(raw, ['indices', 'frameIndices', 'frames']));
 		if(prefixValue == null && indices.length < 1) return null;
 
@@ -1208,18 +1467,18 @@ class Note extends FlxSprite
 			var assetPath:String = switch(assetType)
 			{
 				case 'note': config.noteAssetPath;
-				case 'holdNote': config.holdAssetPath != null ? config.holdAssetPath : config.noteAssetPath;
-				case 'noteStrumline': config.strumAssetPath != null ? config.strumAssetPath : config.noteAssetPath;
+				case 'holdNote': config.noteAssetPath != null ? config.noteAssetPath : config.holdAssetPath;
+				case 'noteStrumline': config.noteAssetPath != null ? config.noteAssetPath : config.strumAssetPath;
 				case 'notePixel': config.pixelNoteAssetPath != null ? config.pixelNoteAssetPath : config.noteAssetPath;
 				case 'holdNotePixel': config.pixelHoldAssetPath != null ? config.pixelHoldAssetPath : (config.holdAssetPath != null ? config.holdAssetPath : config.noteAssetPath);
 				case 'noteStrumlinePixel': config.pixelStrumAssetPath != null ? config.pixelStrumAssetPath : (config.pixelNoteAssetPath != null ? config.pixelNoteAssetPath : config.strumAssetPath);
 				default: null;
 			}
 
-			if(imageAssetExists(assetPath))
+			if(imageAssetExists(assetPath, config.directory))
 				return assetPath;
 
-			var relativeAsset:String = resolveStyleRelativeNoteSkinAsset(texture, assetPath, assetType);
+			var relativeAsset:String = resolveStyleRelativeNoteSkinAsset(texture, assetPath, assetType, config.directory);
 			if(relativeAsset != null)
 				return relativeAsset;
 		}
@@ -1229,7 +1488,7 @@ class Note extends FlxSprite
 		return texture;
 	}
 
-	static function resolveStyleRelativeNoteSkinAsset(texture:String, assetPath:String, assetType:String):String
+	static function resolveStyleRelativeNoteSkinAsset(texture:String, assetPath:String, assetType:String, ?directory:String):String
 	{
 		if(assetPath == null || assetPath.length < 1)
 			return null;
@@ -1252,7 +1511,7 @@ class Note extends FlxSprite
 
 		for(candidate in candidates)
 		{
-			if(imageAssetExists(candidate))
+			if(imageAssetExists(candidate, directory))
 				return candidate;
 		}
 		return null;
@@ -1270,12 +1529,12 @@ class Note extends FlxSprite
 		{
 			case 'notePixel', 'noteStrumlinePixel':
 				if(isPixelStyle)
-					candidates = ['noteSkins/pixel/NOTE_assets', 'weeb/pixelUI/arrows-pixels-rgb', 'weeb/pixelUI/arrows-pixels', 'pixelUI/noteSkins/NOTE_assets'];
+					candidates = ['ui/notes/noteSkins/NOTE_assets', 'noteSkins/pixel/NOTE_assets', 'weeb/pixelUI/arrows-pixels-rgb', 'weeb/pixelUI/arrows-pixels', 'pixelUI/noteSkins/NOTE_assets'];
 				else if(styleKey.length > 0)
 					candidates = ['noteSkins/$styleKey/NOTE_assets', 'noteSkins/NOTE_assets'];
 			case 'holdNotePixel':
 				if(isPixelStyle)
-					candidates = ['noteSkins/pixel/NOTE_assetsENDS', 'weeb/pixelUI/arrowEndsNew-rgb', 'weeb/pixelUI/arrowEndsNew', 'pixelUI/noteSkins/NOTE_assetsENDS'];
+					candidates = ['ui/notes/noteSkins/NOTE_assetsENDS', 'noteSkins/pixel/NOTE_assetsENDS', 'weeb/pixelUI/arrowEndsNew-rgb', 'weeb/pixelUI/arrowEndsNew', 'pixelUI/noteSkins/NOTE_assetsENDS'];
 				else if(styleKey.length > 0)
 					candidates = ['noteSkins/$styleKey/NOTE_assetsENDS', 'noteSkins/$styleKey/NOTE_assets', 'noteSkins/NOTE_assets'];
 			case 'note', 'holdNote', 'noteStrumline':
@@ -1294,111 +1553,250 @@ class Note extends FlxSprite
 		return null;
 	}
 
-	static function imageAssetExists(assetPath:String):Bool
+	static function imageAssetExists(assetPath:String, ?directory:String):Bool
 	{
 		if(assetPath == null || assetPath.length < 1)
 			return false;
 
-		#if sys
-		var picoImage:String = picoNoteSkinAssetPath(assetPath, 'png');
-		if(picoImage != null && sys.FileSystem.exists(picoImage))
-			return true;
-		#end
-
 		var key:String = 'images/$assetPath.png';
+		var folder:String = normalizeNoteSkinDirectory(directory);
+		if(folder != 'shared')
+		{
+			var folderPath:String = Paths.getPath(key, IMAGE, folder, true);
+			#if sys
+			if(sys.FileSystem.exists(folderPath))
+				return true;
+			#end
+			if(openfl.utils.Assets.exists(folderPath, IMAGE))
+				return true;
+			if(weekNoteSkinAssetExists(key, IMAGE, folder))
+				return true;
+		}
 		if(Paths.fileExists(key, IMAGE))
 			return true;
 		#if sys
 		if(sys.FileSystem.exists(Paths.getPath(key, IMAGE, null, true)))
 			return true;
 		#end
+		if(picoAssetExists('game/$assetPath.png', IMAGE))
+			return true;
+		if(picoAssetExists('data/images/$assetPath.png', IMAGE))
+			return true;
 		return false;
 	}
 
-	public static function noteSkinImageExists(assetPath:String):Bool
+	public static function noteSkinImageExists(assetPath:String, ?directory:String):Bool
 	{
-		return imageAssetExists(assetPath);
+		return imageAssetExists(assetPath, directory);
 	}
 
-	public static function noteSkinAtlasExists(assetPath:String):Bool
+	public static function noteSkinAtlasExists(assetPath:String, ?directory:String):Bool
 	{
-		return imageAssetExists(assetPath) && textAssetExists('images/$assetPath.xml');
+		return imageAssetExists(assetPath, directory) && textAssetExists('images/$assetPath.xml', directory);
 	}
 
-	static function textAssetExists(key:String):Bool
+	function tryLoadNoteSkinAtlas(assetPath:String, ?directory:String):Bool
+	{
+		frames = null;
+		if(!noteSkinAtlasExists(assetPath, directory))
+			return false;
+
+		try
+		{
+			frames = loadNoteSkinAtlas(assetPath, directory);
+		}
+		catch (e:Dynamic)
+		{
+			trace('Failed to load note skin atlas "$assetPath": $e');
+			frames = null;
+		}
+		return frames != null;
+	}
+
+	static function textAssetExists(key:String, ?directory:String):Bool
 	{
 		if(key == null || key.length < 1)
 			return false;
 
-		#if sys
-		if(key.startsWith('assets/') && sys.FileSystem.exists(key))
-			return true;
-		#end
-
+		var folder:String = normalizeNoteSkinDirectory(directory);
+		if(folder != 'shared')
+		{
+			var folderPath:String = Paths.getPath(key, TEXT, folder, true);
+			#if sys
+			if(sys.FileSystem.exists(folderPath))
+				return true;
+			#end
+			if(openfl.utils.Assets.exists(folderPath, TEXT))
+				return true;
+			if(weekNoteSkinAssetExists(key, TEXT, folder))
+				return true;
+		}
 		if(Paths.fileExists(key, TEXT))
 			return true;
 		#if sys
 		if(sys.FileSystem.exists(Paths.getPath(key, TEXT, null, true)))
 			return true;
 		#end
+		var picoKey:String = key;
+		if(picoKey.startsWith('images/'))
+		{
+			var imageRelative:String = picoKey.substr('images/'.length);
+			if(picoAssetExists('game/$imageRelative', TEXT))
+				return true;
+			picoKey = 'data/images/$imageRelative';
+		}
+		if(picoAssetExists(picoKey, TEXT))
+			return true;
 		return false;
 	}
 
-	public static function getNoteSkinGraphic(assetPath:String):FlxGraphic
+	public static function noteSkinAssetParent(assetPath:String, ?directory:String):String
 	{
-		#if sys
-		var picoImage:String = picoNoteSkinAssetPath(assetPath, 'png');
-		if(picoImage != null && sys.FileSystem.exists(picoImage))
+		if(picoAssetExists('game/$assetPath.png', IMAGE))
+			return PICO_NOTE_IMAGE_PARENT;
+
+		var folder:String = normalizeNoteSkinDirectory(directory);
+		return folder != 'shared' ? folder : null;
+	}
+
+	public static function isPicoNoteSkinAsset(assetPath:String):Bool
+	{
+		return assetPath != null && assetPath.length > 0 && picoAssetExists('game/$assetPath.png', IMAGE);
+	}
+
+	public static function loadNoteSkinGraphic(assetPath:String, ?directory:String):flixel.graphics.FlxGraphic
+	{
+		if(isPicoNoteSkinAsset(assetPath))
 		{
-			var bitmap:BitmapData = BitmapData.fromFile(picoImage);
-			if(bitmap != null)
-				return Paths.cacheBitmap(picoImage, null, bitmap);
+			var cacheKey:String = 'pico_assets/game/$assetPath.png';
+			if(Paths.currentTrackedAssets.exists(cacheKey))
+			{
+				Paths.localTrackedAssets.push(cacheKey);
+				return Paths.currentTrackedAssets.get(cacheKey);
+			}
+
+			var path:String = Paths.getPicoFunkinPath('game/$assetPath.png');
+			var bitmap:openfl.display.BitmapData = null;
+			#if sys
+			if(sys.FileSystem.exists(path))
+				bitmap = openfl.display.BitmapData.fromFile(path);
+			#else
+			if(openfl.utils.Assets.exists(path, IMAGE))
+				bitmap = openfl.utils.Assets.getBitmapData(path);
+			#end
+			return bitmap != null ? Paths.cacheBitmap(cacheKey, null, bitmap) : null;
 		}
-		#end
-		return Paths.image(assetPath);
+		var weekGraphic:flixel.graphics.FlxGraphic = loadWeekNoteSkinGraphic(assetPath, directory);
+		if(weekGraphic != null)
+			return weekGraphic;
+		return Paths.image(assetPath, noteSkinAssetParent(assetPath, directory));
 	}
 
-	public static function getNoteSkinAtlas(assetPath:String):FlxAtlasFrames
+	public static function loadNoteSkinAtlas(assetPath:String, ?directory:String):flixel.graphics.frames.FlxAtlasFrames
 	{
-		#if sys
-		var picoXml:String = picoNoteSkinAssetPath(assetPath, 'xml');
-		if(picoXml != null && sys.FileSystem.exists(picoXml))
+		if(isPicoNoteSkinAsset(assetPath))
 		{
-			var graphic:FlxGraphic = getNoteSkinGraphic(assetPath);
-			if(graphic != null)
-				return FlxAtlasFrames.fromSparrow(graphic, sys.io.File.getContent(picoXml));
+			var graphic:flixel.graphics.FlxGraphic = loadNoteSkinGraphic(assetPath, directory);
+			if(graphic == null)
+				return null;
+
+			var xmlPath:String = Paths.getPicoFunkinPath('game/$assetPath.xml');
+			var xmlText:String = null;
+			#if sys
+			if(sys.FileSystem.exists(xmlPath))
+				xmlText = sys.io.File.getContent(xmlPath);
+			#else
+			if(openfl.utils.Assets.exists(xmlPath, TEXT))
+				xmlText = openfl.utils.Assets.getText(xmlPath);
+			#end
+			return xmlText != null ? flixel.graphics.frames.FlxAtlasFrames.fromSparrow(graphic, xmlText) : null;
 		}
-		#end
-		return Paths.getSparrowAtlas(assetPath);
+		var weekAtlas:flixel.graphics.frames.FlxAtlasFrames = loadWeekNoteSkinAtlas(assetPath, directory);
+		if(weekAtlas != null)
+			return weekAtlas;
+		return Paths.getSparrowAtlas(assetPath, noteSkinAssetParent(assetPath, directory));
 	}
 
-	static function picoCustomNoteJsonPath(styleKey:String):String
+	static function weekNoteSkinAssetExists(key:String, type:openfl.utils.AssetType, ?directory:String):Bool
 	{
-		if(styleKey == null || styleKey.length < 1)
-			return null;
-		return Paths.getPicoFunkinPath('game/custom-notes/$styleKey.json');
-	}
+		var folder:String = normalizeNoteSkinDirectory(directory);
+		if(folder == 'shared' || key == null || key.length < 1)
+			return false;
 
-	static function picoNoteSkinAssetPath(assetPath:String, extension:String):String
-	{
-		var clean:String = cleanFunkinAssetPath(assetPath);
-		if(clean == null || clean.length < 1)
-			return null;
-
-		if(clean.startsWith('game/'))
-			return Paths.getPicoFunkinPath('$clean.$extension');
-		if(clean.startsWith('ui/notes/'))
-			return Paths.getPicoFunkinPath('game/$clean.$extension');
-		return null;
-	}
-
-	static function readNoteSkinText(key:String):String
-	{
+		var path:String = Paths.getWeekAssetPath(key, folder);
 		#if sys
-		if(key != null && key.startsWith('assets/') && sys.FileSystem.exists(key))
-			return sys.io.File.getContent(key);
+		if(sys.FileSystem.exists(path))
+			return true;
 		#end
-		return Paths.getTextFromFile(key, true);
+		return openfl.utils.Assets.exists(path, type);
+	}
+
+	static function loadWeekNoteSkinGraphic(assetPath:String, ?directory:String):flixel.graphics.FlxGraphic
+	{
+		var folder:String = normalizeNoteSkinDirectory(directory);
+		if(folder == 'shared')
+			return null;
+
+		var key:String = 'images/$assetPath.png';
+		if(!weekNoteSkinAssetExists(key, IMAGE, folder))
+			return null;
+
+		var cacheKey:String = 'week_assets/$folder/$key';
+		if(Paths.currentTrackedAssets.exists(cacheKey))
+		{
+			Paths.localTrackedAssets.push(cacheKey);
+			return Paths.currentTrackedAssets.get(cacheKey);
+		}
+
+		var path:String = Paths.getWeekAssetPath(key, folder);
+		var bitmap:openfl.display.BitmapData = null;
+		#if sys
+		if(sys.FileSystem.exists(path))
+			bitmap = openfl.display.BitmapData.fromFile(path);
+		#else
+		if(openfl.utils.Assets.exists(path, IMAGE))
+			bitmap = openfl.utils.Assets.getBitmapData(path);
+		#end
+		return bitmap != null ? Paths.cacheBitmap(cacheKey, null, bitmap) : null;
+	}
+
+	static function loadWeekNoteSkinAtlas(assetPath:String, ?directory:String):flixel.graphics.frames.FlxAtlasFrames
+	{
+		var folder:String = normalizeNoteSkinDirectory(directory);
+		if(folder == 'shared')
+			return null;
+
+		var xmlKey:String = 'images/$assetPath.xml';
+		if(!weekNoteSkinAssetExists(xmlKey, TEXT, folder))
+			return null;
+
+		var graphic:flixel.graphics.FlxGraphic = loadWeekNoteSkinGraphic(assetPath, folder);
+		if(graphic == null)
+			return null;
+
+		var xmlPath:String = Paths.getWeekAssetPath(xmlKey, folder);
+		var xmlText:String = null;
+		#if sys
+		if(sys.FileSystem.exists(xmlPath))
+			xmlText = sys.io.File.getContent(xmlPath);
+		#else
+		if(openfl.utils.Assets.exists(xmlPath, TEXT))
+			xmlText = openfl.utils.Assets.getText(xmlPath);
+		#end
+		return xmlText != null ? flixel.graphics.frames.FlxAtlasFrames.fromSparrow(graphic, xmlText) : null;
+	}
+
+	static function picoAssetExists(key:String, type:openfl.utils.AssetType):Bool
+	{
+		if(key == null || key.length < 1)
+			return false;
+
+		var path:String = Paths.getPicoFunkinPath(key);
+		#if sys
+		if(sys.FileSystem.exists(path))
+			return true;
+		#end
+		return openfl.utils.Assets.exists(path, type);
 	}
 
 	public static function holdNoteCoverEnabled(config:NoteSkinConfig):Bool
@@ -1413,7 +1811,7 @@ class Note extends FlxSprite
 
 		var id:Int = FlxMath.wrap(noteData, 0, 3);
 		var assetPath:String = config.holdNoteCover.assetPaths[id];
-		if(imageAssetExists(assetPath))
+		if(imageAssetExists(assetPath, config.directory))
 			return assetPath;
 
 		var cleanAsset:String = cleanFunkinAssetPath(assetPath);
@@ -1422,12 +1820,12 @@ class Note extends FlxSprite
 			if(config.holdNoteCover.isPixel)
 			{
 				var pixelCandidate:String = 'noteSkins/pixel/$cleanAsset';
-				if(imageAssetExists(pixelCandidate))
+				if(imageAssetExists(pixelCandidate, config.directory))
 					return pixelCandidate;
 			}
 
 			var candidate:String = 'holdCover/$cleanAsset';
-			if(imageAssetExists(candidate))
+			if(imageAssetExists(candidate, config.directory))
 				return candidate;
 		}
 
@@ -1435,7 +1833,7 @@ class Note extends FlxSprite
 			return null;
 
 		var fallback:Array<String> = ['holdCover/holdCoverPurple', 'holdCover/holdCoverBlue', 'holdCover/holdCoverGreen', 'holdCover/holdCoverRed'];
-		return imageAssetExists(fallback[id]) ? fallback[id] : null;
+		return imageAssetExists(fallback[id], config.directory) ? fallback[id] : null;
 	}
 
 	public static function holdNoteCoverScale(config:NoteSkinConfig):Float
@@ -1561,6 +1959,8 @@ class Note extends FlxSprite
 			path = path.substr('images/'.length);
 		if(path.startsWith('assets/images/'))
 			path = path.substr('assets/images/'.length);
+		if(path.startsWith('custom-notes/images/'))
+			path = 'ui/notes/' + path.substr('custom-notes/images/'.length);
 		for (extension in ['.png', '.xml', '.json'])
 		{
 			if(path.endsWith(extension))
@@ -1571,6 +1971,26 @@ class Note extends FlxSprite
 		}
 
 		return path;
+	}
+
+	static function normalizeNoteSkinDirectory(value:Dynamic, ?fallback:String = 'shared'):String
+	{
+		var directory:String = value == null ? fallback : Std.string(value).trim();
+		if(directory == null || directory.length < 1 || directory == 'null')
+			directory = fallback;
+		if(directory == null || directory.length < 1)
+			directory = 'shared';
+
+		directory = directory.replace('\\', '/');
+		if(directory.startsWith('assets/'))
+			directory = directory.substr('assets/'.length);
+		if(directory.startsWith('week_assets/'))
+			directory = directory.substr('week_assets/'.length);
+		while(directory.startsWith('/'))
+			directory = directory.substr(1);
+		while(directory.endsWith('/'))
+			directory = directory.substr(0, directory.length - 1);
+		return directory.length > 0 ? directory : 'shared';
 	}
 
 	static function cleanFunkinSoundPath(value:Dynamic):String
@@ -1708,7 +2128,7 @@ class Note extends FlxSprite
 	{
 		super.update(elapsed);
 
-		if (mustPress)
+		if (PlayState.isPlayerNote(this))
 		{
 			canBeHit = (strumTime > Conductor.songPosition - (Conductor.safeZoneOffset * lateHitMult) &&
 						strumTime < Conductor.songPosition + (Conductor.safeZoneOffset * earlyHitMult));

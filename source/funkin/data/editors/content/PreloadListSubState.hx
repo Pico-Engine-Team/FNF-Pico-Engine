@@ -1,8 +1,8 @@
 package funkin.data.editors.content;
 
 import funkin.stages.StageData;
-import funkin.utils.psych.ui.PsychUIEventHandler.PsychUIEvent;
-import funkin.utils.psych.ui.PsychUIRadioGroup.PsychUIRadioItem;
+import funkin.utils.engines.psych.ui.PsychUIEventHandler.PsychUIEvent;
+import funkin.utils.engines.psych.ui.PsychUIRadioGroup.PsychUIRadioItem;
 import funkin.data.editors.content.FileDialogHandler;
 
 import haxe.io.Path;

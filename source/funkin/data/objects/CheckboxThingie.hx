@@ -10,7 +10,7 @@ class CheckboxThingie extends FlxSprite
 	public function new(x:Float = 0, y:Float = 0, ?checked = false) {
 		super(x, y);
 
-		frames = Paths.getSparrowAtlas('checkboxanim');
+		frames = Paths.getSparrowAtlas(Paths.fileExists('images/checkboxanim.xml', TEXT) ? 'checkboxanim' : 'menus/options/checkboxanim');
 		animation.addByPrefix("unchecked", "checkbox0", 24, false);
 		animation.addByPrefix("unchecking", "checkbox anim reverse", 24, false);
 		animation.addByPrefix("checking", "checkbox anim0", 24, false);
@@ -37,11 +37,11 @@ class CheckboxThingie extends FlxSprite
 
 	private function set_daValue(check:Bool):Bool {
 		if(check) {
-			if(animation.curAnim.name != 'checked' && animation.curAnim.name != 'checking') {
+			if(animation.curAnim == null || (animation.curAnim.name != 'checked' && animation.curAnim.name != 'checking')) {
 				animation.play('checking', true);
 				offset.set(34, 25);
 			}
-		} else if(animation.curAnim.name != 'unchecked' && animation.curAnim.name != 'unchecking') {
+		} else if(animation.curAnim == null || (animation.curAnim.name != 'unchecked' && animation.curAnim.name != 'unchecking')) {
 			animation.play("unchecking", true);
 			offset.set(25, 28);
 		}

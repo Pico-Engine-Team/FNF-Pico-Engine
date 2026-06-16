@@ -1,6 +1,7 @@
-package funkin.data.notes;
+package funkin.data.objects.game.notes.data;
 
 import funkin.play.shaders.RGBPalette;
+import funkin.data.notes.StrumNote;
 import funkin.utils.engines.psych.PsychAnimationController;
 
 import flixel.system.FlxAssets.FlxShader;
@@ -199,6 +200,11 @@ class NoteSplash extends FlxSprite
 		{
 			var loadedTexture:String = NoteData.notestyles.noteSplash(null, true);
 			if (note != null && note.noteSplashData.texture != null) loadedTexture = note.noteSplashData.texture;
+			else
+			{
+				var songSplash:String = Note.songSplashSkinForMustPress(true);
+				if(songSplash != null && songSplash.length > 0) loadedTexture = songSplash;
+			}
 
 			if (texture != loadedTexture) loadSplash(loadedTexture);
 		}

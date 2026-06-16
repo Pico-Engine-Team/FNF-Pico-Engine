@@ -1,6 +1,6 @@
 package funkin.data.dialogue;
 
-import funkin.play.songs.Song;
+import funkin.play.Song;
 import flixel.addons.text.FlxTypeText;
 
 class DialogueBox extends FlxSpriteGroup

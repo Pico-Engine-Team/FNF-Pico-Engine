@@ -1,12 +1,14 @@
-package funkin.data.notes;
+package funkin.data.objects.game.notes.data;
 
-import funkin.data.notes.Note.NoteSkinConfig;
 import funkin.utils.engines.psych.PsychAnimationController;
+import funkin.data.notes.Note.NoteSkinConfig;
+import funkin.data.notes.StrumNote;
+import funkin.play.PlayState;
 
-class HoldNoteCover extends FlxSprite
-{
+class HoldNoteCover extends FlxSprite {
 	public var babyArrow:StrumNote;
 	public var noteData:Int = 0;
+
 	var texture:String;
 	var textureIsAtlas:Bool = false;
 	var ending:Bool = false;
@@ -15,9 +17,9 @@ class HoldNoteCover extends FlxSprite
 	var coverOffsets:Array<Float> = [0, 0];
 	var centerOnStrum:Bool = true;
 
-	public function new(x:Float = 0, y:Float = 0)
-	{
+	public function new(x:Float = 0, y:Float = 0) {
 		super(x, y);
+
 		animation = new PsychAnimationController(this);
 		scrollFactor.set();
 		visible = false;
@@ -48,7 +50,7 @@ class HoldNoteCover extends FlxSprite
 			return;
 		}
 
-		var useAtlas:Bool = Paths.fileExists('images/$assetPath.xml', TEXT);
+		var useAtlas:Bool = Note.noteSkinAtlasExists(assetPath, config.directory);
 		if(texture != assetPath || textureIsAtlas != useAtlas)
 		{
 			texture = assetPath;
@@ -56,11 +58,11 @@ class HoldNoteCover extends FlxSprite
 
 			if(useAtlas)
 			{
-				frames = Paths.getSparrowAtlas(texture);
+				frames = Note.loadNoteSkinAtlas(texture, config.directory);
 			}
 			else if(Note.holdNoteCoverIsPixel(config))
 			{
-				var graphic = Paths.image(texture);
+				var graphic = Note.loadNoteSkinGraphic(texture, config.directory);
 				if(graphic == null)
 				{
 					kill();
@@ -90,7 +92,7 @@ class HoldNoteCover extends FlxSprite
 		babyArrow = strum;
 		noteData = note.noteData;
 		ending = false;
-		playEndOnRelease = note.mustPress;
+		playEndOnRelease = PlayState.isPlayerNote(note);
 		releaseTimer = holdTime > 0 ? holdTime : 0.001;
 		coverOffsets = Note.holdNoteCoverOffset(config).copy();
 		centerOnStrum = Note.holdNoteCoverCenterOnStrum(config);

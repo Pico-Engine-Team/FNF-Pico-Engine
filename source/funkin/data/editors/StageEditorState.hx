@@ -1,13 +1,13 @@
 package funkin.data.editors;
 
 import funkin.stages.StageData;
-import funkin.utils.psych.PsychCamera;
-import funkin.data.characters.Character;
+import funkin.utils.engines.psych.PsychCamera;
+import funkin.data.objects.game.characters.Character;
 import funkin.modding.scripting.psychlua.LuaUtils;
 import funkin.data.editors.content.Prompt;
 import funkin.data.editors.content.PreloadListSubState;
 import funkin.modding.scripting.psychlua.ModchartSprite;
-import funkin.utils.psych.PsychJsonPrinter;
+import funkin.utils.engines.psych.PsychJsonPrinter;
 
 import flixel.FlxObject;
 import flixel.addons.display.FlxBackdrop;
@@ -24,6 +24,8 @@ import flash.net.FileFilter;
 
 class StageEditorState extends MusicBeatState implements PsychUIEventHandler.PsychUIEvent
 {
+	static inline var STAGE_BACKUP_DIR:String = 'backups/stages';
+
 	final minZoom = 0.1;
 	final maxZoom = 2;
 
@@ -165,7 +167,7 @@ class StageEditorState extends MusicBeatState implements PsychUIEventHandler.Psy
 		}
 	}
 
-	static function normalizeDynamicPoint(value:Dynamic, fallback:Array<Float>):Array<Dynamic>
+	static function normalizeDynamicPoint(value:Dynamic, fallback:Array<Float>):Array<Float>
 	{
 		var parsed = normalizeFloatPoint(value, fallback);
 		return [parsed[0], parsed[1]];
@@ -1790,6 +1792,7 @@ class StageEditorState extends MusicBeatState implements PsychUIEventHandler.Psy
 	function saveData()
 	{
 		if(_file != null) return;
+		ensureStageBackupFolder();
 
 		var data = PsychJsonPrinter.print(prepareStageJsonForSave(), ['boyfriend', 'girlfriend', 'opponent', 'camera_boyfriend', 'camera_opponent', 'camera_girlfriend', 'scale', 'scroll', 'offsets', 'indices']);
 		if (data.length > 0)
@@ -1799,6 +1802,24 @@ class StageEditorState extends MusicBeatState implements PsychUIEventHandler.Psy
 			_file.addEventListener(Event.CANCEL, onSaveCancel);
 			_file.addEventListener(IOErrorEvent.IO_ERROR, onSaveError);
 			_file.save(data, '$lastLoadedStage.json');
+		}
+	}
+
+	function ensureStageBackupFolder()
+	{
+		ensureDirectory(STAGE_BACKUP_DIR);
+	}
+
+	function ensureDirectory(path:String)
+	{
+		var clean:String = path.replace('\\', '/');
+		var current:String = '';
+		for (part in clean.split('/'))
+		{
+			if(part.length < 1) continue;
+			current = current.length > 0 ? '$current/$part' : part;
+			if(!FileSystem.exists(current))
+				FileSystem.createDirectory(current);
 		}
 	}
 

@@ -7,26 +7,26 @@ import openfl.events.IOErrorEvent;
 import flash.net.FileFilter;
 import haxe.Json;
 
-import funkin.states.data.menus.story.MenuCharacter;
+import funkin.data.objects.story.MenuCharacter;
 import funkin.data.editors.content.Prompt;
-import funkin.utils.psych.PsychJsonPrinter;
+import funkin.utils.engines.psych.PsychJsonPrinter;
 
 class MenuCharacterEditorState extends MusicBeatState implements PsychUIEventHandler.PsychUIEvent
 {
+	var defaultCharacters:Array<String> = ['dad', 'bf', 'gf'];
 	var grpWeekCharacters:FlxTypedGroup<MenuCharacter>;
 	var characterFile:MenuCharacterFile = null;
 	var txtOffsets:FlxText;
-	var defaultCharacters:Array<String> = ['dad', 'bf', 'gf'];
 	var unsavedProgress:Bool = false;
 
-	override function create() {
-		characterFile =
-		{
-			image: 'Menu_Dad',
-			scale: 1,
+	override function create()
+	{
+		characterFile = {
 			position: [0, 0],
 			idle_anim: 'M Dad Idle',
 			confirm_anim: 'M Dad Idle',
+			image: 'Menu_Dad',
+			scale: 1,
 			flipX: false,
 			antialiasing: true
 		};
@@ -107,55 +107,78 @@ class MenuCharacterEditorState extends MusicBeatState implements PsychUIEventHan
 		tab_group.add(characterTypeRadio);
 	}
 
-	// ── Animações: idle e confirm com prefix (string no XML) ─────────────
-	var idleNameInput:PsychUIInputText;
-	var idlePrefixInput:PsychUIInputText;
-	var confirmNameInput:PsychUIInputText;
-	var confirmPrefixInput:PsychUIInputText;
+	var animationTypeDropDown:PsychUIDropDownMenu;
+	var animationPrefixInput:PsychUIInputText;
 	function addAnimationUI() {
-		// Usa a aba 'Animations' dentro do UI_mainbox
 		var tab_group = UI_mainbox.getTab('Animations').menu;
 		var lx:Int = 10;
 		var ly:Int = 10;
 
-		// ── Idle ─────────────────────────────────────────────
-		tab_group.add(new FlxText(lx, ly, 0, 'Idle Animation:', 10));
-		ly += 14;
+		animationTypeDropDown = new PsychUIDropDownMenu(lx, ly + 12, ['idle', 'confirm'], function(id:Int, selected:String)
+		{
+			refreshAnimationInput();
+		});
+		animationTypeDropDown.selectedLabel = 'idle';
+		tab_group.add(new FlxText(animationTypeDropDown.x, animationTypeDropDown.y - 18, 120, 'Animations:'));
+		tab_group.add(animationTypeDropDown);
 
-		tab_group.add(new FlxText(lx, ly, 0, 'Name:', 9));
-		idleNameInput = new PsychUIInputText(lx, ly + 12, 100, 'idle', 8);
-		tab_group.add(idleNameInput);
+		ly += 60;
+		animationPrefixInput = new PsychUIInputText(lx, ly + 12, 210, characterFile.idle_anim, 8);
+		animationPrefixInput.name = 'idle_anim';
+		tab_group.add(new FlxText(animationPrefixInput.x, animationPrefixInput.y - 18, 170, 'Prefix:'));
+		tab_group.add(animationPrefixInput);
 
-		tab_group.add(new FlxText(lx + 110, ly, 0, 'Prefix (XML):', 9));
-		idlePrefixInput = new PsychUIInputText(lx + 110, ly + 12, 110, characterFile.idle_anim, 8);
-		tab_group.add(idlePrefixInput);
-
-		ly += 42;
-
-		// ── Confirm ───────────────────────────────────────────
-		tab_group.add(new FlxText(lx, ly, 0, 'Confirm Animation (Start Press):', 10));
-		ly += 14;
-
-		tab_group.add(new FlxText(lx, ly, 0, 'Name:', 9));
-		confirmNameInput = new PsychUIInputText(lx, ly + 12, 100, 'confirm', 8);
-		tab_group.add(confirmNameInput);
-
-		tab_group.add(new FlxText(lx + 110, ly, 0, 'Prefix (XML):', 9));
-		confirmPrefixInput = new PsychUIInputText(lx + 110, ly + 12, 110, characterFile.confirm_anim, 8);
-		tab_group.add(confirmPrefixInput);
-
-		ly += 42;
-
-		// ── Botão Apply ───────────────────────────────────────
-		var applyAnimBtn = new PsychUIButton(lx, ly, 'Apply & Preview', function() {
-			characterFile.idle_anim    = idlePrefixInput.text.trim();
-			characterFile.confirm_anim = confirmPrefixInput.text.trim();
+		ly += 55;
+		var addUpdateButton:PsychUIButton = new PsychUIButton(lx, ly, 'Add/Update', function()
+		{
+			applySelectedAnimation(animationPrefixInput.text.trim());
 			reloadSelectedCharacter();
 			unsavedProgress = true;
-		}, 210);
-		applyAnimBtn.normalStyle.bgColor   = 0xFF226622;
-		applyAnimBtn.normalStyle.textColor = FlxColor.WHITE;
-		tab_group.add(applyAnimBtn);
+		}, 100);
+		tab_group.add(addUpdateButton);
+
+		var removeButton:PsychUIButton = new PsychUIButton(lx + 110, ly, 'Remove', function()
+		{
+			applySelectedAnimation('');
+			refreshAnimationInput();
+			reloadSelectedCharacter();
+			unsavedProgress = true;
+		}, 100);
+		tab_group.add(removeButton);
+	}
+
+	function getSelectedAnimationName():String
+	{
+		if(animationTypeDropDown == null || animationTypeDropDown.selectedLabel == null)
+			return 'idle';
+		return animationTypeDropDown.selectedLabel.toLowerCase().trim();
+	}
+
+	function getSelectedAnimationPrefix():String
+	{
+		return getSelectedAnimationName() == 'confirm' ? characterFile.confirm_anim : characterFile.idle_anim;
+	}
+
+	function getSelectedAnimationFieldName():String
+	{
+		return getSelectedAnimationName() == 'confirm' ? 'confirm_anim' : 'idle_anim';
+	}
+
+	function applySelectedAnimation(prefix:String)
+	{
+		if(getSelectedAnimationName() == 'confirm')
+			characterFile.confirm_anim = prefix;
+		else
+			characterFile.idle_anim = prefix;
+	}
+
+	function refreshAnimationInput()
+	{
+		if(animationPrefixInput != null)
+		{
+			animationPrefixInput.name = getSelectedAnimationFieldName();
+			animationPrefixInput.text = getSelectedAnimationPrefix();
+		}
 	}
 
 	var imageInputText:PsychUIInputText;
@@ -212,13 +235,16 @@ class MenuCharacterEditorState extends MusicBeatState implements PsychUIEventHan
 
 		char.alpha = 1;
 		char.frames = Paths.getSparrowAtlas('storymenu/props/characters/' + characterFile.image);
-		char.animation.addByPrefix('idle', characterFile.idle_anim, 24);
-		if(characterTypeRadio.checked == 1) char.animation.addByPrefix('confirm', characterFile.confirm_anim, 24, false);
+		if(characterFile.idle_anim != null && characterFile.idle_anim.length > 0)
+			char.animation.addByPrefix('idle', characterFile.idle_anim, 24);
+		if(characterTypeRadio.checked == 1 && characterFile.confirm_anim != null && characterFile.confirm_anim.length > 0)
+			char.animation.addByPrefix('confirm', characterFile.confirm_anim, 24, false);
 		char.flipX = (characterFile.flipX == true);
 
 		char.scale.set(characterFile.scale, characterFile.scale);
 		char.updateHitbox();
-		char.animation.play('idle');
+		if(char.animation.exists('idle'))
+			char.animation.play('idle');
 		updateOffset();
 		
 		#if DISCORD_ALLOWED
@@ -235,11 +261,8 @@ class MenuCharacterEditorState extends MusicBeatState implements PsychUIEventHan
 			if(sender == imageInputText) {
 				characterFile.image = imageInputText.text;
 				unsavedProgress = true;
-			} else if(sender == idlePrefixInput) {
-				characterFile.idle_anim = idlePrefixInput.text;
-				unsavedProgress = true;
-			} else if(sender == confirmPrefixInput) {
-				characterFile.confirm_anim = confirmPrefixInput.text;
+			} else if(sender == animationPrefixInput) {
+				applySelectedAnimation(animationPrefixInput.text);
 				unsavedProgress = true;
 			}
 		} else if(id == PsychUINumericStepper.CHANGE_EVENT && (sender is PsychUINumericStepper)) {
@@ -284,7 +307,7 @@ class MenuCharacterEditorState extends MusicBeatState implements PsychUIEventHan
 				updateOffset();
 			}
 
-			if(FlxG.keys.justPressed.SPACE && characterTypeRadio.checked == 1) {
+			if(FlxG.keys.justPressed.SPACE && characterTypeRadio.checked == 1 && grpWeekCharacters.members[characterTypeRadio.checked].animation.exists('confirm')) {
 				grpWeekCharacters.members[characterTypeRadio.checked].animation.play('confirm', true);
 			}
 		}
@@ -336,8 +359,7 @@ class MenuCharacterEditorState extends MusicBeatState implements PsychUIEventHan
 					characterFile = loadedChar;
 					reloadSelectedCharacter();
 					imageInputText.text  = characterFile.image;
-					idlePrefixInput.text    = characterFile.idle_anim;
-					confirmPrefixInput.text = characterFile.confirm_anim;
+					refreshAnimationInput();
 					scaleStepper.value   = characterFile.scale;
 					updateOffset();
 					_file = null;
@@ -377,8 +399,8 @@ class MenuCharacterEditorState extends MusicBeatState implements PsychUIEventHan
 
 	function saveCharacter() {
 		// Garante que os prefixes estão atualizados antes de salvar
-		characterFile.idle_anim    = idlePrefixInput.text.trim();
-		characterFile.confirm_anim = confirmPrefixInput.text.trim();
+		if(animationPrefixInput != null)
+			applySelectedAnimation(animationPrefixInput.text.trim());
 
 		var data:String = PsychJsonPrinter.print(characterFile, ['position']);
 		if (data.length > 0)

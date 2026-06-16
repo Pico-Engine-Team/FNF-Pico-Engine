@@ -2,8 +2,7 @@ package funkin.data.objects;
 
 import flixel.math.FlxRect;
 
-class Bar extends FlxSpriteGroup
-{
+class Bar extends FlxSpriteGroup {
 	public var leftBar:FlxSprite;
 	public var rightBar:FlxSprite;
 	public var bg:FlxSprite;
@@ -18,10 +17,9 @@ class Bar extends FlxSpriteGroup
 	public var barHeight(default, set):Int = 1;
 	public var barOffset:FlxPoint = new FlxPoint(3, 3);
 
-	public function new(x:Float, y:Float, image:String = 'healthBar', valueFunction:Void->Float = null, boundX:Float = 0, boundY:Float = 1)
-	{
+	public function new(x:Float, y:Float, image:String = 'ui/healthBar', valueFunction:Void->Float = null, boundX:Float = 0, boundY:Float = 1) {		
 		super(x, y);
-		
+
 		this.valueFunction = valueFunction;
 		setBounds(boundX, boundY);
 		
@@ -31,7 +29,6 @@ class Bar extends FlxSpriteGroup
 		barHeight = Std.int(bg.height - 6);
 
 		leftBar = new FlxSprite().makeGraphic(Std.int(bg.width), Std.int(bg.height), FlxColor.WHITE);
-		//leftBar.color = FlxColor.WHITE;
 		leftBar.antialiasing = antialiasing = ClientPrefs.data.antialiasing;
 
 		rightBar = new FlxSprite().makeGraphic(Std.int(bg.width), Std.int(bg.height), FlxColor.WHITE);

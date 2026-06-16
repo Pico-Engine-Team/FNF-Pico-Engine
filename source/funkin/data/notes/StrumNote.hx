@@ -2,7 +2,7 @@ package funkin.data.notes;
 
 import funkin.play.shaders.RGBPalette;
 import funkin.play.shaders.RGBPalette.RGBShaderReference;
-import funkin.utils.psych.PsychAnimationController;
+import funkin.utils.engines.psych.PsychAnimationController;
 
 class StrumNote extends FlxSprite
 {
@@ -68,20 +68,20 @@ class StrumNote extends FlxSprite
 		var lastAnim:String = null;
 		if(animation.curAnim != null) lastAnim = animation.curAnim.name;
 
-		noteSkinConfig = Note.getNoteSkinConfig(texture);
+		noteSkinConfig = NoteData.notestyles.config(texture);
 		if(PlayState.isPixelStage)
 		{
 			var assetType:String = 'noteStrumlinePixel';
-			var assetPath:String = Note.resolveNoteSkinAsset(texture, noteSkinConfig, assetType);
+			var assetPath:String = NoteData.notestyles.noteStrumline(texture, true);
 			if(Note.noteSkinAtlasExists(assetPath))
 			{
-				frames = Paths.getSparrowAtlas(assetPath);
+				frames = Note.getNoteSkinAtlas(assetPath);
 			}
 			else
 			{
 				if(!Note.noteSkinImageExists(assetPath))
 					assetPath = 'noteSkins/pixel/NOTE_assets';
-				var graphic = Paths.image(assetPath);
+				var graphic = Note.getNoteSkinGraphic(assetPath);
 				if(graphic == null)
 					return;
 
@@ -97,10 +97,10 @@ class StrumNote extends FlxSprite
 		}
 		else
 		{
-			var assetPath:String = Note.resolveNoteSkinAsset(texture, noteSkinConfig, 'noteStrumline');
+			var assetPath:String = NoteData.notestyles.noteStrumline(texture);
 			if(!Note.noteSkinAtlasExists(assetPath))
 				assetPath = 'noteSkins/NOTE_assets';
-			frames = Note.noteSkinAtlasExists(assetPath) ? Paths.getSparrowAtlas(assetPath) : null;
+			frames = Note.noteSkinAtlasExists(assetPath) ? Note.getNoteSkinAtlas(assetPath) : null;
 			if(frames == null)
 				return;
 

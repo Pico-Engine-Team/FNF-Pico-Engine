@@ -3,8 +3,7 @@ package funkin.data.objects.story;
 import openfl.utils.Assets;
 import haxe.Json;
 
-typedef MenuCharacterFile =
-{
+typedef MenuCharacterFile = {
 	var image:String;
 	var scale:Float;
 	var position:Array<Int>;
@@ -57,7 +56,7 @@ class MenuCharacter extends FlxSprite
 				if (!Assets.exists(path))
 				#end
 				{
-					path = Paths.getSharedPath('data/characters/' + DEFAULT_CHARACTER + '.json'); //If a character couldn't be found, change him to BF just to prevent a crash
+					path = Paths.getPath('images/storymenu/props/characters/' + DEFAULT_CHARACTER + '.json', TEXT, null, false); //If a character couldn't be found, change him to BF just to prevent a crash
 					color = FlxColor.BLACK;
 					alpha = 0.6;
 				}
@@ -76,8 +75,24 @@ class MenuCharacter extends FlxSprite
 					trace('Error loading menu character file of "$character": $e');
 				}
 
+				if(charFile == null)
+				{
+					charFile = {
+						image: 'Menu_BF',
+						scale: 1,
+						position: [47, -37],
+						idle_anim: 'M BF Idle',
+						confirm_anim: 'M bf HEY',
+						flipX: false,
+						antialiasing: true
+					};
+					color = FlxColor.BLACK;
+					alpha = 0.6;
+				}
+
 				frames = Paths.getSparrowAtlas('storymenu/props/' + charFile.image);
-				animation.addByPrefix('idle', charFile.idle_anim, 24);
+				if(charFile.idle_anim != null && charFile.idle_anim.length > 0)
+					animation.addByPrefix('idle', charFile.idle_anim, 24);
 
 				var confirmAnim:String = charFile.confirm_anim;
 				if(confirmAnim != null && confirmAnim.length > 0 && confirmAnim != charFile.idle_anim)
@@ -93,8 +108,11 @@ class MenuCharacter extends FlxSprite
 					scale.set(charFile.scale, charFile.scale);
 					updateHitbox();
 				}
+				if(charFile.position == null || charFile.position.length < 2)
+					charFile.position = [0, 0];
 				offset.set(charFile.position[0], charFile.position[1]);
-				animation.play('idle');
+				if(animation.getByName('idle') != null)
+					animation.play('idle');
 
 				antialiasing = (charFile.antialiasing != false && ClientPrefs.data.antialiasing);
 		}

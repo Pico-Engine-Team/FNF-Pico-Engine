@@ -13,7 +13,7 @@ import flixel.input.gamepad.FlxGamepadInputID;
 	public var middleScroll:Bool = false;
 	public var opponentStrums:Bool = true;
 	public var fpsDisplay:String = 'FPS Only';
-	public var debugDisplayBG:Float = 60;
+	public var debugDisplayBG:Float = 0.6;
 	public var flashing:Bool = true;
 	public var autoPause:Bool = true;
 	public var antialiasing:Bool = true;
@@ -25,11 +25,15 @@ import flixel.input.gamepad.FlxGamepadInputID;
 	public var cacheOnGPU:Bool = #if !switch false #else true #end;
 	public var framerate:Int = 60;
 	public var camZooms:Bool = true;
+	public var comboCam:String = 'camHud';
 	public var hideHud:Bool = false;
 	public var comboEnabled:Bool = false;
 	public var hold:Bool = false;
+	public var noteHold:Bool = false;
+	public var modcharts:Bool = true;
 	public var hub:Bool = false;
-	public var noteskinsCharacters:String = 'Player';
+	public var SliceHub:Bool = false;
+	public var noteskinsCharacters:String = 'Disabled';
 
 	public var noteOffset:Int = 0;
 	public var arrowRGB:Array<Array<FlxColor>> = [
@@ -60,12 +64,13 @@ import flixel.input.gamepad.FlxGamepadInputID;
 		'healthloss' => 1.0,
 		'instakill' => false,
 		'practice' => false,
-		'botplay' => false,
-		'opponentplay' => false
+		'botplay' => false
 	];
 
 	public var comboOffset:Array<Int> = [0, 0, 0, 0];
 	public var ratingOffset:Int = 0;
+	public var useEpicRankings:Bool = true;
+	public var epicRankings:Float = 20.0;
 	public var marvelousWindow:Float = 20.0;
 	public var sickWindow:Float = 45.0;
 	public var goodWindow:Float = 90.0;
@@ -80,6 +85,7 @@ import flixel.input.gamepad.FlxGamepadInputID;
 class ClientPrefs {
 	public static var data:SaveVariables = {};
 	public static var defaultData:SaveVariables = {};
+	static final FPS_DISPLAY_VALUES:Array<String> = ['Disabled', 'FPS Only', 'FPS and Memory', 'Everything'];
 
 	public static var isLowQuality(get, never):Bool;
 	static function get_isLowQuality():Bool
@@ -119,7 +125,8 @@ class ClientPrefs {
 		
 		'debug_0'		=> [E],
 		'debug_1'		=> [SEVEN],
-		'debug_2'		=> [EIGHT]
+		'debug_2'		=> [EIGHT],
+		'fps_display_toggle' => [F6]
 	];
 	public static var gamepadBinds:Map<String, Array<FlxGamepadInputID>> = [
 		'note_up'		=> [DPAD_UP, Y],
@@ -173,6 +180,8 @@ class ClientPrefs {
 	}
 
 	public static function saveSettings() {
+		data.hub = data.SliceHub;
+
 		for (key in Reflect.fields(data))
 			Reflect.setField(FlxG.save.data, key, Reflect.field(data, key));
 
@@ -188,12 +197,33 @@ class ClientPrefs {
 		FlxG.log.add("Settings saved!");
 	}
 
+	public static function toggleFPSDisplay():Void
+	{
+		var index:Int = FPS_DISPLAY_VALUES.indexOf(data.fpsDisplay);
+		index = FlxMath.wrap(index + 1, 0, FPS_DISPLAY_VALUES.length - 1);
+		data.fpsDisplay = FPS_DISPLAY_VALUES[index];
+		saveSettings();
+
+		if(Main.fpsVar != null)
+		{
+			Main.fpsVar.visible = (data.fpsDisplay != 'Disabled');
+			Main.fpsVar.updateDebugType(data.fpsDisplay);
+			Main.fpsVar.updateBackgroundAlpha(data.debugDisplayBG);
+		}
+	}
+
 	public static function loadPrefs() {
 		#if ACHIEVEMENTS_ALLOWED Achievements.load(); #end
 
 		for (key in Reflect.fields(data))
 			if (key != 'gameplaySettings' && Reflect.hasField(FlxG.save.data, key))
 				Reflect.setField(data, key, Reflect.field(FlxG.save.data, key));
+
+		if(Reflect.hasField(FlxG.save.data, 'hub') && !Reflect.hasField(FlxG.save.data, 'SliceHub'))
+			data.SliceHub = FlxG.save.data.hub;
+		data.hub = data.SliceHub;
+		normalizeDebugDisplayBG();
+		normalizeComboCamera();
 		
 		if(Main.fpsVar != null) {
 			Main.fpsVar.visible = (data.fpsDisplay != 'Disabled');
@@ -254,6 +284,25 @@ class ClientPrefs {
 					if(gamepadBinds.exists(control)) gamepadBinds.set(control, keys);
 			}
 			reloadVolumeKeys();
+		}
+	}
+
+	static function normalizeDebugDisplayBG()
+	{
+		if(data.debugDisplayBG > 1)
+			data.debugDisplayBG *= 0.01;
+		data.debugDisplayBG = FlxMath.bound(data.debugDisplayBG, 0, 1);
+	}
+
+	static function normalizeComboCamera():Void
+	{
+		var value:Dynamic = Reflect.field(data, 'comboCam');
+		if(Std.isOfType(value, Bool))
+			data.comboCam = value ? 'camGame' : 'camHud';
+		else
+		{
+			var text:String = value != null ? Std.string(value).toLowerCase().trim() : 'camhud';
+			data.comboCam = (text == 'game' || text == 'camgame') ? 'camGame' : 'camHud';
 		}
 	}
 

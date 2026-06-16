@@ -1,7 +1,7 @@
 package funkin.data.editors.content;
 
 import funkin.play.Rating;
-import funkin.play.songs.Song;
+import funkin.play.Song;
 import funkin.data.notes.Note;
 import funkin.data.notes.NoteSplash;
 import funkin.data.notes.StrumNote;

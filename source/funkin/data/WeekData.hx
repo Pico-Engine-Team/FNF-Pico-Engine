@@ -4,8 +4,7 @@ import lime.utils.Assets;
 import openfl.utils.Assets as OpenFlAssets;
 import haxe.Json;
 
-typedef WeekFile =
-{
+typedef WeekFile = {
 	var songs:Array<Dynamic>;
 	var weekCharacters:Array<String>;
 	var weekBackground:String;
@@ -16,14 +15,19 @@ typedef WeekFile =
 	var hiddenUntilUnlocked:Bool;
 	var hideStoryMode:Bool;
 	var hideFreeplay:Bool;
-	@:optional var hideStorySongs:Array<String>;
 	var difficulties:String;
+	@:optional var hideStorySongs:Array<String>;
+	@:optional var storyDifficulties:String;
+	@:optional var freeplayDifficulties:String;
+	@:optional var section:Dynamic;
+	@:optional var sections:Dynamic;
 }
 
-class WeekData
-{
+class WeekData {
+
 	public static var weeksLoaded:Map<String, WeekData> = new Map<String, WeekData>();
 	public static var weeksList:Array<String> = [];
+	static var reloadTargetSection:String = 'freeplay';
 	public var folder:String = '';
 
 	// JSON variables
@@ -39,17 +43,22 @@ class WeekData
 	public var hideFreeplay:Bool;
 	public var hideStorySongs:Array<String>;
 	public var difficulties:String;
+	public var storyDifficulties:String;
+	public var freeplayDifficulties:String;
+	public var section:Dynamic;
+	public var sections:Dynamic;
 
 	public var fileName:String;
 
 	public static function createWeekFile():WeekFile {
-		var weekFile:WeekFile = {
-			songs: [["Bopeebo", "face", [146, 113, 253]], ["Fresh", "face", [146, 113, 253]], ["Dad Battle", "face", [146, 113, 253]]],
-			#if BASE_GAME_FILES
+		var weekFile:WeekFile =
+			{
+				songs: [
+					["Bopeebo", "dad", [146, 113, 253]],
+					["Fresh", "dad", [146, 113, 253]],
+					["Dad Battle", "dad", [146, 113, 253]]
+				],
 			weekCharacters: ['dad', 'bf', 'gf'],
-			#else
-			weekCharacters: ['dad', 'bf', 'gf'],
-			#end
 			weekBackground: 'stage',
 			weekBefore: 'tutorial',
 			storyName: 'Your New Week',
@@ -59,7 +68,10 @@ class WeekData
 			hideStoryMode: false,
 			hideFreeplay: false,
 			hideStorySongs: [],
-			difficulties: ''
+			difficulties: 'Easy, Normal, Hard',
+			storyDifficulties: 'Easy, Normal, Hard',
+			freeplayDifficulties: 'Easy, Normal, Hard',
+			section: ['storyMode', 'freeplay']
 		};
 		return weekFile;
 	}
@@ -181,10 +193,12 @@ class WeekData
 		return clean == 'true' || clean == '1' || clean == 'yes' || clean == 'hide' || clean == 'hidden';
 	}
 
-	public static function reloadWeekFiles(isStoryMode:Null<Bool> = false)
+	public static function reloadWeekFiles(section:Dynamic = false)
 	{
 		weeksList = [];
 		weeksLoaded.clear();
+		var targetSection:String = normalizeMenuSection(section);
+		reloadTargetSection = targetSection;
 		#if MODS_ALLOWED
 		var directories:Array<String> = [Paths.mods(), Paths.getSharedPath()];
 		var originalLength:Int = directories.length;
@@ -211,7 +225,7 @@ class WeekData
 						}
 						#end
 
-						if(weekFile != null && (isStoryMode == null || (isStoryMode && !weekFile.hideStoryMode) || (!isStoryMode && !weekFile.hideFreeplay))) {
+						if(weekFile != null && weekMatchesSection(weekFile, targetSection)) {
 							weeksLoaded.set(sexList[i], weekFile);
 							weeksList.push(sexList[i]);
 						}
@@ -246,6 +260,79 @@ class WeekData
 		}
 		#end
 	}
+
+	public static function normalizeMenuSection(value:Dynamic):String
+	{
+		if(value == null)
+			return null;
+		if(Std.isOfType(value, Bool))
+			return value ? 'storyMode' : 'freeplay';
+
+		var clean:String = Std.string(value).trim();
+		if(clean.length < 1)
+			return null;
+
+		switch(clean.toLowerCase())
+		{
+			case 'story', 'storymode', 'story_mode':
+				return 'storyMode';
+			case 'free', 'freeplay', 'free_play':
+				return 'freeplay';
+			case 'extra', 'extras', 'extrafreeplay', 'extra_freeplay', 'extra-freeplay':
+				return 'extraFreeplay';
+		}
+		return clean;
+	}
+
+	public static function weekMatchesSection(week:WeekData, targetSection:String):Bool
+	{
+		if(week == null)
+			return false;
+		if(targetSection == null)
+			return true;
+
+		if(targetSection == 'storyMode' && week.hideStoryMode)
+			return false;
+		if(targetSection == 'freeplay' && week.hideFreeplay)
+			return false;
+
+		var sections:Array<String> = getWeekSections(week);
+		if(sections.length < 1)
+			return targetSection != 'extraFreeplay';
+
+		for(section in sections)
+			if(normalizeMenuSection(section) == targetSection)
+				return true;
+		return false;
+	}
+
+	public static function getWeekSections(week:Dynamic):Array<String>
+	{
+		var output:Array<String> = [];
+		addWeekSections(output, week != null ? Reflect.field(week, 'section') : null);
+		addWeekSections(output, week != null ? Reflect.field(week, 'sections') : null);
+		return output;
+	}
+
+	static function addWeekSections(output:Array<String>, value:Dynamic):Void
+	{
+		if(value == null)
+			return;
+		if(Std.isOfType(value, Array))
+		{
+			for(item in (cast value:Array<Dynamic>))
+				addWeekSections(output, item);
+			return;
+		}
+
+		for(part in Std.string(value).split(','))
+		{
+			var normalized:String = normalizeMenuSection(part);
+			if(normalized != null && normalized.length > 0 && !output.contains(normalized))
+				output.push(normalized);
+		}
+	}
+
 	private static function addWeek(weekToCheck:String, path:String, directory:String, i:Int, originalLength:Int)
 	{
 		if(!weeksLoaded.exists(weekToCheck))
@@ -260,7 +347,7 @@ class WeekData
 					weekFile.folder = directory.substring(Paths.mods().length, directory.length-1);
 					#end
 				}
-				if((PlayState.isStoryMode && !weekFile.hideStoryMode) || (!PlayState.isStoryMode && !weekFile.hideFreeplay))
+				if(weekMatchesSection(weekFile, reloadTargetSection))
 				{
 					weeksLoaded.set(weekToCheck, weekFile);
 					weeksList.push(weekToCheck);

@@ -1,7 +1,7 @@
 package funkin.data.editors.content;
 
-import funkin.play.songs.Song;
-import funkin.data.Difficulty;
+import funkin.play.Song;
+import funkin.play.Difficulty;
 
 import flixel.math.FlxMath;
 import flixel.util.FlxSort;

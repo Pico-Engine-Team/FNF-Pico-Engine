@@ -1,7 +1,6 @@
 package funkin.data.objects;
 
 import flixel.graphics.FlxGraphic;
-import haxe.Json;
 import openfl.display.BitmapData;
 
 class HealthIcon extends FlxSprite
@@ -38,6 +37,8 @@ class HealthIcon extends FlxSprite
 		if(icon.length < 1) icon = 'face';
 
 		var newAnimatedIcon:Bool = animatedIcon != null ? animatedIcon : this.animatedIcon;
+		if(!newAnimatedIcon && hasAnimatedIconAtlas(icon))
+			newAnimatedIcon = true;
 		if(this.char != icon || this.animatedIcon != newAnimatedIcon)
 		{
 			this.animatedIcon = newAnimatedIcon;
@@ -108,26 +109,17 @@ class HealthIcon extends FlxSprite
 		return 'icons/icon-face';
 	}
 
+	private function hasAnimatedIconAtlas(char:String):Bool
+	{
+		var icon:String = char != null ? char.trim() : '';
+		if(icon.length < 1) return false;
+		return Paths.fileExists('images/icons/animated/$icon/$icon.png', IMAGE) && Paths.fileExists('images/icons/animated/$icon/$icon.xml', TEXT);
+	}
+
 	private function hasIconAtlas(name:String):Bool
 	{
 		if(Paths.fileExists('images/' + name + '.xml', TEXT))
 			return true;
-
-		if(Paths.fileExists('images/' + name + '.json', TEXT))
-		{
-			var raw:String = Paths.getTextFromFile('images/' + name + '.json');
-			if(raw != null)
-			{
-				try
-				{
-					var data:Dynamic = Json.parse(cleanJson(raw));
-					if(Reflect.hasField(data, 'IconPoses'))
-						return false;
-				}
-				catch(e:Dynamic) {}
-			}
-			return true;
-		}
 
 		return false;
 	}
@@ -155,13 +147,9 @@ class HealthIcon extends FlxSprite
 
 		if(this.animatedIcon)
 		{
-			var neutralPrefix:String = getIconPosePrefix(name, 'idle', 'Neutral');
-			var losePrefix:String = getIconPosePrefix(name, 'lose', 'Lose');
-			var winPrefix:String = getIconPosePrefix(name, 'win', 'Win');
-
-			var hasNeutral:Bool = addAtlasAnim('neutral', [neutralPrefix, 'Neutral', 'neutral', 'Idle', 'idle'], true);
-			var hasLose:Bool = addAtlasAnim('lose', [losePrefix, 'Lose', 'lose', 'Losing', 'losing'], true);
-			var hasWin:Bool = addAtlasAnim('win', [winPrefix, 'Win', 'win', 'Winning', 'winning'], true);
+			var hasNeutral:Bool = addAtlasAnim('neutral', ['icon animated idle', 'icon animated neutral', 'icon animated0', 'icon animated', 'Neutral', 'neutral', 'Idle', 'idle'], true);
+			var hasLose:Bool = addAtlasAnim('lose', ['icon animated lose', 'icon animated losing', 'icon lose', 'Lose', 'lose', 'Losing', 'losing'], true);
+			var hasWin:Bool = addAtlasAnim('win', ['icon animated win', 'icon animated winning', 'icon win', 'Win', 'win', 'Winning', 'winning'], true);
 
 			if(hasNeutral) neutralAnim = 'neutral';
 			if(hasLose) loseAnim = 'lose';
@@ -204,33 +192,6 @@ class HealthIcon extends FlxSprite
 			}
 		}
 		return null;
-	}
-
-	private function getIconPosePrefix(name:String, anim:String, fallback:String):String
-	{
-		var raw:String = Paths.getTextFromFile('images/' + name + '.json');
-		if(raw == null) return fallback;
-
-		try
-		{
-			var data:Dynamic = Json.parse(cleanJson(raw));
-			var poses:Array<Dynamic> = cast Reflect.field(data, 'IconPoses');
-			if(poses != null)
-			{
-				for(pose in poses)
-				{
-					if(Std.string(Reflect.field(pose, 'Anim')).toLowerCase() == anim)
-						return Std.string(Reflect.field(pose, 'Name'));
-				}
-			}
-		}
-		catch(e:Dynamic) {}
-		return fallback;
-	}
-
-	private function cleanJson(raw:String):String
-	{
-		return ~/,\s*([}\]])/g.replace(raw, "$1");
 	}
 
 	public function updateHealthState(healthPercent:Float, opponent:Bool = false):Void
