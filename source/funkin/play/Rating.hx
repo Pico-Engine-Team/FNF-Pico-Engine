@@ -1,6 +1,6 @@
 package funkin.play;
 
-import funkin.ClientPrefs;
+import funkin.data.ClientPrefs;
 
 class Rating
 {
@@ -18,10 +18,12 @@ class Rating
 		this.image = name;
 		this.hitWindow = defaultHitWindow(name);
 
-		var window:String = name + 'Window';
+		var window:String = name == 'marvelous' ? 'epicRankings' : name + 'Window';
 		try
 		{
 			var rawWindow:Dynamic = Reflect.field(ClientPrefs.data, window);
+			if(rawWindow == null && name == 'marvelous')
+				rawWindow = Reflect.field(ClientPrefs.data, 'marvelousWindow');
 			if(rawWindow != null)
 			{
 				var parsedWindow:Float = Std.parseFloat(Std.string(rawWindow));
@@ -34,14 +36,20 @@ class Rating
 
 	public static function loadDefault():Array<Rating>
 	{
-		var rating:Rating = new Rating('marvelous');
-		rating.ratingMod = 1;
-		rating.score = 350;
-		rating.noteSplash = true;
-		var ratingsData:Array<Rating> = [rating];
+		var ratingsData:Array<Rating> = [];
+		var rating:Rating;
+
+		if(ClientPrefs.data.useEpicRankings)
+		{
+			rating = new Rating('marvelous');
+			rating.ratingMod = 1;
+			rating.score = 500;
+			rating.noteSplash = true;
+			ratingsData.push(rating);
+		}
 
 		rating = new Rating('sick');
-		rating.ratingMod = 0.9;
+		rating.ratingMod = 1;
 		rating.score = 350;
 		rating.noteSplash = true;
 		ratingsData.push(rating);

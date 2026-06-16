@@ -139,12 +139,20 @@ class Difficulty
 		return false;
 	}
 
-	public static function loadFromWeek(?week:WeekData):Void
+	public static function loadFromWeek(?week:WeekData, ?freeplay:Bool = false):Void
 	{
 		if (week == null)
 			week = WeekData.getCurrentWeek();
 
-		if (week == null || week.difficulties == null || week.difficulties.trim().length == 0)
+		var difficultyText:String = null;
+		if(week != null)
+		{
+			difficultyText = freeplay ? week.freeplayDifficulties : week.storyDifficulties;
+			if(difficultyText == null || difficultyText.trim().length == 0)
+				difficultyText = week.difficulties;
+		}
+
+		if (week == null || difficultyText == null || difficultyText.trim().length == 0)
 		{
 			resetList();
 			return;
@@ -152,7 +160,7 @@ class Difficulty
 
 		var diffs:Array<String> = [];
 
-		for (diff in week.difficulties.split(','))
+		for (diff in difficultyText.split(','))
 		{
 			var cleanDiff:String = diff.trim();
 			if (cleanDiff.length > 0)
@@ -170,6 +178,11 @@ class Difficulty
 	inline public static function copyFrom(diffs:Array<String>):Void
 	{
 		list = diffs == null ? defaultList.copy() : diffs.copy();
+	}
+
+	inline public static function getDifficultyVariationName(?num:Null<Int>):String
+	{
+		return getChartSuffixName(getRaw(num));
 	}
 
 	inline public static function getString(?num:Null<Int>, ?canTranslate:Bool = true):String
