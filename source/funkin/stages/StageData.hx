@@ -1,18 +1,18 @@
 package funkin.stages;
 
-import funkin.data.characters.Character;
-import funkin.play.songs.Song;
+import funkin.play.Song;
+import funkin.data.objects.game.characters.Character;
 import funkin.modding.scripting.psychlua.ModchartSprite;
 
 import openfl.utils.Assets;
 import haxe.Json;
 
-typedef StageFile =
-{
+typedef StageFile = {
 	var directory:String;
 	var defaultZoom:Float;
 	@:optional var isPixelStage:Null<Bool>;
 	var stageUI:String;
+	@:optional var characters:StageCharactersData;
 
 	var boyfriend:Array<Float>;
 	var girlfriend:Array<Float>;
@@ -27,6 +27,18 @@ typedef StageFile =
 	@:optional var preload:Dynamic;
 	@:optional var objects:Array<Dynamic>;
 	@:optional var _editorMeta:Dynamic;
+}
+
+typedef StageCharactersData = {
+	@:optional var bf:StageCharacterData;
+	@:optional var dad:StageCharacterData;
+	@:optional var gf:StageCharacterData;
+}
+
+typedef StageCharacterData = {
+	var zIndex:Int;
+	var position:Array<Float>;
+	var cameraOffsets:Array<Float>;
 }
 
 enum abstract LoadFilters(Int) from Int from UInt to Int to UInt
@@ -46,21 +58,38 @@ class StageData
 			directory: "",
 			defaultZoom: 0.9,
 			stageUI: "normal",
+			characters: {
+				bf: {
+					zIndex: 300,
+					position: [989.5, 885],
+					cameraOffsets: [-100, -100]
+				},
+				dad: {
+					zIndex: 200,
+					position: [335, 885],
+					cameraOffsets: [150, -100]
+				},
+				gf: {
+					zIndex: 100,
+					cameraOffsets: [0, 0],
+					position: [751.5, 787]
+				}
+			},
 
-			boyfriend: [770, 100],
-			girlfriend: [400, 130],
-			opponent: [100, 100],
+			boyfriend: [989.5, 885],
+			opponent: [335, 885],
+			girlfriend: [751.5, 787],
 			hide_girlfriend: false,
 
-			camera_boyfriend: [0, 0],
-			camera_opponent: [0, 0],
+			camera_boyfriend: [-100, -100],
+			camera_opponent: [150, -100],
 			camera_girlfriend: [0, 0],
 			camera_speed: 1,
 
 			_editorMeta: {
 				boyfriend: "bf",
+				dad: "dad",
 				gf: "gf",
-				dad: "dad"
 			}
 		};
 	}
@@ -82,7 +111,7 @@ class StageData
 	public static function getStageFile(stage:String):StageFile {
 		try
 		{
-			var path:String = Paths.getPath('stages/' + stage + '.json', TEXT, null, true);
+			var path:String = Paths.getPath('data/stages/' + stage + '.json', TEXT, null, true);
 			#if MODS_ALLOWED
 			if(FileSystem.exists(path))
 				return normalizeStageFile(cast tjson.TJSON.parse(File.getContent(path)));
@@ -100,6 +129,7 @@ class StageData
 
 		stage.defaultZoom = floatField(stage.defaultZoom, 0.9);
 		stage.camera_speed = stage.camera_speed != null ? floatField(stage.camera_speed, 1) : 1;
+		normalizeStageCharacters(stage);
 
 		stage.boyfriend = normalizePoint(stage.boyfriend, [770, 100]);
 		stage.girlfriend = normalizePoint(stage.girlfriend, [400, 130]);
@@ -114,6 +144,51 @@ class StageData
 				normalizeStageObject(object);
 		}
 		return stage;
+	}
+
+	static function normalizeStageCharacters(stage:StageFile):Void
+	{
+		if(stage.characters == null)
+		{
+			stage.characters = {
+				bf: createStageCharacter(300, stage.boyfriend, stage.camera_boyfriend, [770, 100], [0, 0]),
+				dad: createStageCharacter(200, stage.opponent, stage.camera_opponent, [100, 100], [0, 0]),
+				gf: createStageCharacter(100, stage.girlfriend, stage.camera_girlfriend, [400, 130], [0, 0])
+			};
+			return;
+		}
+
+		stage.characters.bf = normalizeStageCharacter(stage.characters.bf, 300, [770, 100], [0, 0]);
+		stage.characters.dad = normalizeStageCharacter(stage.characters.dad, 200, [100, 100], [0, 0]);
+		stage.characters.gf = normalizeStageCharacter(stage.characters.gf, 100, [400, 130], [0, 0]);
+
+		stage.boyfriend = stage.characters.bf.position.copy();
+		stage.opponent = stage.characters.dad.position.copy();
+		stage.girlfriend = stage.characters.gf.position.copy();
+		stage.camera_boyfriend = stage.characters.bf.cameraOffsets.copy();
+		stage.camera_opponent = stage.characters.dad.cameraOffsets.copy();
+		stage.camera_girlfriend = stage.characters.gf.cameraOffsets.copy();
+	}
+
+	static function createStageCharacter(zIndex:Int, position:Dynamic, cameraOffsets:Dynamic, fallbackPosition:Array<Float>, fallbackCamera:Array<Float>):StageCharacterData
+	{
+		return {
+			zIndex: zIndex,
+			position: normalizePoint(position, fallbackPosition),
+			cameraOffsets: normalizePoint(cameraOffsets, fallbackCamera)
+		};
+	}
+
+	static function normalizeStageCharacter(character:StageCharacterData, zIndex:Int, fallbackPosition:Array<Float>, fallbackCamera:Array<Float>):StageCharacterData
+	{
+		if(character == null)
+			return createStageCharacter(zIndex, null, null, fallbackPosition, fallbackCamera);
+
+		return {
+			zIndex: Std.int(floatField(character.zIndex, zIndex)),
+			position: normalizePoint(character.position, fallbackPosition),
+			cameraOffsets: normalizePoint(character.cameraOffsets, fallbackCamera)
+		};
 	}
 
 	static function normalizeStageObject(object:Dynamic):Void
@@ -267,7 +342,7 @@ class StageData
 						
 						if(data.type == 'animatedSprite' && data.animations != null)
 						{
-							var anims:Array<funkin.data.characters.Character.AnimArray> = cast data.animations;
+							var anims:Array<funkin.data.objects.game.characters.Character.AnimArray> = cast data.animations;
 							for (key => anim in anims)
 							{
 								if(anim.indices == null || anim.indices.length < 1)

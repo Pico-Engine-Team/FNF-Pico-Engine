@@ -2,7 +2,7 @@ package funkin.stages;
 
 import funkin.play.PlayState;
 import funkin.data.notes.Note;
-import funkin.data.characters.Character;
+import funkin.data.objects.game.characters.Character;
 import funkin.states.GameOverState;
 
 import flixel.FlxBasic;
