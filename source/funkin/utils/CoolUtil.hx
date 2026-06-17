@@ -6,7 +6,7 @@ import lime.utils.Assets as LimeAssets;
 class CoolUtil {
 	public static function checkForUpdates(url:String = null):String {
 		if (url == null || url.length == 0)
-			url = "https://raw.githubusercontent.com/Pico-Engine-Team/FNF-Pico-Engine/refs/heads/master/gitVersion.txt";
+			url = "https://raw.githubusercontent.com/Pico-Engine-Team/FNF-Pico-Engine/master/gitVersion.txt";
 		var version:String =funkin.menus.MainMenuState.PicoVersion.trim();
 		if(ClientPrefs.data.checkForUpdates) {
 			trace('checking for updates');
