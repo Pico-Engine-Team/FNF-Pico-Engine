@@ -2,10 +2,10 @@ package funkin.utils.windows;
 
 // New Folder for Source Code
 import funkin.data.ClientPrefs;
-import funkin.play.PlayState;
 import funkin.utils.Conductor;
 import funkin.menus.MainMenuState;
 import funkin.states.MusicBeatState;
+import funkin.states.PlayState;
 
 import openfl.Lib;
 import openfl.display.BitmapData;

@@ -1,4 +1,3 @@
-#if VSLICE_ALLOWED
 package funkin.utils.engines.vslice.stages;
 
 import funkin.stages.data.levels.week1.*;
@@ -36,25 +35,26 @@ class StagesVslice extends BaseStage {
     }
     #end
 
-        public static function addstage(name:String) {
+        public static function addstage(name:String) 
+        {
             currentStage = null;
-            currentStage = switch (name) {
+            currentStage = switch (name)
+            {
                 case 'stage': new StageWeek1();                        //Week 1
-                case 'mainStageErect': new MainStageErect();           //Week 1 - Erect
-                case 'spookyMansion': new SpookyMansion();             //Week 2
-                case 'philly': new Philly();                           //Week 3
-                case 'phillyTrainRemix': new PhillyRemix();            //Week 3 - Remix
-                case 'limoRide': new LimoRide();					   //Week 4
-                case 'mallXmas': new MallXmas();					   //Week 5 - Cocoa, Eggnog
+                case 'spooky': new StageWeek2();                       //Week 2
+                case 'philly': new StageWeek3();                       //Week 3
+                case 'limo': new StageWeek4();					       //Week 4
+                case 'mall': new MallXmas();					       //Week 5 - Cocoa, Eggnog
                 case 'mallEvil': new MallEvil();					   //Week 5 - Winter Horrorland
                 case 'school': new School();						   //Week 6 - Senpai, Roses
                 case 'schoolEvil': new SchoolEvil();				   //Week 6 - Thorns
-                case 'tankmanBattlefield': new TankmanBattlefield();   //Week 7 - Ugh, Guns, Stress
+                case 'tank': new TankmanBattlefield();                 //Week 7 - Ugh, Guns, Stress
                 case 'phillyStreets': new PhillyStreets();             //Weekend 1 - Darnell, Lit Up, 2Hot
-                case 'phillyStreetsErect': new PhillyStreetsErect();   //Weekend 1 - Erect
                 case 'phillyBlazin': new PhillyBlazin();               //weekend1 - Blazin
+                case 'phillyStreetsErect': new PhillyStreetsErect();   //Weekend 1 - Erect
                 case 'shiftDarkErect': new TheShiftDarkErect();        //Sky (Pico Mix)
-                case 'charSelector': new SelectCharacterStage();   //StayFunky
+                case 'charSelector': new SelectCharacterStage();       //StayFunky
+                case 'phillyTrainRemix': new PhillyRemix();            //Week 3 - Remix
             default: null;
         }
         #end

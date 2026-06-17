@@ -2,10 +2,9 @@ package funkin.utils;
 
 import funkin.play.Song;
 import funkin.play.Rating;
-import funkin.data.notes.Note;
+import funkin.data.objects.game.notes.config.Note;
 
-typedef BPMChangeEvent =
-{
+typedef BPMChangeEvent ={
 	var stepTime:Int;
 	var songTime:Float;
 	var bpm:Float;

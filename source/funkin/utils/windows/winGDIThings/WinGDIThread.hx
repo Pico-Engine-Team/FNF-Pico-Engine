@@ -1,10 +1,10 @@
 package funkin.utils.windows.winGDIThings;
 
+import funkin.states.PlayState;
 import funkin.utils.windows.Main;
 
 import sys.thread.Thread;
 import openfl.Lib;
-import funkin.play.PlayState;
 
 class WinGDIThread {
 	public static var mainThread:Thread;
