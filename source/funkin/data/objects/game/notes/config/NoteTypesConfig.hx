@@ -1,6 +1,6 @@
 package funkin.data.objects.game.notes.config;
 
-import funkin.data.notes.Note;
+import funkin.data.objects.game.notes.config.Note;
 
 typedef NoteTypeProperty = {
 	property:Array<String>,
