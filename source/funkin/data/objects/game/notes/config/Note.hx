@@ -1,4 +1,4 @@
-package funkin.data.objects.game.notes.data;
+package funkin.data.objects.game.notes.config;
 
 import funkin.data.shaders.RGBPalette;
 import funkin.data.objects.game.notes.data.StrumNote;
