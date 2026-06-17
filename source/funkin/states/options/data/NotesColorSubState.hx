@@ -1,9 +1,9 @@
 package funkin.states.options.data;
 
-import funkin.data.notes.Note;
-import funkin.data.notes.StrumNote;
-import funkin.play.shaders.RGBPalette;
-import funkin.play.shaders.RGBPalette.RGBShaderReference;
+import funkin.data.shaders.RGBPalette;
+import funkin.data.shaders.RGBPalette.RGBShaderReference;
+import funkin.data.objects.game.notes.config.Note;
+import funkin.data.objects.game.notes.data.StrumNote;
 
 import flixel.addons.display.FlxBackdrop;
 import flixel.addons.display.FlxGridOverlay;
@@ -11,7 +11,6 @@ import flixel.addons.display.shapes.FlxShapeCircle;
 import flixel.input.keyboard.FlxKey;
 import flixel.input.gamepad.FlxGamepadInputID;
 import flixel.util.FlxGradient;
-
 import lime.system.Clipboard;
 
 class NotesColorSubState extends MusicBeatSubstate
