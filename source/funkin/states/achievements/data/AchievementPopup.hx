@@ -1,12 +1,13 @@
-package funkin.data.achievements;
-
 #if ACHIEVEMENTS_ALLOWED
+package funkin.states.achievements.data;
+
 import openfl.events.Event;
 import openfl.geom.Matrix;
-import flash.display.BitmapData;
 import openfl.Lib;
+import flash.display.BitmapData;
 
-class AchievementPopup extends openfl.display.Sprite {
+class AchievementPopup extends openfl.display.Sprite
+{
 	public var onFinish:Void->Void = null;
 	var alphaTween:FlxTween;
 	var lastScale:Float = 1;
