@@ -1,7 +1,7 @@
 package funkin.stages.data.levels.weekend1;
 
 import funkin.states.PauseState;
-import funkin.states.GameOverState;
+import funkin.data.GameOverState;
 import funkin.play.shaders.RainShader;
 import funkin.data.cutscenes.CutsceneHandler;
 import funkin.utils.engines.vslice.VsliceOptions;
