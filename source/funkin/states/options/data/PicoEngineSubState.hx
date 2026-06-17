@@ -2,11 +2,13 @@ package funkin.states.options.data;
 
 import funkin.states.options.config.*;
 
-class PicoEngineSubState extends BaseOptionsMenu {
-	public function new() {
+class PicoEngineSubState extends BaseOptionsMenu 
+{
+	public function new()
+	{
     title = Language.getPhrase("pico_menu","Pico Engine (W.I.P Settings)");
-    rpcTitle = "Pico Engine Settings Menu (W.I.P)"; {
-
+    rpcTitle = "Pico Engine Settings Menu (W.I.P)"; 
+	{
 		var option:Option = new Option('Characters Note Skins',
 			"If checked, Enables NoteSkins In Songs (Character Specific)",
 			'noteskinsCharacters',
@@ -29,12 +31,6 @@ class PicoEngineSubState extends BaseOptionsMenu {
 		var option:Option = new Option('Hold Note',
 		'Enable/Disable to prevent characters from performing hold animations during music.',
 		'noteHold',
-		BOOL);
-		addOption(option);
-
-		var option:Option = new Option('Use Mod Charts',
-		'If unchecked, it will not use the Mod Chart in the Songs.',
-		'modcharts',
 		BOOL);
 		addOption(option);
 		super();
