@@ -1,7 +1,6 @@
 package funkin.stages.data.levels.week4;
 
 import funkin.stages.data.objects.levels.week4.*;
-import states.stages.objects.*;
 
 enum HenchmenKillState
 {
