@@ -1,9 +1,9 @@
 package funkin.play;
 
-import funkin.stages.StageData;
-import funkin.data.notes.Note;
-import funkin.menus.MainMenuState;
 import funkin.modding.Mods;
+import funkin.stages.StageData;
+import funkin.menus.MainMenuState;
+import funkin.data.objects.game.notes.config.Note;
 
 import haxe.Json;
 import lime.utils.Assets;
