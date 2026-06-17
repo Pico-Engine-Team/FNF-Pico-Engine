@@ -1,0 +1,21 @@
+package funkin;
+
+import funkin.data.*;
+import funkin.menus.*;
+import funkin.modding.*;
+import funkin.modding.scripting.*;
+import funkin.modding.scripting.psychlua.*;
+import funkin.play.*;
+import funkin.stages.*;
+import funkin.states.*;
+import funkin.states.data.*;
+import funkin.states.config.*;
+import funkin.states.achievements.AchievementsMenuState;
+import funkin.substates.*;
+import funkin.utils.*;
+import funkin.utils.api.*;
+import funkin.api.engines.*;
+import funkin.engines.*;
+import funkin.states.*;
+import funkin.windows.*;
+import funkin.Paths;
