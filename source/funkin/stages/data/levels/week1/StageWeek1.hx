@@ -3,14 +3,16 @@ package funkin.stages.data.levels.week1;
 import funkin.data.objects.game.characters.Character;
 import funkin.stages.objects.levels.week1.*;
 
-class StageWeek1 extends BaseStage {
-	static inline var STAGE_ASSET_PATH:String = 'stages/weeks/week1';
+class StageWeek1 extends BaseStage
+{
 	static inline var WEEK_ASSET_FOLDER:String = 'week1';
+	static inline var STAGE_ASSET_PATH:String = 'stages/weeks/week1';
 
 	var dadbattleBlack:BGSprite;
 	var dadbattleLight:BGSprite;
 	var dadbattleFog:DadBattleFog;
-	override function create() {
+	override function create()
+	{
 		var bg:BGSprite = new BGSprite('', -600, -200, 0.9, 0.9);
 		bg.loadGraphic(Paths.image('$STAGE_ASSET_PATH/stageback'));
 		add(bg);
@@ -20,7 +22,9 @@ class StageWeek1 extends BaseStage {
 		stageFront.setGraphicSize(Std.int(stageFront.width * 1.1));
 		stageFront.updateHitbox();
 		add(stageFront);
-		if(!ClientPrefs.isLowQuality) {
+
+		if(!ClientPrefs.isLowQuality)
+		{
 			var stageLight:BGSprite = new BGSprite('', -125, -100, 0.9, 0.9);
 			stageLight.loadGraphic(Paths.image('stage_light', WEEK_ASSET_FOLDER));
 			stageLight.setGraphicSize(Std.int(stageLight.width * 1.1));
@@ -40,7 +44,9 @@ class StageWeek1 extends BaseStage {
 			add(stageCurtains);
 		}
 	}
-	override function eventPushed(event:funkin.data.notes.Note.EventNote) {
+
+	override function eventPushed(event:funkin.data.objects.game.notes.config.Note.EventNote)
+	{
 		switch(event.event)
 		{
 			case "Dadbattle Spotlight":
