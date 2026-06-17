@@ -2,6 +2,7 @@ package funkin.data.objects.game.characters;
 
 import funkin.play.Song;
 import funkin.stages.objects.levels.week7.TankmenBG;
+import funkin.data.objects.game.notes.config.Note;
 import funkin.utils.engines.psych.PsychAnimationController;
 
 import flixel.util.FlxSort;
@@ -18,7 +19,6 @@ typedef CharacterFile = {
 	var scale:Float;
 	var sing_duration:Float;
 	var healthicon:String;
-	@:optional var animatedIcon:Bool;
 
 	@:optional var positionOffsets:Array<Float>;
 	@:optional var position:Array<Float>;
@@ -91,7 +91,6 @@ class Character extends FlxSprite {
 	public var originalFlipX:Bool = false;
 	public var editorIsPlayer:Null<Bool> = null;
 	public var editorCharacterType:String = null;
-	public var animatedIcon:Bool = false;
 	public var gameOverChar:String = null;
 	public var gameOverSound:String = null;
 	public var gameOverLoop:String = null;
@@ -206,7 +205,6 @@ class Character extends FlxSprite {
 
 		// data
 		healthIcon = json.healthicon != null ? json.healthicon : 'face';
-		animatedIcon = json.animatedIcon == true;
 		singDuration = json.sing_duration != null ? json.sing_duration : 4;
 		var jsonFlipX:Bool = json.flip_x == true;
 		flipX = (jsonFlipX != isPlayer);

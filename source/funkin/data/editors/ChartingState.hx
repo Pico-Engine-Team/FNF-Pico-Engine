@@ -20,23 +20,22 @@ import haxe.Exception;
 import haxe.ds.StringMap;
 import haxe.io.Bytes;
 
-// New Forlds 
+// New Forlds to Pico Engine
+import funkin.data.editors.content.*;
 import funkin.data.editors.content.MetaNote;
 import funkin.data.editors.content.Prompt;
 import funkin.data.editors.content.VSlice.VSlicePackage;
 import funkin.utils.engines.psych.PsychJsonPrinter;
-import funkin.data.editors.content.*;
 
 import funkin.play.Song;
 import funkin.play.Difficulty;
 import funkin.stages.StageData;
-
-import funkin.data.notes.Note;
-import funkin.data.notes.StrumNote;
-import funkin.data.notes.config.NoteTypesConfig;
-import funkin.data.objects.game.characters.Character;
 import funkin.data.objects.HealthIcon;
+import funkin.data.objects.game.characters.Character;
 
+import funkin.data.objects.game.config.Note;
+import funkin.data.objects.notes.data.StrumNote;
+import funkin.data.objects.game.config.NoteTypesConfig;
 using DateTools;
 
 typedef UndoStruct = {
@@ -3915,10 +3914,10 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		if(eventDropDown != null)
 		{
 			eventsList = [];
-			var eventFiles:Array<String> = loadFileList('scripts/event/', ['.txt']);
+			var eventFiles:Array<String> = loadFileList('scripts/events/', ['.txt']);
 			for (file in eventFiles)
 			{
-				var desc:String = Paths.getTextFromFile('scripts/event/$file.txt');
+				var desc:String = Paths.getTextFromFile('scripts/events//$file.txt');
 				eventsList.push([file, desc]);
 			}
 

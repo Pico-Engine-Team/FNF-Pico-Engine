@@ -2,9 +2,9 @@ package funkin.data.editors.content;
 
 import funkin.play.Rating;
 import funkin.play.Song;
-import funkin.data.notes.Note;
-import funkin.data.notes.NoteSplash;
-import funkin.data.notes.StrumNote;
+import funkin.data.objects.game.notes.config.Note;
+import funkin.data.objects.game.notes.data.NoteSplash;
+import funkin.data.objects.game.notes.data.StrumNote;
 
 import flixel.util.FlxSort;
 import flixel.util.FlxStringUtil;

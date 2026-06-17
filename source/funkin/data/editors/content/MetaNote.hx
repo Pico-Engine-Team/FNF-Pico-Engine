@@ -1,9 +1,8 @@
 package funkin.data.editors.content;
 
 import funkin.play.shaders.RGBPalette;
-import funkin.data.notes.Note;
+import funkin.data.objects.game.notes.config.Note;
 import flixel.util.FlxDestroyUtil;
-
 class MetaNote extends Note
 {
 	public static var noteTypeTexts:Map<Int, FlxText> = [];

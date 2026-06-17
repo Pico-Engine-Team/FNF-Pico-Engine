@@ -1,4 +1,4 @@
-package funkin.data.objects.game.notes.config;
+package funkin.data.notes.config;
 
 import funkin.data.objects.game.notes.config.Note;
 

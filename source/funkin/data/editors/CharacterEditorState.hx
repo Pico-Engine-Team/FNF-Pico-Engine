@@ -4,7 +4,7 @@ import funkin.data.objects.Bar;
 import funkin.data.objects.HealthIcon;
 import funkin.data.editors.content.Prompt;
 import funkin.utils.engines.psych.PsychJsonPrinter;
-import funkin.data.notes.Note;
+import funkin.data.objects.game.notes.config.Note;
 import funkin.data.objects.game.characters.Character;
 import funkin.play.Song;
 
@@ -119,7 +119,7 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		healthBar.scrollFactor.set();
 		healthBar.cameras = [camHUD];
 
-		healthIcon = new HealthIcon(character.healthIcon, false, false, character.animatedIcon);
+		healthIcon = new HealthIcon(character.healthIcon, false, false);
 		healthIcon.y = FlxG.height - 150;
 		healthIcon.cameras = [camHUD];
 
@@ -395,15 +395,6 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 			unsavedProgress = true;
 		};
 
-		animatedIconCheckBox = new PsychUICheckBox(characterTypeDropDown.x + 95, characterTypeDropDown.y + 40, "Animated Icon", 120);
-		animatedIconCheckBox.checked = character.animatedIcon;
-		animatedIconCheckBox.onClick = function()
-		{
-			character.animatedIcon = animatedIconCheckBox.checked;
-			healthIcon.changeIcon(character.healthIcon, false, character.animatedIcon);
-			unsavedProgress = true;
-		};
-
 		var reloadCharacter:PsychUIButton = new PsychUIButton(140, 20, "Reload", function()
 		{
 			addCharacter(true);
@@ -481,7 +472,6 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		tab_group.add(new FlxText(characterTypeDropDown.x, characterTypeDropDown.y - 18, 100, 'Character Type:'));
 		tab_group.add(characterTypeDropDown);
 		tab_group.add(isPixelCheckBox);
-		tab_group.add(animatedIconCheckBox);
 		tab_group.add(reloadCharacter);
 		tab_group.add(templateCharacter);
 		tab_group.add(charDropDown);
@@ -638,7 +628,6 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 
 	var flipXCheckBox:PsychUICheckBox;
 	var isPixelCheckBox:PsychUICheckBox;
-	var animatedIconCheckBox:PsychUICheckBox;
 
 	var healthColorStepperR:PsychUINumericStepper;
 	var healthColorStepperG:PsychUINumericStepper;
@@ -826,7 +815,7 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		{
 			if(sender == healthIconInputText) {
 				var lastIcon = healthIcon.getCharacter();
-				healthIcon.changeIcon(healthIconInputText.text, false, character.animatedIcon);
+				healthIcon.changeIcon(healthIconInputText.text, false);
 				character.healthIcon = healthIconInputText.text;
 				if(lastIcon != healthIcon.getCharacter()) updatePresence();
 				unsavedProgress = true;
@@ -969,10 +958,9 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 
 		if(characterTypeDropDown != null) characterTypeDropDown.selectedLabel = getCharacterType();
 		if(isPixelCheckBox != null) isPixelCheckBox.checked = character.noAntialiasing;
-		if(animatedIconCheckBox != null) animatedIconCheckBox.checked = character.animatedIcon;
 		imageInputText.text = character.imageFile;
 		healthIconInputText.text = character.healthIcon;
-		healthIcon.changeIcon(character.healthIcon, false, character.animatedIcon);
+		healthIcon.changeIcon(character.healthIcon, false);
 		vocalsInputText.text = character.vocalsFile != null ? character.vocalsFile : '';
 		singDurationStepper.value = character.singDuration;
 		scaleStepper.value = character.jsonScale;
@@ -1265,7 +1253,7 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		healthColorStepperG.value = character.healthColorArray[1];
 		healthColorStepperB.value = character.healthColorArray[2];
 		healthBar.leftBar.color = healthBar.rightBar.color = FlxColor.fromRGB(character.healthColorArray[0], character.healthColorArray[1], character.healthColorArray[2]);
-		healthIcon.changeIcon(character.healthIcon, false, character.animatedIcon);
+		healthIcon.changeIcon(character.healthIcon, false);
 		updatePresence();
 	}
 
@@ -1528,7 +1516,6 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 			"scale": character.jsonScale,
 			"sing_duration": character.singDuration,
 			"healthicon": character.healthIcon,
-			"animatedIcon": character.animatedIcon,
 
 			"positionOffsets": character.positionArray,
 			"cameraOffsets": character.cameraPosition,
