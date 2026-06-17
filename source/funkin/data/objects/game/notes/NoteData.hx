@@ -5,14 +5,12 @@ import funkin.data.objects.game.config.Note.NoteSkinConfig;
 import funkin.data.objects.game.config.Note.NoteSkinUiAsset;
 using StringTools;
 
-class NoteData
-{
+class NoteData {
 	public static var noteStyle(default, null):NoteStyleData = new NoteStyleData();
 	public static var notestyles(default, null):NoteStyleData = new NoteStyleData();
 	public static var noteStyles(default, null):NoteStyleData = notestyles;
-
 	public static function songStyle(?mustPress:Bool = true):String
-		return notestyles.songStyle(mustPress);
+	return notestyles.songStyle(mustPress);
 }
 
 class NoteStyleData
