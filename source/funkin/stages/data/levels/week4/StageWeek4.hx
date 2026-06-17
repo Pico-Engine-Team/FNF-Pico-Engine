@@ -1,9 +1,7 @@
 package funkin.stages.data.levels.week4;
 
-import funkin.stages.objects.levels.week4.*;
-
-// Pico Engine
-import funkin.utils.engines.vslice.VsliceOptions;
+import funkin.stages.data.objects.levels.week4.*;
+import states.stages.objects.*;
 
 enum HenchmenKillState
 {
@@ -14,7 +12,7 @@ enum HenchmenKillState
 	STOPPING;
 }
 
-class LimoRide extends BaseStage
+class Limo extends BaseStage
 {
 	var grpLimoDancers:FlxTypedGroup<BackgroundDancer>;
 	var fastCar:BGSprite;
@@ -24,38 +22,20 @@ class LimoRide extends BaseStage
 	var limoKillingState:HenchmenKillState = WAIT;
 	var limoMetalPole:BGSprite;
 	var limoLight:BGSprite;
-	var limoBglight:BGSprite;
 	var limoCorpse:BGSprite;
 	var limoCorpseTwo:BGSprite;
 	var bgLimo:BGSprite;
 	var grpLimoParticles:FlxTypedGroup<BGSprite>;
 	var dancersDiff:Float = 320;
 
-	inline function hasLimoGore():Bool
-		return !VsliceOptions.IS_LOW_QUALITY;
-
-	inline function canUseLimoGore():Bool
-		return hasLimoGore()
-			&& grpLimoDancers != null
-			&& grpLimoParticles != null
-			&& bgLimo != null
-			&& limoMetalPole != null
-			&& limoLight != null
-			&& limoCorpse != null
-			&& limoCorpseTwo != null;
-
 	override function create()
 	{
 		var skyBG:BGSprite = new BGSprite('limo/limoSunset', -120, -50, 0.1, 0.1);
 		add(skyBG);
 
-		if(hasLimoGore())
-		{
+		if(!ClientPrefs.data.lowQuality) {
 			limoMetalPole = new BGSprite('gore/metalPole', -500, 220, 0.4, 0.4);
 			add(limoMetalPole);
-
-			limoBglight = new BGSprite('gore/coldHeartKiller', limoMetalPole.x - 180, limoMetalPole.y - 80, 0.4, 0.4);
-			add(limoBglight);
 
 			bgLimo = new BGSprite('limo/bgLimo', -150, 480, 0.4, 0.4, ['background limo pink'], true);
 			add(bgLimo);
@@ -108,9 +88,9 @@ class LimoRide extends BaseStage
 	var limoSpeed:Float = 0;
 	override function update(elapsed:Float)
 	{
-		if(canUseLimoGore()) {
-			if(grpLimoParticles != null) grpLimoParticles.forEach(function(spr:BGSprite) {
-				if(spr != null && spr.animation != null && spr.animation.curAnim != null && spr.animation.curAnim.finished) {
+		if(!ClientPrefs.data.lowQuality) {
+			grpLimoParticles.forEach(function(spr:BGSprite) {
+				if(spr.animation.curAnim.finished) {
 					spr.kill();
 					grpLimoParticles.remove(spr, true);
 					spr.destroy();
@@ -124,32 +104,31 @@ class LimoRide extends BaseStage
 					limoCorpse.x = limoLight.x - 50;
 					limoCorpseTwo.x = limoLight.x + 35;
 
-					var dancers:Array<BackgroundDancer> = grpLimoDancers != null ? grpLimoDancers.members : [];
+					var dancers:Array<BackgroundDancer> = grpLimoDancers.members;
 					for (i in 0...dancers.length) {
-						var dancer:BackgroundDancer = dancers[i];
-						if(dancer != null && dancer.x < FlxG.width * 1.5 && limoLight.x > (370 * i) + 170) {
+						if(dancers[i].x < FlxG.width * 1.5 && limoLight.x > (370 * i) + 170) {
 							switch(i) {
 								case 0 | 3:
 									if(i == 0) FlxG.sound.play(Paths.sound('dancerdeath'), 0.5);
 
 									var diffStr:String = i == 3 ? ' 2 ' : ' ';
-									var particle:BGSprite = new BGSprite('gore/noooooo', dancer.x + 200, dancer.y, 0.4, 0.4, ['hench leg spin' + diffStr + 'PINK'], false);
-									if(grpLimoParticles != null) grpLimoParticles.add(particle);
-									var particle:BGSprite = new BGSprite('gore/noooooo', dancer.x + 160, dancer.y + 200, 0.4, 0.4, ['hench arm spin' + diffStr + 'PINK'], false);
-									if(grpLimoParticles != null) grpLimoParticles.add(particle);
-									var particle:BGSprite = new BGSprite('gore/noooooo', dancer.x, dancer.y + 50, 0.4, 0.4, ['hench head spin' + diffStr + 'PINK'], false);
-									if(grpLimoParticles != null) grpLimoParticles.add(particle);
+									var particle:BGSprite = new BGSprite('gore/noooooo', dancers[i].x + 200, dancers[i].y, 0.4, 0.4, ['hench leg spin' + diffStr + 'PINK'], false);
+									grpLimoParticles.add(particle);
+									var particle:BGSprite = new BGSprite('gore/noooooo', dancers[i].x + 160, dancers[i].y + 200, 0.4, 0.4, ['hench arm spin' + diffStr + 'PINK'], false);
+									grpLimoParticles.add(particle);
+									var particle:BGSprite = new BGSprite('gore/noooooo', dancers[i].x, dancers[i].y + 50, 0.4, 0.4, ['hench head spin' + diffStr + 'PINK'], false);
+									grpLimoParticles.add(particle);
 
-									var particle:BGSprite = new BGSprite('gore/stupidBlood', dancer.x - 110, dancer.y + 20, 0.4, 0.4, ['blood'], false);
+									var particle:BGSprite = new BGSprite('gore/stupidBlood', dancers[i].x - 110, dancers[i].y + 20, 0.4, 0.4, ['blood'], false);
 									particle.flipX = true;
 									particle.angle = -57.5;
-									if(grpLimoParticles != null) grpLimoParticles.add(particle);
+									grpLimoParticles.add(particle);
 								case 1:
 									limoCorpse.visible = true;
 								case 2:
 									limoCorpseTwo.visible = true;
 							} //Note: Nobody cares about the fifth dancer because he is mostly hidden offscreen :(
-							dancer.x += FlxG.width * 2;
+							dancers[i].x += FlxG.width * 2;
 						}
 					}
 
@@ -193,10 +172,10 @@ class LimoRide extends BaseStage
 
 	override function beatHit()
 	{
-		if(canUseLimoGore()) {
+		if(!ClientPrefs.data.lowQuality) {
 			grpLimoDancers.forEach(function(dancer:BackgroundDancer)
 			{
-				if(dancer != null) dancer.dance();
+				dancer.dance();
 			});
 		}
 
@@ -232,12 +211,9 @@ class LimoRide extends BaseStage
 
 	function dancersParenting()
 	{
-		if(grpLimoDancers == null || bgLimo == null) return;
-
 		var dancers:Array<BackgroundDancer> = grpLimoDancers.members;
 		for (i in 0...dancers.length) {
-			if(dancers[i] != null)
-				dancers[i].x = (370 * i) + dancersDiff + bgLimo.x;
+			dancers[i].x = (370 * i) + dancersDiff + bgLimo.x;
 		}
 	}
 	
@@ -267,7 +243,7 @@ class LimoRide extends BaseStage
 		//trace('Car drive');
 		FlxG.sound.play(Paths.soundRandom('carPass', 0, 1), 0.7);
 
-		fastCar.velocity.x = (FlxG.random.int(170, 220) / FlxG.elapsed) * 3;
+		fastCar.velocity.x = FlxG.random.int(30600, 39600);
 		fastCarCanDrive = false;
 		carTimer = new FlxTimer().start(2, function(tmr:FlxTimer)
 		{
@@ -278,7 +254,7 @@ class LimoRide extends BaseStage
 
 	function killHenchmen():Void
 	{
-		if(canUseLimoGore()) {
+		if(!ClientPrefs.data.lowQuality) {
 			if(limoKillingState == WAIT) {
 				limoMetalPole.x = -400;
 				limoMetalPole.visible = true;
