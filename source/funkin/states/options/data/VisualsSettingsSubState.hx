@@ -1,13 +1,13 @@
 package funkin.states.options.data;
 
-import funkin.utils.windows.Main;
-import funkin.utils.Alphabet;
-import funkin.data.notes.Note;
-import funkin.data.notes.StrumNote;
-import funkin.data.notes.NoteSplash;
-
-import funkin.states.options.config.*;
 import funkin.states.PauseState;
+import funkin.data.objects.game.notes.config.Note;
+import funkin.data.objects.game.notes.data.StrumNote;
+import funkin.data.objects.game.notes.data.NoteSplash;
+
+import funkin.utils.Alphabet;
+import funkin.utils.windows.Main;
+import funkin.states.options.config.*;
 import funkin.substates.MusicBeatSubstate;
 
 class VisualsSettingsSubState extends BaseOptionsMenu
