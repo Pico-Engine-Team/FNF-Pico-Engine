@@ -1,10 +1,9 @@
 package funkin.stages.data.levels.week3;
 
-import funkin.stages.objects.levels.week3.*;
 import funkin.data.objects.game.characters.Character;
-import funkin.utils.engines.vslice.VsliceOptions;
+import funkin.stages.objects.levels.week3.*;
 
-class Philly extends BaseStage
+class StageWeek3 extends BaseStage
 {
 	var phillyLightsColors:Array<FlxColor>;
 	var phillyWindow:BGSprite;
@@ -12,14 +11,16 @@ class Philly extends BaseStage
 	var phillyTrain:PhillyTrain;
 	var curLight:Int = -1;
 
+	//For Philly Glow events
 	var blammedLightsBlack:FlxSprite;
 	var phillyGlowGradient:PhillyGlowGradient;
 	var phillyGlowParticles:FlxTypedGroup<PhillyGlowParticle>;
 	var phillyWindowEvent:BGSprite;
 	var curLightEvent:Int = -1;
+
 	override function create()
 	{
-		if(!VsliceOptions.IS_LOW_QUALITY) {
+		if(!ClientPrefs.data.lowQuality) {
 			var bg:BGSprite = new BGSprite('philly/sky', -100, 0, 0.1, 0.1);
 			add(bg);
 		}
@@ -36,7 +37,7 @@ class Philly extends BaseStage
 		add(phillyWindow);
 		phillyWindow.alpha = 0;
 
-		if(!VsliceOptions.IS_LOW_QUALITY) {
+		if(!ClientPrefs.data.lowQuality) {
 			var streetBehind:BGSprite = new BGSprite('philly/behindTrain', -40, 50);
 			add(streetBehind);
 		}
@@ -47,7 +48,7 @@ class Philly extends BaseStage
 		phillyStreet = new BGSprite('philly/street', -40, 50);
 		add(phillyStreet);
 	}
-	override function eventPushed(event:funkin.data.notes.Note.EventNote)
+	override function eventPushed(event:objects.Note.EventNote)
 	{
 		switch(event.event)
 		{
@@ -62,12 +63,12 @@ class Philly extends BaseStage
 				phillyWindowEvent.visible = false;
 				insert(members.indexOf(blammedLightsBlack) + 1, phillyWindowEvent);
 
-				phillyGlowGradient = new PhillyGlowGradient(-400, 225); //This shit was refusing to properly load FlxGradient so fuck it
+				phillyGlowGradient = new PhillyGlowGradient(-400, 225);
 				phillyGlowGradient.visible = false;
 				insert(members.indexOf(blammedLightsBlack) + 1, phillyGlowGradient);
 				if(!ClientPrefs.data.flashing) phillyGlowGradient.intendedAlpha = 0.7;
 
-				Paths.image('philly/particle');
+				Paths.image('philly/particle'); //precache philly glow particle image
 				phillyGlowParticles = new FlxTypedGroup<PhillyGlowParticle>();
 				phillyGlowParticles.visible = false;
 				insert(members.indexOf(phillyGlowGradient) + 1, phillyGlowParticles);
@@ -76,7 +77,7 @@ class Philly extends BaseStage
 
 	override function update(elapsed:Float)
 	{
-		phillyWindow.alpha -= (Conductor.crochet / 1000) * FlxG.elapsed * 1.5;
+		phillyWindow.alpha -= (Conductor.crochet / 1000) * elapsed * 1.5;
 		if(phillyGlowParticles != null)
 		{
 			phillyGlowParticles.forEachAlive(function(particle:PhillyGlowParticle)
@@ -177,7 +178,7 @@ class Philly extends BaseStage
 						phillyStreet.color = color;
 
 					case 2: // spawn particles
-						if(!ClientPrefs.isLowQuality)
+						if(!ClientPrefs.data.lowQuality)
 						{
 							var particlesNum:Int = FlxG.random.int(8, 12);
 							var width:Float = (2000 / particlesNum);
@@ -190,6 +191,7 @@ class Philly extends BaseStage
 									particle.x = -400 + width * i + FlxG.random.float(-width / 5, width / 5);
 									particle.y = phillyGlowGradient.originalY + 200 + (FlxG.random.float(0, 125) + j * 40);
 									particle.color = color;
+									particle.start();
 									phillyGlowParticles.add(particle);
 								}
 							}
