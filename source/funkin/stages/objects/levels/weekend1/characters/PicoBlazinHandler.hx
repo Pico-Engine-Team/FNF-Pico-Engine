@@ -1,6 +1,6 @@
 package funkin.stages.objects.levels.weekend1.characters;
 
-import funkin.data.notes.Note;
+import funkin.data.objects.game.notes.config.Note;
 import funkin.data.objects.game.characters.Character;
 
 class PicoBlazinHandler {
