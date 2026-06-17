@@ -1,4 +1,4 @@
-package funkin.data.notes;
+package funkin.data.objects.gane.notes;
 
 import funkin.data.notes.Note.HoldNoteCoverConfig;
 import funkin.data.notes.Note.NoteSkinConfig;
