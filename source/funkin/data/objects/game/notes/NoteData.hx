@@ -3,7 +3,6 @@ package funkin.data.objects.gane.notes;
 import funkin.data.notes.Note.HoldNoteCoverConfig;
 import funkin.data.notes.Note.NoteSkinConfig;
 import funkin.data.notes.Note.NoteSkinUiAsset;
-
 using StringTools;
 
 class NoteData
