@@ -1,19 +1,17 @@
 package funkin.stages.data.levels.weekend1;
 
-import funkin.data.cutscenes.CutsceneHandler;
-import funkin.data.notes.Note;
 import funkin.states.PauseState;
 import funkin.states.GameOverState;
+import funkin.play.shaders.RainShader;
+import funkin.data.cutscenes.CutsceneHandler;
+import funkin.utils.engines.vslice.VsliceOptions;
+import funkin.data.objects.game.notes.config.Note;
+import funkin.stages.objects.levels.weekend1.SpraycanAtlasSprite;
 
 import flixel.FlxSubState;
 import openfl.filters.ShaderFilter;
-import funkin.play.shaders.RainShader;
 import flixel.addons.display.FlxTiledSprite;
 import flixel.graphics.frames.FlxAtlasFrames;
-
-//Pico Engine
-import funkin.utils.engines.vslice.VsliceOptions;
-import funkin.stages.objects.levels.weekend1.SpraycanAtlasSprite;
 
 class PhillyStreets extends BaseStage
 {
