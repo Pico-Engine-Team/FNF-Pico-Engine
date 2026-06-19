@@ -1,14 +1,12 @@
-# Psych Engine Build Instructions
+# Pico Engine Build Instructions
 
 * [Dependencies](#dependencies)
 * [Building](#building)
 
----
-
 # Dependencies
 
 - `git`
-- (Windows only) Microsoft Visual Studio Community 2022
+- Windows Only of ([Microsoft Visual Studio Code](https://code.visualstudio.com) Or [Microsoft Visual Studio Community 2022](https://visualstudio.microsoft.com/pt-br/downloads/))
 - (Linux only) VLC
 - Haxe (4.3.4 or greater)
 
@@ -104,5 +102,3 @@ e.g: Fedora is `gcc-c++`, Gentoo is `sys-devel/gcc`, and so on.
 ### "I have an error saying ApplicationMain.exe : fatal error LNK1120: 1 unresolved externals!"
 
 Run `lime test cpp -clean` again, or delete the export folder and compile again.
-
----
