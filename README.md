@@ -1,12 +1,27 @@
 # Friday Night Funkin' Pico Engine
-![pico-Logo](art/Funkin-Pico-banner.png)
-- [Playable on GameJolt](https://gamejolt.com/games/Pico-Engine/948902)
+![Logo](art/Funkin-Pico-banner.png)
+#### Made With
+<img src="https://img.shields.io/badge/-HAXE-262626.svg?logo=haxe&style=for-the-badge">
+
 # About
 This project is a custom [Friday Night Funkin'](https://github.com/FunkinCrew/Funkin) engine based on [Psych Engine 1.0.4](https://github.com/ShadowMario/FNF-PsychEngine), developed with a primary focus on delivering an optimized experience for creating Pico-centered mods.
 
 The engine preserves the core structure of Psych Engine while introducing custom systems and internal tweaks to support Pico as a fully playable character. This includes animation handling, gameplay mechanics, and character-specific features.
 
 The main goal of this project is to provide modders with an engine that simplifies the creation of Pico-centered mods, without sacrificing the flexibility, stability, and features of the original Psych Engine
+
+# Installation:
+Refer to [the Build Instructions](/docs/BUILDING.md)
+
+# Customization:
+If you wish to disable things like *Lua Scripts* or *Video Cutscenes*, you can refer to the `Project.xml` file.
+Inside `Project.xml`, you will find several variables to customize Psych Engine to your liking.
+To start you off, disabling *Video Cutscenes* should be simple, simply delete the line `"VIDEOS_ALLOWED"` or comment it out by wrapping the line in XML-like comments, like this: `<!-- YOUR_LINE_HERE -->`
+Same goes for *Lua Scripts*, comment out or delete the line with `LUA_ALLOWED`, this and other customization options are all available within the `Project.xml` file.
+
+Use `PICO_ALLOWED` for things via Source Code
+use `PSYCH_ALLOWED` for general Psych Engine stuff
+Use `VSLICE_ALLOWED` if you want to adapt something from the FNF Base Game
 
 # Credits
 * Pico Engine: Lucas Sanches
