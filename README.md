@@ -8,10 +8,10 @@ The engine preserves the core structure of Psych Engine while introducing custom
 
 The main goal of this project is to provide modders with an engine that simplifies the creation of Pico-centered mods, without sacrificing the flexibility, stability, and features of the original Psych Engine
 
-# Installation:
+# Installation
 Refer to [the Build Instructions](/docs/BUILDING.md)
 
-# Customization:
+# Customization
 If you wish to disable things like *Lua Scripts* or *Video Cutscenes*, you can refer to the `Project.xml` file.
 Inside `Project.xml`, you will find several variables to customize Psych Engine to your liking.
 To start you off, disabling *Video Cutscenes* should be simple, simply delete the line `"VIDEOS_ALLOWED"` or comment it out by wrapping the line in XML-like comments, like this: `<!-- YOUR_LINE_HERE -->`
