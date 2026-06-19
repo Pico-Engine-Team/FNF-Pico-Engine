@@ -1,7 +1,5 @@
 # Friday Night Funkin' Pico Engine
 ![Logo](art/Funkin-Pico-banner.png)
-#### Made With
-<img src="https://img.shields.io/badge/-HAXE-262626.svg?logo=haxe&style=for-the-badge">
 
 # About
 This project is a custom [Friday Night Funkin'](https://github.com/FunkinCrew/Funkin) engine based on [Psych Engine 1.0.4](https://github.com/ShadowMario/FNF-PsychEngine), developed with a primary focus on delivering an optimized experience for creating Pico-centered mods.
