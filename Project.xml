@@ -2,8 +2,8 @@
 <project>
 	<!-- _________________________ Application Settings _________________________ -->
 
-	<app title="FNF': Pico Engine" file="Pico-Engine"
-	packageName="com.Pico-Engine-Team.FNF-Pico-Engine" package="com.Pico-Engine-Team.FNF-Pico-Engine"
+	<app title="Friday Night Funkin' Pico Engine" file="PicoEngine"
+	packageName="com.picoengineteam.fnfpicoengine" package="com.picoengineteam.fnfpicoengine"
 	main="funkin.utils.windows.Main"
 	version="v2.26.6" company="Pico-Engine-Team" />
 
@@ -16,12 +16,12 @@
 	<!--The flixel preloader is not accurate in Chrome. You can use it regularly if you embed the swf into a html file
 		or you can set the actual size of your file manually at "FlxPreloaderBase-onUpdate-bytesTotal"-->
 	<!-- <app preloader="Preloader" resizable="true" /> -->
-	<app preloader="lucas.states.funkin.util.PicoPreloader" />
+	<app preloader="flixel.system.FlxPreloader" />
 
 	<!--Minimum without FLX_NO_GAMEPAD: 11.8, without FLX_NO_NATIVE_CURSOR: 11.2-->
 	<set name="SWF_VERSION" value="11.8" />
 	
-	<!-- ______________________ PSYCH ENGINE CUSTOMIZATION ______________________ -->
+	<!-- ______________________ PICO ENGINE + PSYCH ENGINE CUSTOMIZATION ______________________ -->
 
 	<define name="MODS_ALLOWED" if="desktop" />
 	<define name="HSCRIPT_ALLOWED" if="desktop" />
@@ -31,7 +31,10 @@
 	<define name="TRANSLATIONS_ALLOWED" />
 	<define name="IRIS_DEBUG"/>
 	<define name="PICO_ALLOWED" />
-	<define name="PSYCH_ALLOWED" if="desktop" />
+	<define name="PSYCH_ALLOWED" />
+	<define name="VSLICE_ALLOWED" />
+	<define name="OPENFL_LOOKUP" />
+	<define name="CHECK_FOR_UPDATES" unless="web || hl" />
 	
 	<define name="MULTITHREADED_LOADING" /> <!-- UNCOMMENTING THIS LINE WILL ENABLE MULTITHREADED LOADING, WHICH IMPROVES LOADING TIMES, BUT APPARENTLY CAN FREEZE THE GAME ON SONG LOAD IN OLDER PCs? -->
 	<define name="SHOW_LOADING_SCREEN" />
@@ -70,11 +73,12 @@
 	<!-- _____________________________ Path Settings ____________________________ -->
 	
 	<classpath name="source" />
+
 	<set name="BUILD_DIR" value="export/debug" if="debug" />
 	<set name="BUILD_DIR" value="export/release" unless="debug" />
 	<set name="BUILD_DIR" value="export/32bit" if="32bits" />
 
-	<!-- __________________________ Game Assets & Etc. __________________________ -->
+	<!-- __________________________ PICO ENGINE + PSYCH ENGINE - Game Assets __________________________ -->
 	
 	<!-- Turn on Crash Handler -->
 	<define name="CRASH_HANDLER" if="desktop release" />
@@ -90,8 +94,8 @@
 	<assets path="assets/songs"         exclude="*.mp3" unless="web"/>
 	<assets path="assets/week_assets"   rename="assets" exclude="*.ogg" if="web"/>
 	<assets path="assets/week_assets"   rename="assets" exclude="*.mp3" unless="web"/>
-	<assets path="assets/funkin_assets" rename="assets" exclude="*.mp3" unless="web"/>
-
+	<assets path="assets/pico_assets" 	exclude="*.mp3" unless="web"/>
+	<assets path="assets/soundtray"/>
 	<section if="TITLE_SCREEN_EASTER_EGG">
 		<assets path="assets/secrets" rename="assets/shared" exclude="*.ogg" if="web"/>
 		<assets path="assets/secrets" rename="assets/shared" exclude="*.mp3"  unless="web"/>
@@ -107,9 +111,11 @@
 		<assets path="assets/base_game" rename="assets" exclude="*.mp3"  unless="web"/>
 	</section>
 
-	<!-- __________________________ Pico Engine Assets __________________________ -->
-
-	<define name="CHECK_FOR_UPDATES" if="desktop officialBuild"/>
+	<section if="PICO_ALLOWED">
+		<assets path="example_content/gitChangelog.txt" rename="Changelog.md" type="text" if="windows"/>
+		<assets path="example_content/data/plugins/audio-config.txt" rename="content/plugins/audio-config.ini" type="text" if="windows"/>
+		<assets path="example_content/data/plugins/alsoft-plugins.txt" rename="plugins/plugins.dat" type="text" if="windows"/>
+	</section>
 
 	<section if="MODS_ALLOWED">
 		<assets path='list.txt' rename='modsList.txt' />
@@ -121,13 +127,12 @@
 	<section if="desktop">
 		<assets path="alsoft.txt" rename="alsoft.ini" type="text" if="windows"/>
 		<assets path="alsoft.txt" rename="plugins/alsoft.dat" type="text" if="windows"/>
-		<assets path="content/audio-config.txt" rename="content/plugins/audio-config.ini" type="text" if="windows"/>
-		<assets path="content/updates/gitChangelog.txt" rename="Changelog.md" type="text" if="windows"/>
-		<assets path="alsoft-plugins.txt" rename="plugins/Plugins.dat" type="text" if="windows"/>
 	</section>
 
 	<!-- _______________________________ Libraries ______________________________ -->
 
+	<set name="lime-version" value="8.1.2"/>
+	<haxelib name="openfl" version="9.3.3"/>
 	<haxelib name="flixel" version="5.6.1"/>
 	<haxelib name="flixel-addons" version="3.2.2"/>
 	<haxelib name="tjson" version="1.4.0"/>
@@ -144,7 +149,7 @@
 
 	<!-- Disable Discord IO Thread -->
 	<haxedef name="DISCORD_DISABLE_IO_THREAD" if="hxdiscord_rpc" />
-	<haxedef name="NO_PRECOMPILED_HEADERS" if="linux" />
+	<haxedef name="NO_PRECOMPILED_HEADERS" if="linux || windows" />
 
 	<!-- Enables a terminal log prompt on debug builds -->
 	<haxelib name="hxcpp-debug-server" if="debug"/>
@@ -202,7 +207,6 @@
 	<!--Macro fixes-->
 	<haxeflag name="--macro" value="allowPackage('flash')" />
 	<haxeflag name="--macro" value="include('my.pack')" />
-
 	<haxedef name="hscriptPos" if="HSCRIPT_ALLOWED" />
 
 	<!-- _________________________________ Custom _______________________________ -->
