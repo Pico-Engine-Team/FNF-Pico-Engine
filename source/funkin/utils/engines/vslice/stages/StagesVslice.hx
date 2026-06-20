@@ -25,8 +25,8 @@ import funkin.stages.BaseStage;
 import funkin.modding.scripting.FunkinLua;
 import haxe.ds.List;
 
-class StagesVslice extends BaseStage {
-
+class StagesVslice extends BaseStage
+{
     public static var currentStage:BaseStage = null;
     #if LUA_ALLOWED
     public static function implement(funk:FunkinLua) {
@@ -41,8 +41,10 @@ class StagesVslice extends BaseStage {
             currentStage = switch (name)
             {
                 case 'stage': new StageWeek1();                        //Week 1
+                case 'stage-erect' new StageWeek1Erect();              //week1 - Erect
                 case 'spooky': new StageWeek2();                       //Week 2
                 case 'philly': new StageWeek3();                       //Week 3
+                 case 'phillyTrainRemix': new PhillyRemix();           //Week 3 - Remix
                 case 'limo': new StageWeek4();					       //Week 4
                 case 'mall': new MallXmas();					       //Week 5 - Cocoa, Eggnog
                 case 'mallEvil': new MallEvil();					   //Week 5 - Winter Horrorland
@@ -52,11 +54,9 @@ class StagesVslice extends BaseStage {
                 case 'phillyStreets': new PhillyStreets();             //Weekend 1 - Darnell, Lit Up, 2Hot
                 case 'phillyBlazin': new PhillyBlazin();               //weekend1 - Blazin
                 case 'phillyStreetsErect': new PhillyStreetsErect();   //Weekend 1 - Erect
-                case 'shiftDarkErect': new TheShiftDarkErect();        //Sky (Pico Mix)
-                case 'charSelector': new SelectCharacterStage();       //StayFunky
-                case 'phillyTrainRemix': new PhillyRemix();            //Week 3 - Remix
-            default: null;
+                case 'shiftDarkErect': new TheShiftDarkErect();        //Sky Mod (Sky - Pico Mix)
+                case 'charSelector': new SelectCharacterStage();       //StayFunky - Extra Song
+                default: null;
         }
-        #end
     }
 }
