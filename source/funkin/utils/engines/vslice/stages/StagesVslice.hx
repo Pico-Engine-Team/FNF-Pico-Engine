@@ -44,7 +44,7 @@ class StagesVslice extends BaseStage
                 case 'stage-erect' new StageWeek1Erect();              //week1 - Erect
                 case 'spooky': new StageWeek2();                       //Week 2
                 case 'philly': new StageWeek3();                       //Week 3
-                 case 'phillyTrainRemix': new PhillyRemix();           //Week 3 - Remix
+                case 'phillyTrainRemix': new PhillyRemix();            //Week 3 - Remix
                 case 'limo': new StageWeek4();					       //Week 4
                 case 'mall': new MallXmas();					       //Week 5 - Cocoa, Eggnog
                 case 'mallEvil': new MallEvil();					   //Week 5 - Winter Horrorland
