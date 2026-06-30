@@ -1,16 +1,17 @@
 #if !macro
 #if DISCORD_ALLOWED
-import funkin.utils.api.DiscordAPI; // New Discord API
+// New Discord API
+import funkin.utils.api.DiscordAPI;
 #end
 
-// Psych
 #if LUA_ALLOWED
+// Psych
 import llua.*;
 import llua.Lua;
 #end
 
 #if ACHIEVEMENTS_ALLOWED
-import funkin.data.achievements.Achievements;
+import funkin.states.achievements.Achievements;
 #end
 
 #if sys
@@ -20,10 +21,10 @@ import sys.io.*;
 import js.html.*;
 #end
 
-// New Souce Code folders
-import funkin.data.ClientPrefs;
+// New Souce Code folders (Pico Engine v2.7.26)
 import funkin.Paths;
-import funkin.play.PlayState;
+import funkin.data.ClientPrefs;
+import funkin.states.PlayState;
 import funkin.play.Difficulty;
 import funkin.stages.BaseStage;
 import funkin.stages.BGSprite;
@@ -34,7 +35,7 @@ import funkin.utils.CoolUtil;
 import funkin.utils.substates.MusicBeatSubstate;
 import funkin.utils.CustomFadeTransition;
 import funkin.utils.Conductor;
-import funkin.utils.Language;
+import funkin.translations.Language;
 import funkin.utils.Alphabet;
 import funkin.menus.MainMenuState;
 
@@ -62,12 +63,7 @@ import funkin.utils.engine.psych.PsychFlxAnimate as FlxAnimate;
 import flxanimate.*;
 #end
 
-#if PICO_ALLOWED
-import lucas.states.funkin.scripts.*;
-import lucas.states.vslice.scripts.*;
-#end
-
-// Flixel News and openfl
+// News Flixel and openfl
 import flixel.sound.FlxSound;
 import flixel.FlxG;
 import flixel.FlxSprite;
@@ -94,9 +90,6 @@ import flixel.util.FlxSave;
 import flixel.input.keyboard.FlxKey;
 import flixel.animation.FlxAnimationController;
 import openfl.media.Sound;
-
-// News Limes
 import lime.utils.Assets;
-
 using StringTools;
 #end
