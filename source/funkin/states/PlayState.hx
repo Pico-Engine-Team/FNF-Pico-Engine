@@ -25,7 +25,7 @@ import funkin.data.objects.game.notes.config.Note;
 import funkin.data.objects.game.notes.data.StrumNote;
 import funkin.data.objects.game.notes.data.NoteSplash;
 import funkin.data.objects.game.notes.data.HoldNoteCover;
-import funkin.data.objects.game.notes.data.Note.EventNote;
+import funkin.data.objects.game.notes.config.Note.EventNote;
 import funkin.data.objects.game.notes.config.NoteTypesConfig;
 import funkin.states.PauseState;
 import funkin.states.GameOverState;

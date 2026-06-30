@@ -1,7 +1,7 @@
 package funkin.states;
 
 import funkin.data.WeekData;
-import funkin.play.shaders.ColorSwap;
+import funkin.data.shaders.ColorSwap;
 import funkin.utils.states.FlashingState;
 import funkin.menus.MainMenuState;
 

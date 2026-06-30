@@ -3,8 +3,8 @@ package funkin.states;
 import funkin.play.Song;
 import funkin.stages.StageData;
 import funkin.data.objects.game.characters.Character;
-import funkin.data.notes.Note;
-import funkin.data.notes.NoteSplash;
+import funkin.data.objects.game.notes.config.Note;
+import funkin.data.objects.game.notes.data.NoteSplash;
 
 import haxe.Json;
 import openfl.display.BitmapData;
