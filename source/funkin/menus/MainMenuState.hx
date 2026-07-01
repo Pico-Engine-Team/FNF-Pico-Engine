@@ -20,7 +20,7 @@ enum MainMenuColumn {
 class MainMenuState extends MusicBeatState
 {
 	public static var PicoVersion:String = '2.7.26'; // Pico Engine Mod Version And mobilie Version 
-	public static var PsychVersion:String = '1.0.0 Custom Build'; // Psych Engine v1.0.4
+	public static var PsychVersion:String = '1.0.4 '; // Psych Engine v1.0.4
 	public static var FunkinVersion:String = '0.8.4'; // V Slice Version of Friday Night Funkin'
 	public static var curSelected:Int = 0;
 	public static var curColumn:MainMenuColumn = CENTER;
@@ -30,9 +30,9 @@ class MainMenuState extends MusicBeatState
 	var leftItem:FlxSprite;
 	var rightItem:FlxSprite;
 
-	var optionShit:Array<String> = ['story_mode', 'freeplay', 'credits', #if MODS_ALLOWED 'mods', #end #if ACHIEVEMENTS_ALLOWED 'awards' #end];
+	var optionShit:Array<String> = ['story_mode', 'freeplay', 'options', 'credits'];
 	var leftOption:String = null;
-	var rightOption:String = 'options';
+	var rightOption:String = null;
 
 	var magenta:FlxSprite;
 	var camFollow:FlxObject;
@@ -48,7 +48,6 @@ class MainMenuState extends MusicBeatState
 		Mods.loadTopMod();
 
 		#if DISCORD_ALLOWED
-		// Updating Discord Rich Presence
 		DiscordClient.changePresence("In the Menus", null);
 		#end
 
@@ -94,28 +93,26 @@ class MainMenuState extends MusicBeatState
 			rightItem.x -= rightItem.width;
 		}
 
-		var picoVer:FlxText = new FlxText(12, FlxG.height - 64, 0, "Pico Engine v" + PicoVersion, 12);
-		picoVer.scrollFactor.set();
-		picoVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.GREEN, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-
 		#if mobile
-		var mobileVer:FlxText = new FlxText(12, FlxG.height - 24, 0, "Friday Night Funkin' v" + Application.current.meta.get('version'), 12);
+		var mobileVer:FlxText = new FlxText(12, FlxG.height - 24, 0, "Pico Engine Mobile v" + Application.current.meta.get('version'), 12);
 		mobileVer.scrollFactor.set();
 		mobileVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.GREEN, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		add(mobileVer);
 		#end
 
-		var psychVer:FlxText = new FlxText(12, FlxG.height - 44, 0, "Psych Engine v" + PsychVersion, 12);
-		psychVer.scrollFactor.set();
-		psychVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.PURPLE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-
+		var picoVer:FlxText = new FlxText(12, FlxG.height - 44, 0, "Pico Engine v" + PicoVersion, 12);
+		var psychVer:FlxText = new FlxText(0, FlxG.height - 18, FlxG.width, "Psych Engine v" + PsychVersion, 12);
 		var fnfVer:FlxText = new FlxText(12, FlxG.height - 24, 0, "Friday Night Funkin' v" + FunkinVersion, 12);
-		fnfVer.scrollFactor.set();
+
+		picoVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.GREEN, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		psychVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, RIGHT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		fnfVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 
+		psychVer.scrollFactor.set();
+		picoVer.scrollFactor.set();
+		fnfVer.scrollFactor.set();
 		add(picoVer);
 		add(psychVer);
-		#if mobile add(mobileVer); #end
 		add(fnfVer);
 		changeItem();
 
