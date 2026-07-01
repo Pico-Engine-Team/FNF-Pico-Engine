@@ -1,12 +1,13 @@
 package funkin.data.objects.game.notes;
 
-import funkin.data.objects.game.config.Note.HoldNoteCoverConfig;
-import funkin.data.objects.game.config.Note.NoteSkinConfig;
-import funkin.data.objects.game.config.Note.NoteSkinUiAsset;
+import funkin.data.objects.game.notes.config.Note;
+import funkin.data.objects.game.notes.data.NoteSplash;
+import funkin.data.objects.game.notes.config.Note.HoldNoteCoverConfig;
+import funkin.data.objects.game.notes.config.Note.NoteSkinConfig;
+import funkin.data.objects.game.notes.config.Note.NoteSkinUiAsset;
 using StringTools;
 
-class NoteData
-{
+class NoteData {
 	public static var noteStyle(default, null):NoteStyleData = new NoteStyleData();
 	public static var notestyles(default, null):NoteStyleData = new NoteStyleData();
 	public static var noteStyles(default, null):NoteStyleData = notestyles;

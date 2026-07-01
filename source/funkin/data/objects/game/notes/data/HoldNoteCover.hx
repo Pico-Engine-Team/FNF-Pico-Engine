@@ -1,9 +1,10 @@
 package funkin.data.objects.game.notes.data;
 
 import funkin.states.PlayState;
-import funkin.data.objects.game.notes.config.Note.NoteSkinConfig;
+import funkin.data.objects.game.notes.config.Note;
 import funkin.data.objects.game.notes.data.StrumNote;
 import funkin.utils.engines.psych.PsychAnimationController;
+import funkin.data.objects.game.notes.config.Note.NoteSkinConfig;
 
 class HoldNoteCover extends FlxSprite
 {
@@ -36,7 +37,6 @@ class HoldNoteCover extends FlxSprite
 		}
 
 		var skin:String = NoteData.notestyles.songStyle(note.mustPress);
-
 		var config:NoteSkinConfig = NoteData.notestyles.config(skin);
 		if(!Note.holdNoteCoverEnabled(config))
 		{
@@ -51,7 +51,7 @@ class HoldNoteCover extends FlxSprite
 			return;
 		}
 
-		var useAtlas:Bool = Note.noteSkinAtlasExists(assetPath, config.directory);
+		var useAtlas:Bool = Note.noteSkinAtlasExists(assetPath);
 		if(texture != assetPath || textureIsAtlas != useAtlas)
 		{
 			texture = assetPath;
@@ -59,11 +59,11 @@ class HoldNoteCover extends FlxSprite
 
 			if(useAtlas)
 			{
-				frames = Note.loadNoteSkinAtlas(texture, config.directory);
+				frames = Note.getNoteSkinAtlas(texture);
 			}
 			else if(Note.holdNoteCoverIsPixel(config))
 			{
-				var graphic = Note.loadNoteSkinGraphic(texture, config.directory);
+				var graphic = Note.getNoteSkinGraphic(texture);
 				if(graphic == null)
 				{
 					kill();

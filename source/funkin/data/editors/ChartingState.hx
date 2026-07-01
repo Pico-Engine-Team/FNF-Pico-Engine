@@ -1,5 +1,22 @@
 package funkin.data.editors;
 
+// New Forlds to Pico Engine
+import funkin.data.editors.content.*;
+import funkin.data.editors.content.MetaNote;
+import funkin.data.editors.content.Prompt;
+import funkin.utils.engines.psych.PsychJsonPrinter;
+import funkin.data.editors.content.VSlice.VSlicePackage;
+
+import funkin.play.Song;
+import funkin.play.Difficulty;
+import funkin.stages.StageData;
+import funkin.data.objects.HealthIcon;
+import funkin.data.objects.game.characters.Character;
+
+import funkin.data.objects.game.notes.config.Note;
+import funkin.data.objects.game.notes.data.StrumNote;
+import funkin.data.objects.game.notes.config.NoteTypesConfig;
+
 import flixel.FlxSubState;
 import flixel.util.FlxSave;
 import flixel.util.FlxSort;
@@ -19,23 +36,6 @@ import haxe.Json;
 import haxe.Exception;
 import haxe.ds.StringMap;
 import haxe.io.Bytes;
-
-// New Forlds to Pico Engine
-import funkin.data.editors.content.*;
-import funkin.data.editors.content.MetaNote;
-import funkin.data.editors.content.Prompt;
-import funkin.data.editors.content.VSlice.VSlicePackage;
-import funkin.utils.engines.psych.PsychJsonPrinter;
-
-import funkin.play.Song;
-import funkin.play.Difficulty;
-import funkin.stages.StageData;
-import funkin.data.objects.HealthIcon;
-import funkin.data.objects.game.characters.Character;
-
-import funkin.data.objects.game.config.Note;
-import funkin.data.objects.notes.data.StrumNote;
-import funkin.data.objects.game.config.NoteTypesConfig;
 using DateTools;
 
 typedef UndoStruct = {
@@ -1842,8 +1842,8 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 		var imageName:String = getPicoChartEditorAssetName(asset);
 		var folder:String = '$PICO_CHART_EDITOR_IMAGE_DIR/$picoChartEditorBuddyTheme';
-		var assetPath:String = Paths.getPicoFunkinPath('$folder/$imageName.png');
-		var xmlPath:String = Paths.getPicoFunkinPath('$folder/$imageName.xml');
+		var assetPath:String = Paths.getPicoFunkinFolder('$folder/$imageName.png');
+		var xmlPath:String = Paths.getPicoFunkinFolder('$folder/$imageName.xml');
 		var loadedAtlas:Bool = false;
 		picoChartEditorBuddyOffsets.remove(sprite);
 
@@ -1947,7 +1947,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 	function loadPicoChartEditorBuddyOffsets(sprite:FlxSprite, path:String)
 	{
 		#if sys
-		var fullPath:String = Paths.getPicoFunkinPath(path);
+		var fullPath:String = Paths.getPicoFunkinFolder(path);
 		if(sprite == null || !FileSystem.exists(fullPath)) return;
 
 		var offsets:Map<String, FlxPoint> = [];
@@ -4624,7 +4624,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		var key:String = 'data/notestyles/$styleKey.json';
 		if(Paths.fileExists(key, TEXT)) return true;
 		#if sys
-		if(FileSystem.exists(Paths.getPicoFunkinPath('game/custom-notes/$styleKey.json'))) return true;
+		if(FileSystem.exists(Paths.getPicoFunkinFolder('game/custom-notes/$styleKey.json'))) return true;
 		return FileSystem.exists(Paths.notestyleJson(styleKey));
 		#else
 		return false;
@@ -5909,7 +5909,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 	{
 		FlxG.mouse.unload();
 		Note.globalRgbShaders = [];
-		funkin.data.notes.config.NoteTypesConfig.clearNoteTypesData();
+		funkin.data.objects.game.notes.config.NoteTypesConfig.clearNoteTypesData();
 
 		for (num => text in MetaNote.noteTypeTexts)
 			text.destroy();

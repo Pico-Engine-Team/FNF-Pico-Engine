@@ -1,10 +1,10 @@
-package funkin.data.notes.config;
+package funkin.data.objects.game.notes.config;
 
 import funkin.data.objects.game.notes.config.Note;
 
 typedef NoteTypeProperty = {
-	property:Array<String>,
-	value:Dynamic
+	var property:Array<String>;
+	var value:Dynamic;
 }
 
 class NoteTypesConfig

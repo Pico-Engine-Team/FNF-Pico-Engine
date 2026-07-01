@@ -1376,7 +1376,7 @@ class Note extends FlxSprite
 	{
 		if(styleKey == null || styleKey.length < 1)
 			return null;
-		return Paths.getPicoFunkinPath('game/custom-notes/$styleKey.json');
+		return Paths.getPicoFunkinFolder('game/custom-notes/$styleKey.json');
 	}
 
 	static function picoNoteSkinAssetPath(assetPath:String, extension:String):String
@@ -1386,9 +1386,9 @@ class Note extends FlxSprite
 			return null;
 
 		if(clean.startsWith('game/'))
-			return Paths.getPicoFunkinPath('$clean.$extension');
+			return Paths.getPicoFunkinFolder('$clean.$extension');
 		if(clean.startsWith('ui/notes/'))
-			return Paths.getPicoFunkinPath('game/$clean.$extension');
+			return Paths.getPicoFunkinFolder('game/$clean.$extension');
 		return null;
 	}
 

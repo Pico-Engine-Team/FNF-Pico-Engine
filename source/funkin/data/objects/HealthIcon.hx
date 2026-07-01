@@ -59,8 +59,8 @@ class HealthIcon extends FlxSprite
 			'icons/$icon',
 			'icons/baseGame/$icon',
 			'icons/baseGame/icon-$icon',
-			'icons/extra/$icon',
-			'icons/extra/icon-$icon',
+			'icons/freeplay/extra/$icon',
+			'icons/freeplay/extra/icon-$icon',
 			'icons/icon-$icon',
 			'icons/icon-face'
 		];

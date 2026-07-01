@@ -1,8 +1,9 @@
 package funkin.data.editors.content;
 
-import funkin.play.shaders.RGBPalette;
 import funkin.data.objects.game.notes.config.Note;
+import funkin.data.shaders.RGBPalette;
 import flixel.util.FlxDestroyUtil;
+
 class MetaNote extends Note
 {
 	public static var noteTypeTexts:Map<Int, FlxText> = [];
@@ -22,14 +23,14 @@ class MetaNote extends Note
 
 	public function changeNoteData(v:Int)
 	{
-		this.chartNoteData = v; //despite being so arbitrary its sadly needed to fix a bug on moving notes
+		this.chartNoteData = v;
 		this.songData[1] = v;
 		this.noteData = v % ChartingState.GRID_COLUMNS_PER_PLAYER;
 		this.mustPress = (v >= ChartingState.GRID_COLUMNS_PER_PLAYER && v < ChartingState.GRID_COLUMNS_PER_PLAYER * 2);
 		
 		loadNoteAnims(PlayState.isPixelStage ? 'notePixel' : 'note');
 
-		if(Note.globalRgbShaders.contains(rgbShader.parent)) //Is using a default shader
+		if(Note.globalRgbShaders.contains(rgbShader.parent))
 			rgbShader = new RGBShaderReference(this, Note.initializeGlobalRGBShader(noteData));
 
 		animation.play(Note.colArray[this.noteData % Note.colArray.length] + 'Scroll');
