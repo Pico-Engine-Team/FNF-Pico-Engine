@@ -1,12 +1,21 @@
 # Friday Night Funkin' Pico Engine
-![Logo](art/Funkin-Pico-banner.png)
+![Logo](art/banner-new)
 
 # About
-This project is a custom [Friday Night Funkin'](https://github.com/FunkinCrew/Funkin) engine based on [Psych Engine 1.0.4](https://github.com/ShadowMario/FNF-PsychEngine), developed with a primary focus on delivering an optimized experience for creating Pico-centered mods.
+This project is a custom [Friday Night Funkin'](https://github.com/FunkinCrew/Funkin) engine based on [Psych Engine](https://github.com/ShadowMario/FNF-PsychEngine) developed with a primary focus on delivering an optimized experience for creating Pico-centered mods.
 
 The engine preserves the core structure of Psych Engine while introducing custom systems and internal tweaks to support Pico as a fully playable character. This includes animation handling, gameplay mechanics, and character-specific features.
 
 The main goal of this project is to provide modders with an engine that simplifies the creation of Pico-centered mods, without sacrificing the flexibility, stability, and features of the original Psych Engine
+
+<div align='center'>
+<table>
+  <tr>
+    <td><img src="docs/readme_images/TitleCard-pico.gif" alt="Title Screen" width="350"/></td>
+    <td><img src="docs/readme_images/Menu-pico.png" alt="Main Menu" width="350"/></td>
+  </tr>
+</table>
+</div>
 
 # Installation
 Refer to [the Build Instructions](/docs/BUILDING.md)
@@ -33,3 +42,6 @@ If you enjoy this project and would like to support its development, here are so
 - **[itch.io](https://lucas-sanches.itch.io/funkin-pico)** - Play and support the game on itch.io
 
 Every contribution helps keep this project alive and enables us to add more features and improvements!
+
+-----
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
