@@ -3,6 +3,7 @@ package funkin.menus.freeplay;
 import funkin.play.Highscore;
 import funkin.data.WeekData;
 import funkin.data.objects.HealthIcon;
+
 import funkin.data.objects.MusicPlayer;
 import funkin.substates.ResetScoreSubState;
 import funkin.substates.GameplayChangersSubState;
@@ -217,7 +218,7 @@ class FreeplayMenuState extends MusicBeatState
 	function weekIsLocked(name:String):Bool
 	{
 		var leWeek:WeekData = WeekData.weeksLoaded.get(name);
-		return (!leWeek.startUnlocked && leWeek.weekBefore.length > 0 && (!StoryModeState.weekCompleted.exists(leWeek.weekBefore) || !StoryModeState.weekCompleted.get(leWeek.weekBefore)));
+		return (!leWeek.startUnlocked && leWeek.weekBefore.length > 0 && (!StoryMenuState.weekCompleted.exists(leWeek.weekBefore) || !StoryMenuState.weekCompleted.get(leWeek.weekBefore)));
 	}
 
 	var instPlaying:Int = -1;
@@ -521,7 +522,7 @@ class FreeplayMenuState extends MusicBeatState
 		else if(controls.RESET && !player.playingMusic)
 		{
 			persistentUpdate = false;
-			openSubState(new ResetScoreSubState(songs[curSelected].songName, curDifficulty, songs[curSelected].songCharacter));
+			openSubState(new ResetScoreSubState(songs[curSelected].songName, curDifficulty, songs[curSelected].songCharacter, songs[curSelected].week, true));
 			FlxG.sound.play(Paths.sound('scrollMenu'));
 		}
 
@@ -570,8 +571,9 @@ class FreeplayMenuState extends MusicBeatState
 
 		curDifficulty = FlxMath.wrap(curDifficulty + change, 0, Difficulty.list.length-1);
 		#if !switch
-		intendedScore = Highscore.getScore(songs[curSelected].songName, curDifficulty);
-		intendedRating = Highscore.getRating(songs[curSelected].songName, curDifficulty);
+		var weekData:WeekData = WeekData.weeksLoaded.get(WeekData.weeksList[songs[curSelected].week]);
+		intendedScore = Highscore.getScore(songs[curSelected].songName, curDifficulty, null, weekData, true);
+		intendedRating = Highscore.getRating(songs[curSelected].songName, curDifficulty, null, weekData, true);
 		#end
 
 		lastDifficultyName = Difficulty.getString(curDifficulty, false);
