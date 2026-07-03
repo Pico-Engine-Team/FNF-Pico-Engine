@@ -1,9 +1,9 @@
 package funkin.states;
 
-import funkin.data.WeekData;
-import funkin.data.editors.ChartingState;
-import funkin.play.Highscore;
 import funkin.play.Song;
+import funkin.data.WeekData;
+import funkin.play.Highscore;
+import funkin.data.editors.ChartingState;
 
 import funkin.menus.freeplay.FreeplayMenuState;	
 import funkin.states.options.OptionsState;
@@ -360,7 +360,7 @@ class PauseState extends MusicBeatSubstate
 					PlayState.instance.canResync = false;
 					Mods.loadTopMod();
 					if(PlayState.isStoryMode)
-						MusicBeatState.switchState(new StoryModeState());
+						MusicBeatState.switchState(new StoryMenuState());
 					else
 						MusicBeatState.switchState(new FreeplayMenuState());
 

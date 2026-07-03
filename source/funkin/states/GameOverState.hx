@@ -1,9 +1,9 @@
 package funkin.states;
 
-import funkin.menus.freeplay.FreeplayMenuState;
 import funkin.data.WeekData;
+import funkin.menus.StoryMenuState;
+import funkin.menus.freeplay.FreeplayMenuState;
 import funkin.data.objects.game.characters.Character;
-// import StoryModeState and other mode classes from appropriate locations
 
 import flixel.FlxObject;
 import flixel.FlxSubState;
@@ -166,7 +166,7 @@ class GameOverState extends MusicBeatSubstate
 	
 				Mods.loadTopMod();
 				if (PlayState.isStoryMode)
-					MusicBeatState.switchState(new StoryModeState());
+					MusicBeatState.switchState(new StoryMenuState());
 				else
 					MusicBeatState.switchState(new FreeplayMenuState());
 	
