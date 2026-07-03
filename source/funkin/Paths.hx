@@ -196,14 +196,14 @@ class Paths
 		return getSharedPath(file);
 	}
 
+	inline static public function getPicoFunkinFolder(file:String, folder = "pico_assets")
+		return 'assets/$folder/$file';
+
 	inline static public function getFolderPath(file:String, folder = "shared")
 		return 'assets/$folder/$file';
 
 	inline public static function getSharedPath(file:String = '')
 		return 'assets/shared/$file';
-
-	inline public static function getFunkinPath(file:String = '')
-		return 'assets/funkin_assets/$file';
 
 	static public function normalizeAssetPath(path:String):String
 	{
