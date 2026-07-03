@@ -21,7 +21,7 @@ The main goal of this project is to provide modders with an engine that simplifi
 </div>
 
 # Installation
-Refer to [the Build Instructions](/docs/BUILDING.md)
+[View The Build from Engine](/docs/BUILDING.md)
 
 # Customization
 If you wish to disable things like *Lua Scripts* or *Video Cutscenes*, you can refer to the `Project.xml` file.
@@ -29,9 +29,9 @@ Inside `Project.xml`, you will find several variables to customize Psych Engine 
 To start you off, disabling *Video Cutscenes* should be simple, simply delete the line `"VIDEOS_ALLOWED"` or comment it out by wrapping the line in XML-like comments, like this: `<!-- YOUR_LINE_HERE -->`
 Same goes for *Lua Scripts*, comment out or delete the line with `LUA_ALLOWED`, this and other customization options are all available within the `Project.xml` file.
 
-Use `PICO_ALLOWED` for things via Source Code
-use `PSYCH_ALLOWED` for general Psych Engine stuff
-Use `VSLICE_ALLOWED` if you want to adapt something from the FNF Base Game
+- Use `PICO_ALLOWED` for things via Source Code
+- Use `PSYCH_ALLOWED` for general Psych Engine stuff
+- Use `VSLICE_ALLOWED` if you want to adapt something from the FNF Base Game
 
 # Credits
 * Pico Engine: Lucas Sanches
@@ -43,8 +43,7 @@ If you enjoy this project and would like to support its development, here are so
 
 - **[GitHub Sponsors](https://github.com/sponsors/Lucas62944)** - Support the development directly on GitHub
 - **[itch.io](https://lucas-sanches.itch.io/funkin-pico)** - Play and support the game on itch.io
-
-Every contribution helps keep this project alive and enables us to add more features and improvements!
+- Every contribution helps keep this project alive and enables us to add more features and improvements!
 
 -----
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+<p align="right"><a href="#readme-top">Back To Top</a></p>
