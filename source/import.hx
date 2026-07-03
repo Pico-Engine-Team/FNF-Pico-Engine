@@ -34,7 +34,7 @@ import funkin.utils.Controls;
 import funkin.utils.CoolUtil;
 import funkin.utils.substates.MusicBeatSubstate;
 import funkin.utils.CustomFadeTransition;
-import funkin.utils.Conductor;
+import funkin.play.Conductor;
 import funkin.translations.Language;
 import funkin.utils.Alphabet;
 import funkin.menus.MainMenuState;
@@ -48,14 +48,15 @@ import funkin.modding.scripting.FunkinLua;
 import funkin.modding.scripting.psychlua.*;
 #end
 
+import funkin.states.TitleState;
+import funkin.states.CreditsState;
+import funkin.menus.StoryMenuState;
 import funkin.modding.ModsMenuState;
 import funkin.states.options.OptionsState;
-import funkin.states.TitleState;
-import funkin.utils.states.CreditsState;
-import funkin.menus.StoryMenuState as StoryModeState;
 
 #if PSYCH_ALLOWED
-import funkin.utils.engine.psych.ui.*; // Psych UI'S elements
+// Psych UI'S elements
+import funkin.utils.engine.psych.ui.*;
 #end
 
 #if flxanimate
