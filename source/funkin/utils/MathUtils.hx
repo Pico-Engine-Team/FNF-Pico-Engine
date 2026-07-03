@@ -1,14 +1,7 @@
 package funkin.utils;
 
-/**
- * Utilities for performing mathematical operations.
- */
 class MathUtils
 {
-  /**
-   * Euler's constant and the base of the natural logarithm.
-   * Math.E is not a constant in Haxe, so we'll just define it ourselves.
-   */
   public static final E:Float = 2.71828182845904523536;
 
   /**
