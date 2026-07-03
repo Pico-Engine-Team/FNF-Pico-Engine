@@ -98,7 +98,7 @@ class TitleState extends MusicBeatState
 
 		if (FlxG.save.data.weekCompleted != null)
 		{
-			StoryModeState.weekCompleted = FlxG.save.data.weekCompleted;
+			StoryMenuState.weekCompleted = FlxG.save.data.weekCompleted;
 		}
 
 		FlxG.mouse.visible = false;
@@ -136,7 +136,7 @@ class TitleState extends MusicBeatState
 		Conductor.bpm = musicBPM;
 
 		logo = new FlxSprite(logoPosition.x, logoPosition.y);
-		logo.frames = Paths.getSparrowAtlas('title/Funkin-Pico-banner');
+		logo.frames = Paths.getSparrowAtlas('title/logoBumpin');
 		logo.antialiasing = ClientPrefs.data.antialiasing;
 		logo.animation.addByPrefix('bump', 'logo bumpin', 24, false);
 		logo.animation.play('bump');
@@ -578,13 +578,12 @@ class TitleState extends MusicBeatState
 			switch (sickBeats)
 			{
 				case 1:
-					//FlxG.sound.music.stop();
 					FlxG.sound.playMusic(Paths.music('freakyMenu'), 0);
 					FlxG.sound.music.fadeIn(4, 0, 0.7);
 				case 2:
 					createCoolText(['Pico Engine by'], 40);
 				case 4:
-					addMoreText('lucas-sanches', 40);
+					addMoreText('Lucas Sanches', 40);
 				case 5:
 					deleteCoolText();
 				case 6:
