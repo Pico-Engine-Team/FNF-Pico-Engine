@@ -21,7 +21,7 @@ class CreditsState extends MusicBeatState
 	override function create()
 	{
 		#if DISCORD_ALLOWED
-		DiscordClient.changePresence("In Credits Menus", null);
+		DiscordClient.changePresence("In Credits", null);
 		#end
 
 		persistentUpdate = true;
@@ -37,29 +37,29 @@ class CreditsState extends MusicBeatState
 		for (mod in Mods.parseList().enabled) pushModCreditsToList(mod);
 		#end
 
-		// Name - Icon name - Description - Link - BG Color
-		var defaultList:Array<Array<String>> =
-		[
+		var defaultList:Array<Array<String>> = [
 			["Pico Engine Team"],
-			["Lucas Sanches",		"null",				"Main Programmer and Head of Pico Engine",					"https://github.com/Pico-Engine-Team",	"F9393F"],
+			["Lucas Sanches",		"null",				"Main Programmer and Head of Pico Engine",					"https://gamebanana.com/tools/22943",	"B7D855"],
 			[""],
 			["Psych Engine Team"],
-			["Shadow Mario",		"psychEngine/shadowmario",		"Main Programmer and Head of Psych Engine",					"https://ko-fi.com/shadowmario",	"444444"],
-			["Riveren",				"psychEngine/riveren",			"Main Artist/Animator of Psych Engine",						"https://x.com/riverennn",			"14967B"],
-			["Join the Psych Ward!", "discord",						"",																				"https://discord.gg/2ka77eMXDv", 	"5165F6"],
+			["Shadow Mario",		"Psych/shadowmario",		"Main Programmer and Head of Psych Engine",					"https://ko-fi.com/shadowmario",	"444444"],
+			["Riveren",				"Psych/riveren",			"Main Artist/Animator of Psych Engine",						"https://x.com/riverennn",			"14967B"],
 			[""],
 			["P Slice Engine Team"],
-			['Mikolka9144',			'P Slice Engine/mikolka',						'Main Programmer and Head of P Slice Engine',						'https://gamebanana.com/members/3329541','2ebcfa'],
-			["Derpy The Hedgeone",	'P Slice Engine/contributors/derpy',			'Made a lot of PRs to the repo',									'https://github.com/DerpyTheHedgeone',	'd86b00'],
-			["Mykarm",				'P Slice Engine/contributors/mykarm',			'Made the new icon and promational art for P Slice',				'https://x.com/cronviersmeat/status/1849059676467417311?s=46&t=4dcTT7PAMkRJ8zYd4LgTow',	'29170a'],
-			["Fazecarl",			'P Slice Engine/contributors/fazecarl',			'Made the new logo for P Slice',									'https://gamebanana.com/members/2121406',	'29170a'],
-			["Join our community", 	"P Slice Engine/discord/ppslice", 				"",																	"https://discord.gg/2ka77eMXDv", 			"5165F6"],
+			['Mikolka9144',			'PSlice/mikolka',						'Main Programmer and Head of P Slice Engine',						'https://gamebanana.com/members/3329541','2ebcfa'],
+			["Derpy The Hedgeone",	'contributors/PSlice/derpy',			'Made a lot of PRs to the repo',									'https://github.com/DerpyTheHedgeone',	'd86b00'],
+			["Mykarm",				'contributors/PSlice/mykarm',			'Made the new icon and promational art for P Slice',				'https://x.com/cronviersmeat/status/1849059676467417311?s=46&t=4dcTT7PAMkRJ8zYd4LgTow',	'29170a'],
+			["Fazecarl",			'contributors/PSlice/fazecarl',			'Made the new logo for P Slice',									'https://gamebanana.com/members/2121406',	'29170a'],
 			[""],
-			["The Funkin' Crew Inc"],
-			["ninjamuffin99",		"the Funkin'/ninjamuffin99",	"Programmer of Friday Night Funkin'",						"https://x.com/ninja_muffin99",		"CF2D2D"],
-			["PhantomArcade",		"the Funkin'/phantomarcade",	"Animator of Friday Night Funkin'",							"https://x.com/PhantomArcade3K",	"FADC45"],
-			["evilsk8r",			"the Funkin'/evilsk8r",			"Artist of Friday Night Funkin'",							"https://x.com/evilsk8r",			"5ABD4B"],
-			["kawaisprite",			"the Funkin'/kawaisprite",		"Composer of Friday Night Funkin'",							"https://x.com/kawaisprite",		"378FC7"],
+			["Funkin Crew Team"],
+			["ninjamuffin99",		"funkinCrew/ninjamuffin99",	"Programmer of Friday Night Funkin'",						"https://x.com/ninja_muffin99",		"CF2D2D"],
+			["PhantomArcade",		"funkinCrew/phantomarcade",	"Animator of Friday Night Funkin'",							"https://x.com/PhantomArcade3K",	"FADC45"],
+			["evilsk8r",			"funkinCrew/evilsk8r",			"Artist of Friday Night Funkin'",							"https://x.com/evilsk8r",			"5ABD4B"],
+			["kawaisprite",			"funkinCrew/kawaisprite",		"Composer of Friday Night Funkin'",							"https://x.com/kawaisprite",		"378FC7"],
+			[""],
+			["Join The Discord Servers"],
+			["Join The Psych Engine Server", "discord-servers/discord-icon-normal", "", "https://discord.gg/2ka77eMXDv", "C24B99"],
+			["Join The P Slice Engine Server", "discord-servers/discord-PSlice", "", "https://discord.gg/9FCyCqEvRf", "C24B99"],
 		];
 		
 		for(i in defaultList)
@@ -228,7 +228,7 @@ class CreditsState extends MusicBeatState
 				if(credit[5] != null)
 					Mods.currentModDirectory = credit[5];
 
-				var str:String = 'credits/picoEngine/default/missing_icon';
+				var str:String = 'credits/no-icon';
 				if(credit[1] != null && credit[1].length > 0)
 				{
 					var fileName = 'credits/' + credit[1];
@@ -309,7 +309,7 @@ class CreditsState extends MusicBeatState
 	function updatePageText()
 	{
 		if(pageText != null)
-			pageText.text = creditsPages.length > 1 ? 'Q < PAGE ${curPage + 1}/${creditsPages.length} > E' : '';
+			pageText.text = creditsPages.length > 1 ? 'PAGE (${curPage + 1}/${creditsPages.length}) Q/E' : '';
 	}
 
 	function getSelectedLink():String
