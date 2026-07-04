@@ -4,13 +4,6 @@
 #### Made With
 <img src="https://img.shields.io/badge/-HAXE-262626.svg?logo=haxe&style=for-the-badge">
 
-# About
-This project is a custom [Friday Night Funkin'](https://github.com/FunkinCrew/Funkin) engine based on [Psych Engine](https://github.com/ShadowMario/FNF-PsychEngine) developed with a primary focus on delivering an optimized experience for creating Pico-centered mods.
-
-The engine preserves the core structure of Psych Engine while introducing custom systems and internal tweaks to support Pico as a fully playable character. This includes animation handling, gameplay mechanics, and character-specific features.
-
-The main goal of this project is to provide modders with an engine that simplifies the creation of Pico-centered mods, without sacrificing the flexibility, stability, and features of the original Psych Engine
-
 <div align='center'>
 <table>
   <tr>
@@ -19,6 +12,13 @@ The main goal of this project is to provide modders with an engine that simplifi
   </tr>
 </table>
 </div>
+
+# About
+This project is a custom [Friday Night Funkin'](https://github.com/FunkinCrew/Funkin) engine based on [Psych Engine](https://github.com/ShadowMario/FNF-PsychEngine) developed with a primary focus on delivering an optimized experience for creating Pico-centered mods.
+
+The engine preserves the core structure of Psych Engine while introducing custom systems and internal tweaks to support Pico as a fully playable character. This includes animation handling, gameplay mechanics, and character-specific features.
+
+The main goal of this project is to provide modders with an engine that simplifies the creation of Pico-centered mods, without sacrificing the flexibility, stability, and features of the original Psych Engine
 
 # Installation
 [View The Build from Engine](/docs/BUILDING.md)
