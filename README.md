@@ -46,4 +46,4 @@ If you enjoy this project and would like to support its development, here are so
 - Every contribution helps keep this project alive and enables us to add more features and improvements!
 
 -----
-<p align="right"><a href="#readme-top">Back To Top</a></p>
+<p align="center"><a href="#readme-top">Back To Top</a></p>
