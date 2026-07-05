@@ -1,8 +1,8 @@
 # Friday Night Funkin' Pico Engine
-![Logo](art/banner-new.png)
+![FNFModBanner](art/banner-new.png)
 
-#### Made With
-<img src="https://img.shields.io/badge/-HAXE-262626.svg?logo=haxe&style=for-the-badge">
+<p align="center">Made With</a></p>
+<p align="center"><img src="https://img.shields.io/badge/-HAXE-262626.svg?logo=haxe&style=for-the-badge">
 
 <div align='center'>
 <table>
