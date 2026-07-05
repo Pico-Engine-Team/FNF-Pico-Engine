@@ -1,9 +1,9 @@
 package funkin.stages.data.levels.week7;
 
 import funkin.states.GameOverState;
+import funkin.stages.objects.levels.week7.*;
 import funkin.data.cutscenes.CutsceneHandler;
 import funkin.data.objects.game.characters.Character;
-import funkin.stages.objects.levels.week7.*;
 
 class TankmanBattlefield extends BaseStage
 {
@@ -11,13 +11,17 @@ class TankmanBattlefield extends BaseStage
 	var tankGround:BackgroundTank;
 	var tankmanRun:FlxTypedGroup<TankmenBG>;
 	var foregroundSprites:FlxTypedGroup<BGSprite>;
-
 	override function create()
 	{
 		var sky:BGSprite = new BGSprite('tankSky', -400, -400, 0, 0);
 		add(sky);
 
-		if(!ClientPrefs.isLowQuality)
+		var tankBricks:BGSprite = new BGSprite('bricksGround', 438, 715);
+		tankBricks.scale.set(1, 1);
+		tankBricks.scrollFactor.set(1.15, 1.15);
+		add(tankBricks);
+
+		if(!ClientPrefs.data.Quality)
 		{
 			var clouds:BGSprite = new BGSprite('tankClouds', FlxG.random.int(-700, -100), FlxG.random.int(-20, 20), 0.1, 0.1);
 			clouds.active = true;
@@ -40,10 +44,11 @@ class TankmanBattlefield extends BaseStage
 		ruins.updateHitbox();
 		add(ruins);
 
-		if(!ClientPrefs.isLowQuality)
+		if(!ClientPrefs.data.Quality)
 		{
 			var smokeLeft:BGSprite = new BGSprite('smokeLeft', -200, -100, 0.4, 0.4, ['SmokeBlurLeft'], true);
 			add(smokeLeft);
+
 			var smokeRight:BGSprite = new BGSprite('smokeRight', 1100, -100, 0.4, 0.4, ['SmokeRight'], true);
 			add(smokeRight);
 
@@ -64,14 +69,14 @@ class TankmanBattlefield extends BaseStage
 
 		foregroundSprites = new FlxTypedGroup<BGSprite>();
 		foregroundSprites.add(new BGSprite('tank0', -500, 650, 1.7, 1.5, ['fg']));
-		if(!ClientPrefs.isLowQuality) foregroundSprites.add(new BGSprite('tank1', -300, 750, 2, 0.2, ['fg']));
+		if(!ClientPrefs.data.Quality) foregroundSprites.add(new BGSprite('tank1', -300, 750, 2, 0.2, ['fg']));
 		foregroundSprites.add(new BGSprite('tank2', 450, 940, 1.5, 1.5, ['foreground']));
-		if(!ClientPrefs.isLowQuality) foregroundSprites.add(new BGSprite('tank4', 1300, 900, 1.5, 1.5, ['fg']));
+		if(!ClientPrefs.data.Quality) foregroundSprites.add(new BGSprite('tank4', 1300, 900, 1.5, 1.5, ['fg']));
 		foregroundSprites.add(new BGSprite('tank5', 1620, 700, 1.5, 1.5, ['fg']));
-		if(!ClientPrefs.isLowQuality) foregroundSprites.add(new BGSprite('tank3', 1300, 1200, 3.5, 2.5, ['fg']));
+		if(!ClientPrefs.data.Quality) foregroundSprites.add(new BGSprite('tank3', 1300, 1200, 3.5, 2.5, ['fg']));
 
 		// Default GFs
-		if(songName == 'stress') setDefaultGF('pico-week7');
+		if(songName == 'stress') setDefaultGF('pico-speaker');
 		else setDefaultGF('gf-tankmen');
 		
 		if (isStoryMode && !seenCutscene)
@@ -87,16 +92,16 @@ class TankmanBattlefield extends BaseStage
 			}
 		}
 	}
+
 	override function createPost()
 	{
 		add(foregroundSprites);
-
-		if(!ClientPrefs.isLowQuality)
+		if(!ClientPrefs.data.Quality)
 		{
 			for (daGf in gfGroup)
 			{
 				var gf:Character = cast daGf;
-				if(gf.curCharacter == 'pico-week7')
+				if(gf.curCharacter == 'pico-speaker')
 				{
 					var firstTank:TankmenBG = new TankmenBG(20, 500, true);
 					firstTank.resetShit(20, 1500, true);
@@ -123,7 +128,7 @@ class TankmanBattlefield extends BaseStage
 	override function beatHit() everyoneDance();
 	function everyoneDance()
 	{
-		if(!ClientPrefs.isLowQuality) tankWatchtower.dance();
+		if(!ClientPrefs.data.Quality) tankWatchtower.dance();
 		foregroundSprites.forEach(function(spr:BGSprite)
 		{
 			spr.dance();
@@ -333,7 +338,7 @@ class TankmanBattlefield extends BaseStage
 
 		boyfriendCutscene = new FlxSprite(boyfriend.x + 5, boyfriend.y + 20);
 		boyfriendCutscene.antialiasing = ClientPrefs.data.antialiasing;
-		boyfriendCutscene.frames = Paths.getSparrowAtlas('characters/BOYFRIEND');
+		boyfriendCutscene.frames = Paths.getSparrowAtlas('characters/bf/Boyfriend');
 		boyfriendCutscene.animation.addByPrefix('idle', 'BF idle dance', 24, false);
 		boyfriendCutscene.animation.play('idle', true);
 		boyfriendCutscene.animation.curAnim.finish();
