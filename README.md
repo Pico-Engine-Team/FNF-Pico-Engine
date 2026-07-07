@@ -1,4 +1,4 @@
-# Friday Night Funkin' Pico Engine
+# Friday Night Funkin': - Pico Engine
 ![FNFModBanner](art/banner-new.png)
 
 <p align="center">Made With</a></p>
