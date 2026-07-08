@@ -1,0 +1,110 @@
+{
+	"animations": [
+		{
+			"frameIndices": [],
+			"prefix": "BF idle dance",
+			"offsets": [-28, 0],
+			"fps": 24,
+			"loop": false,
+			"name": "idle"
+		},
+		{
+			"frameIndices": [],
+			"prefix": "BF NOTE UP0",
+			"offsets": [-24, 29],
+			"fps": 24,
+			"loop": false,
+			"name": "singUP"
+		},
+		{
+			"frameIndices": [],
+			"prefix": "BF NOTE DOWN0",
+			"offsets": [-41, -52],
+			"fps": 24,
+			"loop": false,
+			"name": "singDOWN"
+		},
+		{
+			"frameIndices": [],
+			"prefix": "BF NOTE LEFT0",
+			"offsets": [-62, -6],
+			"fps": 24,
+			"loop": false,
+			"name": "singLEFT"
+		},
+		{
+			"frameIndices": [],
+			"prefix": "BF NOTE RIGHT0",
+			"offsets": [23, -4],
+			"fps": 24,
+			"loop": false,
+			"name": "singRIGHT"
+		},
+		{
+			"frameIndices": [],
+			"prefix": "boyfriend dodge",
+			"offsets": [-59, -13],
+			"fps": 24,
+			"loop": false,
+			"name": "dodge"
+		},
+		{
+			"assetPath": "characters/extraAnims/bf/Alt anims",
+			"frameIndices": [],
+			"prefix": "upAlt",
+			"offsets": [-20, 21],
+			"fps": 24,
+			"loop": false,
+			"name": "singUP-alt"
+		},
+		{
+			"assetPath": "characters/extraAnims/bf/Alt anims",
+			"frameIndices": [],
+			"prefix": "downAlt",
+			"offsets": [-43, -45],
+			"fps": 24,
+			"loop": false,
+			"name": "singDOWN-alt"
+		},
+		{
+			"assetPath": "characters/extraAnims/bf/Alt anims",
+			"frameIndices": [],
+			"prefix": "leftAlt",
+			"offsets": [-22, -7],
+			"fps": 24,
+			"loop": false,
+			"name": "singLEFT-alt"
+		},
+		{
+			"assetPath": "characters/extraAnims/bf/Alt anims",
+			"frameIndices": [],
+			"prefix": "rightAlt",
+			"offsets": [38, -4],
+			"fps": 24,
+			"loop": false,
+			"name": "singRIGHT-alt"
+		},
+		{
+			"assetPath": "characters/extraAnims/bf/BFCheer",
+			"frameIndices": [],
+			"prefix": "Cheer",
+			"offsets": [37, 52],
+			"fps": 24,
+			"loop": false,
+			"name": "hey"
+		}
+	],
+	"vocals_file": "",
+	"no_antialiasing": false,
+	"animatedIcon": false,
+	"assetPath": "characters/bf/Boyfriend",
+	"offsets": [0, 350],
+	"cameraOffsets": [0, -53],
+	"renderType": "multisparrow",
+	"healthicon": "bf",
+	"flip_x": true,
+	"healthbar_colors": [49, 176, 209],
+	"characterType": "Opponent",
+	"sing_duration": 4,
+	"scale": 1
+}
