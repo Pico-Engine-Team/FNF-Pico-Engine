@@ -33,10 +33,10 @@ import crowplexus.hscript.Printer;
 #if cpp
 @:headerCode('
 #include <iostream>
-#include <thread>
-')
+#include <thread>')
 #end
-class LoadingState extends MusicBeatState
+
+class LoadingScreenState extends MusicBeatState
 {
 	public static var loaded:Int = 0;
 	public static var loadMax:Int = 0;
@@ -71,7 +71,7 @@ class LoadingState extends MusicBeatState
 	var rareFunkayLoading:Bool = false;
 
 	#if PSYCH_WATERMARKS
-	var logo:FlxSprite;
+	var logoKey:FlxSprite;
 	var pessy:FlxSprite;
 	var loadingText:FlxText;
 
@@ -164,7 +164,7 @@ class LoadingState extends MusicBeatState
 			FlxG.camera.fade(0xFF8A2BE2, 0.6, true);
 
 			#if PSYCH_WATERMARKS
-			loadingText = new FlxText(520, 600, 400, Language.getPhrase('now_loading', ' Loading', ['...']), 32);
+			loadingText = new FlxText(520, 600, 400, Language.getPhrase('now_loading', ' Loading Song', ['...']), 32);
 			loadingText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, LEFT, OUTLINE_FAST, FlxColor.BLACK);
 			loadingText.borderSize = 2;
 			addBehindBar(loadingText);
@@ -185,14 +185,14 @@ class LoadingState extends MusicBeatState
 			loadingText.borderSize = 2;
 			addBehindBar(loadingText);
 		
-			logo = new FlxSprite(0, 0).loadGraphic(Paths.image('loading/icon'));
-			logo.antialiasing = ClientPrefs.data.antialiasing;
-			logo.scale.set(0.75, 0.75);
-			logo.updateHitbox();
-			logo.screenCenter();
-			logo.x -= 50;
-			logo.y -= 40;
-			addBehindBar(logo);
+			logoKey = new FlxSprite(0, 0).loadGraphic(Paths.image('loading/icon'));
+			logoKey.antialiasing = ClientPrefs.data.antialiasing;
+			logoKey.scale.set(0.75, 0.75);
+			logoKey.updateHitbox();
+			logoKey.screenCenter();
+			logoKey.x -= 50;
+			logoKey.y -= 40;
+			addBehindBar(logoKey);
 
 			#else // BASE GAME LOADING SCREEN
 			var bg = new FlxSprite().makeGraphic(1, 1, 0xFFCAFF4D);
@@ -260,7 +260,8 @@ class LoadingState extends MusicBeatState
 		}
 		#end
 
-		#if PSYCH_WATERMARKS // PSYCH LOADING SCREEN
+		// PSYCH LOADING SCREEN
+		#if PSYCH_WATERMARKS
 		timePassed += elapsed;
 		shakeFl += elapsed * 3000;
 		var dots:String = '';
@@ -273,7 +274,7 @@ class LoadingState extends MusicBeatState
 			case 2:
 				dots = '...';
 		}
-		loadingText.text = Language.getPhrase('now_loading', ' Loading {1}', [dots]);
+		loadingText.text = Language.getPhrase('now_loading', 'Loading Song {1}', [dots]);
 
 		if(rareFunkayLoading) return;
 
@@ -286,12 +287,12 @@ class LoadingState extends MusicBeatState
 				pressedTimes++;
 			}
 			shakeMult = Math.max(0, shakeMult - elapsed * 5);
-			logo.offset.x = Math.sin(shakeFl * Math.PI / 180) * shakeMult * 100;
+			logoKey.offset.x = Math.sin(shakeFl * Math.PI / 180) * shakeMult * 100;
 
 			if(pressedTimes >= 5)
 			{
 				FlxG.camera.fade(0xAAFFFFFF, 0.5, true);
-				logo.visible = false;
+				logoKey.visible = false;
 				spawnedPessy = true;
 				stateChangeDelay = 5;
 				FlxG.sound.play(Paths.sound('secret'));
@@ -301,7 +302,7 @@ class LoadingState extends MusicBeatState
 				pessy.animation.addByPrefix('run', 'run', 24, true);
 				pessy.animation.addByPrefix('spin', 'spin', 24, true);
 				pessy.antialiasing = ClientPrefs.data.antialiasing;
-				pessy.flipX = (logo.offset.x > 0);
+				pessy.flipX = (logoKey.offset.x > 0);
 				pessy.visible = false;
 
 				new FlxTimer().start(0.01, function(tmr:FlxTimer) {
