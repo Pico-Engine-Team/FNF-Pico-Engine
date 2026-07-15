@@ -43,24 +43,21 @@ typedef UndoStruct = {
 	var data:Dynamic;
 }
 
-enum abstract UndoAction(String)
-{
+enum abstract UndoAction(String) {
 	var ADD_NOTE = 'Add Note';
 	var DELETE_NOTE = 'Delete Note';
 	var MOVE_NOTE = 'Move Note';
 	var SELECT_NOTE = 'Select Note';
 }
 
-enum abstract ChartingTheme(String)
-{
+enum abstract ChartingTheme(String) {
 	var LIGHT = 'light';
 	var DARK = 'dark';
 	var DEFAULT = 'default';
 	var CUSTOM = 'custom';
 }
 
-enum abstract WaveformTarget(String)
-{
+enum abstract WaveformTarget(String) {
 	var INST = 'inst';
 	var PLAYER = 'voc';
 	var OPPONENT = 'opp';
@@ -68,8 +65,8 @@ enum abstract WaveformTarget(String)
 
 class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychUIEvent
 {
-	public static final defaultEvents:Array<Array<String>> = [
-		['', "Nothing. Yep, that's right."], //Always leave this one empty pls
+	public static final defaultEvents:Array<Array<String>> =  [
+		['', "Nothing. Yep, that's right."],
 		['Dadbattle Spotlight', "Used in Dad Battle,\nValue 1: 0/1 = ON/OFF,\n2 = Target Dad\n3 = Target BF"],
 		['Hey!', "Plays the \"Hey!\" animation from Bopeebo,\nValue 1: BF = Only Boyfriend, GF = Only Girlfriend,\nSomething else = Both.\nValue 2: Custom animation duration,\nleave it blank for 0.6s"],
 		['Set GF Speed', "Sets GF head bopping speed,\nValue 1: 1 = Normal speed,\n2 = 1/2 speed, 4 = 1/4 speed etc.\nUsed on Fresh during the beatbox parts.\n\nWarning: Value must be integer!"],
@@ -143,17 +140,18 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 	var chartEditorSave:FlxSave;
 	var mainBox:PsychUIBox;
 	var mainBoxPosition:FlxPoint = FlxPoint.get(920, 40);
+
 	var infoBox:PsychUIBox;
 	var infoBoxPosition:FlxPoint = FlxPoint.get(1000, 360);
 	var upperBox:PsychUIBox;
 	
 	var camUI:FlxCamera;
-
 	var prevGridBg:ChartingGridSprite;
 	var gridBg:ChartingGridSprite;
 	var nextGridBg:ChartingGridSprite;
 	var waveformSprite:FlxSprite;
 	var scrollY:Float = 0;
+
 	var zoomList:Array<Float> = [
 		0.25,
 		0.5,
@@ -341,9 +339,8 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		var columns:Int = 0;
 		var iconX:Float = gridBg.x;
 		var iconY:Float = 50;
-		if(SHOW_EVENT_COLUMN)
-		{
-			eventIcon = new FlxSprite(0, iconY).loadGraphic(Paths.image('editors/chartEditor/eventIcon'));
+		if(SHOW_EVENT_COLUMN) {
+			eventIcon = new FlxSprite(0, iconY).loadGraphic(Paths.image('editors/chart-editor/chart-events/unknown-event'));
 			eventIcon.antialiasing = ClientPrefs.data.antialiasing;
 			eventIcon.alpha = 0.6;
 			eventIcon.setGraphicSize(30, 30);
@@ -352,7 +349,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			add(eventIcon);
 			eventIcon.x = iconX + (GRID_SIZE * 0.5) - eventIcon.width/2;
 			iconX += GRID_SIZE;
-
 			columns++;
 		}
 
@@ -408,7 +404,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		mainBox.cameras = [camUI];
 		add(mainBox);
 
-		autoSaveIcon = new FlxSprite(50).loadGraphic(Paths.image('editors/chartEditor/autosave'));
+		autoSaveIcon = new FlxSprite(50).loadGraphic(Paths.image('editors/chart-editor/chart-events/chart-autosave'));
 		autoSaveIcon.screenCenter(Y);
 		autoSaveIcon.scale.set(0.6, 0.6);
 		autoSaveIcon.antialiasing = ClientPrefs.data.antialiasing;
@@ -445,7 +441,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		}
 		updateJsonData();
 		
-		//TABS For MainBox
+		// TABS For MainBox
 		addChartingTab();
 		addDataTab();
 		addEventsTab();
@@ -453,7 +449,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		addSectionTab();
 		addSongTab();
 		
-		//for upper box
+		// for upper box
 		addFileTab();
 		addEditTab();
 		addViewTab();
@@ -507,8 +503,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		fullTipText.cameras = [camUI];
 		fullTipText.scrollFactor.set();
 		fullTipText.visible = fullTipText.active = false;
-		fullTipText.text =
-		[
+		fullTipText.text = [
 			"W/S/Mouse Wheel - Move Conductor's Time",
 			"A/D - Change Sections",
 			"Q/E - Decrease/Increase Note Sustain Length",
@@ -5885,7 +5880,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		updateChartData();
 		StageData.loadDirectory(PlayState.SONG);
 		PlayState.chartingMode = true;
-		LoadingState.loadAndSwitchState(new PlayState());
+		LoadingScreenState.loadAndSwitchState(new PlayState());
 		ClientPrefs.toggleVolumeKeys(true);
 	}
 	
