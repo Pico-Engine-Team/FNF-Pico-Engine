@@ -1,12 +1,5 @@
 package funkin.menus;
 
-import funkin.utils.EditorsMenus;
-import funkin.states.AchievementsMenuState;
-import funkin.states.options.OptionsState;
-import funkin.menus.freeplay.*;
-import funkin.menus.*;
-import funmin.states.*;
-
 import flixel.FlxObject;
 import flixel.effects.FlxFlicker;
 import lime.app.Application;
@@ -19,18 +12,19 @@ enum MainMenuColumn {
 
 class MainMenuState extends MusicBeatState
 {
-	public static var PicoVersion:String = '2.7.26'; // Pico Engine Mod Version And mobilie Version 
-	public static var PsychVersion:String = '1.0.4 '; // Psych Engine v1.0.4
-	public static var FunkinVersion:String = '0.8.4'; // V Slice Version of Friday Night Funkin'
 	public static var curSelected:Int = 0;
 	public static var curColumn:MainMenuColumn = CENTER;
+	public static var PicoVersion:String = '2.26.7-(Pre Release Build)'; // Version of Pico Engine
+	public static var FunkinVersion:String = '0.8.4'; // Version of Friday Night Funkin'
+	public static var PsychVersion:String = '1.0.4'; // Version of Psych Engine
 
-	var allowMouse:Bool = true; //Turn this off to block mouse movement in menus
+	var allowMouse:Bool = true;
 	var menuItems:FlxTypedGroup<FlxSprite>;
 	var leftItem:FlxSprite;
 	var rightItem:FlxSprite;
 
 	var optionShit:Array<String> = ['story_mode', 'freeplay', 'options', 'credits'];
+
 	var leftOption:String = null;
 	var rightOption:String = null;
 
@@ -134,7 +128,26 @@ class MainMenuState extends MusicBeatState
 			openSubState(new funkin.substates.OutdatedSubState());
 		}
 		#end
+
 		FlxG.camera.follow(camFollow, null, 0.15);
+		applyMenuMusic();
+	}
+
+	function applyMenuMusic()
+	{
+		if(ClientPrefs.data.menuMusic == 'None')
+		{
+			if(FlxG.sound.music != null)
+				FlxG.sound.music.stop();
+		}
+		else if(ClientPrefs.data.menuMusic == 'freakyMenu')
+		{
+			FlxG.sound.music.volume = 0;
+		}
+		else
+		{
+			FlxG.sound.playMusic(Paths.music(MainMenuState.resolveMenuMusicKey(ClientPrefs.data.menuMusic)));
+		}
 	}
 
 	function createMenuItem(name:String, x:Float, y:Float):FlxSprite {
@@ -302,22 +315,10 @@ class MainMenuState extends MusicBeatState
 				{
 					switch (option)
 					{
-						case 'story_mode':
-							MusicBeatState.switchState(new StoryMenuState());
-						case 'freeplay':
-							MusicBeatState.switchState(new FreeplayMenuState());
-						#if MODS_ALLOWED
-						case 'mods':
-							MusicBeatState.switchState(new ModsMenuState());
-						#end
-						case 'credits':
-							MusicBeatState.switchState(new funkin.states.CreditsState());
-						#if ACHIEVEMENTS_ALLOWED
-						case 'awards':
-							MusicBeatState.switchState(new AchievementsMenuState());
-						#end
-						case 'options':
-							MusicBeatState.switchState(new OptionsState());
+						case 'story_mode':MusicBeatState.switchState(new funkin.menus.StoryMenuState());
+						case 'freeplay': MusicBeatState.switchState(new funkin.menus.freeplay.FreeplayMenuState());
+						case 'credits':MusicBeatState.switchState(new funkin.states.CreditsState());
+						case 'options':MusicBeatState.switchState(new funkin.states.options.OptionsState());
 							OptionsState.onPlayState = false;
 							if (PlayState.SONG != null)
 							{
@@ -325,10 +326,7 @@ class MainMenuState extends MusicBeatState
 								PlayState.SONG.splashSkin = null;
 								PlayState.stageUI = 'normal';
 							}
-						case 'donate':
-							CoolUtil.browserLoad('https://lucas-sanches.itch.io/funkin-pico');
-							selectedSomethin = false;
-							item.visible = true;
+
 						default:
 							trace('Menu Item ${option} doesn\'t do anything');
 							selectedSomethin = false;
@@ -382,5 +380,10 @@ class MainMenuState extends MusicBeatState
 		selectedItem.animation.play('selected');
 		selectedItem.centerOffsets();
 		camFollow.y = selectedItem.getGraphicMidpoint().y;
+	}
+
+	public static function resolveMenuMusicKey(musicKey:String):String
+	{
+		return musicKey;
 	}
 }
