@@ -1,9 +1,6 @@
 package funkin.utils;
 
-import funkin.menus.*;
-import funkin.data.editors.*;
 import funkin.data.WeekData;
-import funkin.menus.MainMenuState;
 import funkin.menus.freeplay.FreeplayMenuState;
 import funkin.data.objects.game.characters.Character;
 
@@ -102,7 +99,7 @@ class EditorsMenus extends MusicBeatState
 
 		if (controls.BACK)
 		{
-			MusicBeatState.switchState(new MainMenuState());
+			MusicBeatState.switchState(new funkin.menus.MainMenuState());
 		}
 
 		if (controls.ACCEPT)
@@ -110,23 +107,21 @@ class EditorsMenus extends MusicBeatState
 			switch(options[curSelected])
 			{
 				case 'Chart Editor':
-					LoadingState.loadAndSwitchState(new ChartingState(), false);
+					LoadingScreenState.loadAndSwitchState(new funkin.data.editors.ChartingState(), false);
 				case 'Character Editor':
-					LoadingState.loadAndSwitchState(new CharacterEditorState(Character.DEFAULT_CHARACTER, false));
+					LoadingScreenState.loadAndSwitchState(new funkin.data.editors.CharacterEditorState(Character.DEFAULT_CHARACTER, false));
 				case 'Stage Editor':
-					LoadingState.loadAndSwitchState(new StageEditorState());
+					LoadingScreenState.loadAndSwitchState(new funkin.data.editors.StageEditorState());
 				case 'Week Editor':
-					MusicBeatState.switchState(new WeekEditorState());
-				case 'Note Skin Editor':
-					MusicBeatState.switchState(new NoteSkinEditorState());
+					MusicBeatState.switchState(new funkin.data.editors.WeekEditorState());
 				case 'Menu Character Editor':
-					MusicBeatState.switchState(new MenuCharacterEditorState());
+					MusicBeatState.switchState(new funkin.data.editors.MenuCharacterEditorState());
 				case 'Dialogue Editor':
-					LoadingState.loadAndSwitchState(new DialogueEditorState(), false);
+					LoadingScreenState.loadAndSwitchState(new funkin.data.editors.DialogueEditorState(), false);
 				case 'Dialogue Portrait Editor':
-					LoadingState.loadAndSwitchState(new DialogueCharacterEditorState(), false);
+					LoadingScreenState.loadAndSwitchState(new funkin.data.editors.DialogueCharacterEditorState(), false);
 				case 'Note Splash Editor':
-					MusicBeatState.switchState(new NoteSplashEditorState());
+					MusicBeatState.switchState(new funkin.data.editors.NoteSplashEditorState());
 				case 'Converters State':
 					MusicBeatState.switchState(new funkin.states.ConvertersState());
 			}
