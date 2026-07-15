@@ -23,12 +23,12 @@ typedef WeekFile = {
 	@:optional var sections:Dynamic;
 }
 
-class WeekData {
-
+class WeekData
+{
+	public var folder:String = '';
+	static var reloadTargetSection:String = 'freeplay';
 	public static var weeksLoaded:Map<String, WeekData> = new Map<String, WeekData>();
 	public static var weeksList:Array<String> = [];
-	static var reloadTargetSection:String = 'freeplay';
-	public var folder:String = '';
 
 	// JSON variables
 	public var songs:Array<Dynamic>;
@@ -47,17 +47,17 @@ class WeekData {
 	public var freeplayDifficulties:String;
 	public var section:Dynamic;
 	public var sections:Dynamic;
-
 	public var fileName:String;
 
-	public static function createWeekFile():WeekFile {
-		var weekFile:WeekFile =
-			{
+	public static function createWeekFile():WeekFile 
+	{
+		var weekFile:WeekFile = {
 				songs: [
 					["Bopeebo", "dad", [146, 113, 253]],
 					["Fresh", "dad", [146, 113, 253]],
 					["Dad Battle", "dad", [146, 113, 253]]
 				],
+
 			weekCharacters: ['dad', 'bf', 'gf'],
 			weekBackground: 'stage',
 			weekBefore: 'tutorial',
@@ -71,7 +71,7 @@ class WeekData {
 			difficulties: 'Easy, Normal, Hard',
 			storyDifficulties: 'Easy, Normal, Hard',
 			freeplayDifficulties: 'Easy, Normal, Hard',
-			section: ['storyMode', 'freeplay']
+			section: ['storyMode', 'freeplay', 'extra']
 		};
 		return weekFile;
 	}
@@ -210,7 +210,7 @@ class WeekData {
 		var originalLength:Int = directories.length;
 		#end
 
-		var sexList:Array<String> = CoolUtil.coolTextFile(Paths.getSharedPath('data/weekList.txt'));
+		var sexList:Array<String> = CoolUtil.coolTextFile(Paths.getSharedPath('levels/WeeksList.txt'));
 		for (i in 0...sexList.length) {
 			for (j in 0...directories.length) {
 				var fileToCheck:String = directories[j] + 'data/levels/' + sexList[i] + '.json';
@@ -293,6 +293,7 @@ class WeekData {
 
 		if(targetSection == 'storyMode' && week.hideStoryMode)
 			return false;
+
 		if(targetSection == 'freeplay' && week.hideFreeplay)
 			return false;
 
