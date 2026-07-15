@@ -4,9 +4,11 @@ package funkin.menus.freeplay;
 import funkin.Paths;
 import funkin.play.Song;
 import funkin.play.Highscore;
+
 import funkin.play.Difficulty;
 import funkin.data.WeekData;
 import funkin.data.editors.ChartingState;
+
 import funkin.data.objects.HealthIcon;
 import funkin.data.objects.story.MenuItem;
 import funkin.stages.StageData;
@@ -329,12 +331,12 @@ class FreeplayExtraSongsState extends MusicBeatState {
 		Mods.currentModDirectory = song.folder ?? '';
 
 		FlxG.sound.music.volume = 0;
-		LoadingState.prepareToSong();
+		LoadingScreenState.prepareToSong();
 
 		if(FlxG.keys.pressed.SHIFT)
-			LoadingState.loadAndSwitchState(new ChartingState());
+			LoadingScreenState.loadAndSwitchState(new ChartingState());
 		else
-			LoadingState.loadAndSwitchState(new PlayState());
+			LoadingScreenState.loadAndSwitchState(new PlayState());
 	}
 
 	function changeDiff(change:Int = 0)
@@ -401,8 +403,9 @@ class FreeplayExtraSongsState extends MusicBeatState {
 	{
 		var song = songs[curSelected];
 		curDifficulty = curDiffSelected;
-		intendedScore  = Highscore.getScore(song.songName, curDifficulty);
-		intendedRating = Highscore.getRating(song.songName, curDifficulty);
+		var weekData:WeekData = WeekData.weeksLoaded.get(WeekData.weeksList[song.week]);
+		intendedScore  = Highscore.getScore(song.songName, curDifficulty, null, weekData, true);
+		intendedRating = Highscore.getRating(song.songName, curDifficulty, null, weekData, true);
 	}
 
 	private function positionHighscore()
