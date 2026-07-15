@@ -3,22 +3,19 @@ package funkin.states;
 import funkin.play.Song;
 import funkin.play.Rating;
 import funkin.play.Highscore;
-import funkin.data.WeekData;
 import funkin.stages.StageData;
+
+import funkin.data.WeekData;
 import funkin.data.objects.Bar;
 import funkin.data.objects.HealthIcon;
-
-import lime.utils.Assets;
-import openfl.utils.Assets as OpenFlAssets;
-import openfl.events.KeyboardEvent;
-import haxe.Json;
-import flixel.FlxSprite;
-
 import funkin.data.dialogue.DialogueBoxPsych;
 import funkin.data.cutscenes.VideoSprite;
+
 import funkin.data.editors.ChartingState;
-import funkin.data.editors.CharacterEditorState;
 import funkin.data.editors.StageEditorState;
+import funkin.data.shaders.ErrorHandledShader;
+import funkin.data.editors.CharacterEditorState;
+import funkin.data.objects.game.characters.Character;
 
 import funkin.data.objects.game.notes.NoteData;
 import funkin.data.objects.game.notes.config.Note;
@@ -27,21 +24,26 @@ import funkin.data.objects.game.notes.data.NoteSplash;
 import funkin.data.objects.game.notes.data.HoldNoteCover;
 import funkin.data.objects.game.notes.config.Note.EventNote;
 import funkin.data.objects.game.notes.config.NoteTypesConfig;
+
 import funkin.states.PauseState;
 import funkin.states.GameOverState;
+import funkin.menus.MainMenuState;
+import funkin.menus.freeplay.FreeplayMenuState;
+
+import funkin.stages.objects.*;
+import funkin.stages.data.levels.*;
+import funkin.utils.engines.pico.stages.StagesPicoEnigne;
+import funkin.utils.engines.vslice.stages.StagesVslice;
+
+import haxe.Json;
+import flixel.FlxSprite;
+import lime.utils.Assets;
+import openfl.utils.Assets as OpenFlAssets;
+import openfl.events.KeyboardEvent;
 
 #if !flash
 import openfl.filters.ShaderFilter;
 #end
-
-import funkin.data.shaders.ErrorHandledShader;
-import funkin.menus.freeplay.FreeplayMenuState;
-import funkin.menus.MainMenuState;
-#if PICO_ALLOWED import funkin.utils.engines.pico.stages.StagesPicoEnigne; #end // New Preload Folder for stages
-#if VSLICE_ALLOWED import funkin.utils.engines.vslice.stages.StagesVslice; #end
-import funkin.data.objects.game.characters.Character;
-import funkin.stages.objects.*;
-import funkin.stages.data.levels.*;
 
 #if LUA_ALLOWED
 import funkin.modding.scripting.FunkinLua;
@@ -61,9 +63,6 @@ import crowplexus.hscript.Expr.Error as IrisError;
 import crowplexus.hscript.Printer;
 #end
 
-// Pico Enigne
-import funkin.menus.StoryMenuState as StoryModeState;
-
 /**
  * This is where all the Gameplay stuff happens and is managed
  *
@@ -81,25 +80,26 @@ import funkin.menus.StoryMenuState as StoryModeState;
  * "function triggerEvent" - Called when the song hits your event's timestamp, this is probably what you were looking for
 **/
 
-class PlayState extends MusicBeatState {
+class PlayState extends MusicBeatState
+{
 	public static var STRUM_X = 42;
 	public static var STRUM_X_MIDDLESCROLL = -278;
 
 	public static var ratingStuff:Array<Dynamic> = [
-		['You Suck!', 0.2], //From 0% to 19%
-		['Shit', 0.4], // From 20% to 39%
-		['Bad', 0.5], // From 40% to 49%
-		['Bruh', 0.6], // From 50% to 59%
-		['Meh', 0.69], // From 60% to 68%
-		['Nice', 0.7], // From 69%
-		['Good', 0.8], // From 70% to 79%
-		['Great', 0.9], // From 80% to 89%
-		['Sick', 0.99], // From 90% to 98%
-		['Perfect', 1], // From 99%
-		['Marvelous', 1] // From 100% 
+		['You Suck', 0.2],
+		['Shit', 0.4],
+		['Bad', 0.5],
+		['Bruh', 0.6],
+		['Meh', 0.69],
+		['Nice', 0.7],
+		['Good', 0.8],
+		['Great', 0.9],
+		['Sick!', 0.99],
+		['Perfect!!', 1],
+		['Marvelous!!!', 1]
 	];
 
-	//event variables
+	// Variables Events
 	private var isCameraOnForcedPos:Bool = false;
 
 	public var boyfriendMap:Map<String, Character> = new Map<String, Character>();
@@ -1561,7 +1561,6 @@ class PlayState extends MusicBeatState {
 
 	var dialogueCount:Int = 0;
 	public var psychDialogue:DialogueBoxPsych;
-	//You don't have to add a song, just saying. You can just do "startDialogue(DialogueBoxPsych.parseDialogue(Paths.json(songName + '/dialogue')))" and it should load dialogue.json
 	public function startDialogue(dialogueFile:DialogueFile, ?song:String = null):Void
 	{
 		// TO DO: Make this more flexible, maybe?
@@ -3319,14 +3318,13 @@ class PlayState extends MusicBeatState {
 					#if DISCORD_ALLOWED DiscordClient.resetClientID(); #end
 
 					canResync = false;
-					MusicBeatState.switchState(new StoryModeState());
+					MusicBeatState.switchState(new StoryMenuState());
 
-					// if ()
 					if(!ClientPrefs.getGameplaySetting('practice') && !ClientPrefs.getGameplaySetting('botplay')) {
-						StoryModeState.weekCompleted.set(WeekData.weeksList[storyWeek], true);
+						StoryMenuState.weekCompleted.set(WeekData.weeksList[storyWeek], true);
 						Highscore.saveWeekScore(WeekData.getWeekFileName(), campaignScore, storyDifficulty, WeekData.getCurrentWeek(), false);
 
-						FlxG.save.data.weekCompleted = StoryModeState.weekCompleted;
+						FlxG.save.data.weekCompleted = StoryMenuState.weekCompleted;
 						FlxG.save.flush();
 					}
 					changedDifficulty = false;
@@ -3347,8 +3345,8 @@ class PlayState extends MusicBeatState {
 					FlxG.sound.music.stop();
 
 					canResync = false;
-					LoadingState.prepareToSong();
-					LoadingState.loadAndSwitchState(new PlayState(), false, false);
+					LoadingScreenState.prepareToSong();
+					LoadingScreenState.loadAndSwitchState(new PlayState(), false, false);
 				}
 			}
 			else
@@ -4591,7 +4589,7 @@ class PlayState extends MusicBeatState {
 		}
 	}
 
-	public var ratingName:String = '[N/A]';
+	public var ratingName:String = 'N/A';
 	public var ratingPercent:Float;
 	public var ratingFC:String;
 	public function RecalculateRating(badHit:Bool = false, scoreBop:Bool = true)
@@ -4604,7 +4602,7 @@ class PlayState extends MusicBeatState {
 		var ret:Dynamic = callOnScripts('onRecalculateRating', null, true);
 		if(ret != LuaUtils.Function_Stop)
 		{
-			ratingName = '[N/A]';
+			ratingName = 'N/A';
 			if(totalPlayed != 0) //Prevent divide by 0
 			{
 				// Rating Percent
