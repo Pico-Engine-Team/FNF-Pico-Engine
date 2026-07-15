@@ -1,7 +1,6 @@
 package funkin.stages;
 
-import funkin.states.PlayState;
-import funkin.states.GameOverState;
+import funkin.data.shaders.ReflectedChar;
 import funkin.data.objects.game.notes.config.Note;
 import funkin.data.objects.game.characters.Character;
 
@@ -20,14 +19,14 @@ enum Countdown {
 
 class BaseStage extends FlxBasic
 {
-	private var game(get, never):PlayState;
+	private var game(get, never):Dynamic;
 	public var onPlayState(get, never):Bool;
 
 	// some variables for convenience
 	public var paused(get, never):Bool;
 	public var songName(get, never):String;
 	public var isStoryMode(get, never):Bool;
-	public var seenCutscene(get, set):Bool;
+	public var seenCutscene(get, never):Bool;
 	public var inCutscene(get, set):Bool;
 	public var canPause(get, set):Bool;
 	public var members(get, never):Array<FlxBasic>;
@@ -40,14 +39,16 @@ class BaseStage extends FlxBasic
 	public var gfGroup(get, never):FlxSpriteGroup;
 
 	public var unspawnNotes(get, never):Array<Note>;
+
+	public var reflectedBF:ReflectedChar;
+	public var reflectedGF:ReflectedChar;
+	public var reflectedDad:ReflectedChar;
+	
 	public var camGame(get, never):FlxCamera;
 	public var camHUD(get, never):FlxCamera;
 	public var camOther(get, never):FlxCamera;
 
 	public var defaultCamZoom(get, set):Float;
-	/**
-	 * This is FlxPoint on 0.6.3!
-	 */
 	public var camFollow(get, never):FlxObject;
 
 	public function new()
@@ -68,7 +69,6 @@ class BaseStage extends FlxBasic
 	//main callbacks
 	public function create() {}
 	public function createPost() {}
-	
 	//public function update(elapsed:Float) {}
 	public function countdownTick(count:Countdown, num:Int) {}
 	public function startSong() {}
@@ -85,17 +85,12 @@ class BaseStage extends FlxBasic
 
 	// Substate close/open, for pausing Tweens/Timers
 	public function closeSubState() {}
-	public function gameOverStart(SubState:GameOverState) {}
 	public function openSubState(SubState:FlxSubState) {}
 
 	// Events
 	public function eventCalled(eventName:String, value1:String, value2:String, flValue1:Null<Float>, flValue2:Null<Float>, strumTime:Float) {}
 	public function eventPushed(event:EventNote) {}
 	public function eventPushedUnique(event:EventNote) {}
-
-	//Dialogue
-	public function startNextDialogue(dialogueCount:Int) {}
-	public function onSkipDialogue(dialogueCount:Int) {}
 
 	// Note Hit/Miss
 	public function goodNoteHit(note:Note) {}
@@ -145,23 +140,15 @@ class BaseStage extends FlxBasic
 	inline private function get_songName() return game.songName;
 	inline private function get_isStoryMode() return PlayState.isStoryMode;
 	inline private function get_seenCutscene() return PlayState.seenCutscene;
-	inline private function set_seenCutscene(value:Bool) {
-		PlayState.seenCutscene = value;
-		return value;
-	}
 	inline private function get_inCutscene() return game.inCutscene;
 	inline private function set_inCutscene(value:Bool)
 	{
 		game.inCutscene = value;
 		return value;
 	}
-	inline private function get_canPause() {
-		@:privateAccess
-		return game.canPause;
-	}
+	inline private function get_canPause() return game.canPause;
 	inline private function set_canPause(value:Bool)
 	{
-		@:privateAccess
 		game.canPause = value;
 		return value;
 	}
@@ -194,7 +181,4 @@ class BaseStage extends FlxBasic
 		return game.defaultCamZoom;
 	}
 	inline private function get_camFollow():FlxObject return game.camFollow;
-	inline public function camFollow_set(x:Float,y:Float) {
-		camFollow.setPosition(x,y);
-	}
 }
