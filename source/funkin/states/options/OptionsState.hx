@@ -1,10 +1,7 @@
 package funkin.states.options;
 
-import funkin.stages.StageData;
-import funkin.states.options.*;
-import funkin.states.options.data.*;
-
-class OptionsState extends MusicBeatState {
+class OptionsState extends MusicBeatState
+{
 	var options:Array<String> = [
 		'Note Colors',
 		'Controls',
@@ -12,7 +9,7 @@ class OptionsState extends MusicBeatState {
 		'Graphics',
 		'Visuals',
 		'Gameplay',
-		#if PICO_ALLOWED 'Engine Setting', #end
+		#if PICO_ALLOWED 'Pico Engine', #end
 		#if TRANSLATIONS_ALLOWED  'Language' #end
 	];
 
@@ -21,31 +18,33 @@ class OptionsState extends MusicBeatState {
 	public static var menuBG:FlxSprite;
 	public static var onPlayState:Bool = false;
 
-	function openSelectedSubstate(label:String) {
+	function openSelectedSubstate(label:String)
+	{
 		switch(label)
 		{
 			case 'Note Colors':
-				openSubState(new NotesColorSubState());
+				openSubState(new funkin.states.options.data.NotesColorSubState());
 			case 'Controls':
-				openSubState(new ControlsSubState());
+				openSubState(new funkin.states.options.data.ControlsSubState());
 			case 'Graphics':
-				openSubState(new GraphicsSettingsSubState());
+				openSubState(new funkin.states.options.data.GraphicsSettingsSubState());
 			case 'Visuals':
-				openSubState(new VisualsSettingsSubState());
+				openSubState(new funkin.states.options.data.VisualsSettingsSubState());
 			case 'Gameplay':
-				openSubState(new GameplaySettingsSubState());
+				openSubState(new funkin.states.options.data.GameplaySettingsSubState());
 			case 'Adjust Delay and Combo':
-				MusicBeatState.switchState(new NoteOffsetState());
+				MusicBeatState.switchState(new funkin.states.options.data.NoteOffsetState());
 			case 'Language':
 				openSubState(new funkin.translations.options.LanguageSubState());
-			case 'Engine Settings':
-				openSubState(new PicoEngineSubState());
+			case 'Pico Engine':
+				openSubState(new funkin.states.options.data.PicoEngineSubState());
 		}
 	}
  
 	var selectorLeft:Alphabet;
 	var selectorRight:Alphabet;
-	override function create() {
+	override function create()
+	{
 		#if DISCORD_ALLOWED
 		DiscordClient.changePresence("Options Menu", null);
 		#end
@@ -69,23 +68,25 @@ class OptionsState extends MusicBeatState {
 
 		selectorLeft = new Alphabet(0, 0, '>', true);
 		add(selectorLeft);
-		selectorRight = new Alphabet(0, 0, '<', true);
-		add(selectorRight);
 
 		changeSelection();
 		ClientPrefs.saveSettings();
+		FlxG.sound.playMusic(Paths.music('options/OptionSongMenu'));
 		super.create();
 	}
 
-	override function closeSubState() {
+	override function closeSubState()
+	{
 		super.closeSubState();
 		ClientPrefs.saveSettings();
+
 		#if DISCORD_ALLOWED
 		DiscordClient.changePresence("Options Menu", null);
 		#end
 	}
 
-	override function update(elapsed:Float) {
+	override function update(elapsed:Float)
+	{
 		super.update(elapsed);
 
 		if (controls.UI_UP_P)
@@ -98,11 +99,16 @@ class OptionsState extends MusicBeatState {
 			FlxG.sound.play(Paths.sound('cancelMenu'));
 			if(onPlayState)
 			{
-				StageData.loadDirectory(PlayState.SONG);
-				LoadingState.loadAndSwitchState(new PlayState());
+				funkin.stages.StageData.loadDirectory(PlayState.SONG);
+				LoadingScreenState.loadAndSwitchState(new PlayState());
 				FlxG.sound.music.volume = 0;
 			}
-			else MusicBeatState.switchState(new funkin.menus.MainMenuState());
+			else
+			{
+				// Stop current menu (options) music and play the main menu music
+				FlxG.sound.playMusic(Paths.music('freakyMenu'));
+				MusicBeatState.switchState(new funkin.menus.MainMenuState());
+			}
 		}
 		else if (controls.ACCEPT) openSelectedSubstate(options[curSelected]);
 	}
@@ -120,8 +126,6 @@ class OptionsState extends MusicBeatState {
 				item.alpha = 1;
 				selectorLeft.x = item.x - 63;
 				selectorLeft.y = item.y;
-				selectorRight.x = item.x + item.width + 15;
-				selectorRight.y = item.y;
 			}
 		}
 		FlxG.sound.play(Paths.sound('scrollMenu'));
