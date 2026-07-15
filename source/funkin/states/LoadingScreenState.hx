@@ -407,12 +407,12 @@ class LoadingScreenState extends MusicBeatState
 		intrusive = false;
 		#end
 
-		LoadingState.isIntrusive = intrusive;
+		LoadingScreenState.isIntrusive = intrusive;
 		_startPool();
 		loadNextDirectory();
 
 		if(intrusive)
-			return new LoadingState(target, stopMusic);
+			return new LoadingScreenState(target, stopMusic);
 		
 		if (stopMusic && FlxG.sound.music != null)
 			FlxG.sound.music.stop();
