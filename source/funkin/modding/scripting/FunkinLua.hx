@@ -1,23 +1,32 @@
 #if LUA_ALLOWED
 package funkin.modding.scripting;
 
-// New Souce Code For Pico Engine
 import funkin.play.Song;
-import funkin.data.WeekData;
 import funkin.play.Highscore;
+
+import funkin.data.WeekData;
 import funkin.data.objects.game.notes.config.Note;
 import funkin.data.objects.game.notes.data.NoteSplash;
 import funkin.data.objects.game.notes.data.StrumNote;
+
 import funkin.data.objects.game.characters.Character;
 import funkin.data.dialogue.DialogueBoxPsych;
+
 import funkin.states.PauseState;
 import funkin.states.GameOverState;
+
 import funkin.menus.MainMenuState;
 import funkin.menus.freeplay.FreeplayMenuState;
+
+import funkin.modding.scripting.psychlua.DebugLuaText;
+import funkin.modding.scripting.psychlua.ModchartSprite;
+import funkin.modding.scripting.psychlua.LuaUtils;
+import funkin.modding.scripting.psychlua.LuaUtils.LuaTweenOptions;
 
 import openfl.Lib;
 import openfl.utils.Assets;
 import openfl.display.BitmapData;
+
 import flixel.FlxBasic;
 import flixel.FlxObject;
 import flixel.FlxState;
@@ -26,15 +35,9 @@ import flixel.FlxState;
 import flixel.addons.display.FlxRuntimeShader;
 #end
 
-import funkin.modding.scripting.psychlua.LuaUtils;
-import funkin.modding.scripting.psychlua.LuaUtils.LuaTweenOptions;
-
 #if HSCRIPT_ALLOWED
 import funkin.modding.scripting.HScript;
 #end
-
-import funkin.modding.scripting.psychlua.DebugLuaText;
-import funkin.modding.scripting.psychlua.ModchartSprite;
 
 import flixel.input.keyboard.FlxKey;
 import flixel.input.gamepad.FlxGamepadInputID;
@@ -382,7 +385,7 @@ class FunkinLua
 			Song.loadFromJson(poop, name);
 			PlayState.storyDifficulty = difficultyNum;
 			FlxG.state.persistentUpdate = false;
-			LoadingState.loadAndSwitchState(new PlayState());
+			LoadingScreenState.loadAndSwitchState(new PlayState());
 
 			FlxG.sound.music.pause();
 			FlxG.sound.music.volume = 0;
