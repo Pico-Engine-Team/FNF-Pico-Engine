@@ -328,7 +328,7 @@ class StoryMenuState extends MusicBeatState
 			}
 
 			var directory = StageData.forceNextDirectory;
-			LoadingState.loadNextDirectory();
+			LoadingScreenState.loadNextDirectory();
 			StageData.forceNextDirectory = directory;
 
 			@:privateAccess
@@ -337,11 +337,11 @@ class StoryMenuState extends MusicBeatState
 				trace('CHANGED MOD DIRECTORY, RELOADING STUFF');
 				Paths.freeGraphicsFromMemory();
 			}
-			LoadingState.prepareToSong();
+			LoadingScreenState.prepareToSong();
 			new FlxTimer().start(1, function(tmr:FlxTimer)
 			{
 				#if !SHOW_LOADING_SCREEN FlxG.sound.music.stop(); #end
-				LoadingState.loadAndSwitchState(new PlayState(), true);
+				LoadingScreenState.loadAndSwitchState(new PlayState(), true);
 				funkin.menus.freeplay.FreeplayMenuState.destroyFreeplayVocals();
 			});
 			
