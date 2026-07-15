@@ -11,7 +11,7 @@ import llua.Lua;
 #end
 
 #if ACHIEVEMENTS_ALLOWED
-import funkin.states.achievements.Achievements;
+import funkin.states.achievements.config.Achievements;
 #end
 
 #if sys
@@ -26,18 +26,18 @@ import funkin.Paths;
 import funkin.data.ClientPrefs;
 import funkin.states.PlayState;
 import funkin.play.Difficulty;
+import funkin.play.Conductor;
 import funkin.stages.BaseStage;
 import funkin.stages.BGSprite;
-import funkin.states.LoadingState;
+import funkin.states.LoadingScreenState;
 import funkin.states.MusicBeatState;
 import funkin.utils.Controls;
 import funkin.utils.CoolUtil;
-import funkin.utils.substates.MusicBeatSubstate;
-import funkin.utils.CustomFadeTransition;
-import funkin.play.Conductor;
-import funkin.translations.Language;
 import funkin.utils.Alphabet;
 import funkin.menus.MainMenuState;
+import funkin.translations.Language;
+import funkin.utils.CustomFadeTransition;
+import funkin.substates.MusicBeatSubstate;
 
 #if MODS_ALLOWED
 import funkin.modding.Mods;
@@ -56,11 +56,11 @@ import funkin.states.options.OptionsState;
 
 #if PSYCH_ALLOWED
 // Psych UI'S elements
-import funkin.utils.engine.psych.ui.*;
+import funkin.utils.engines.psych.ui.*;
 #end
 
 #if flxanimate
-import funkin.utils.engine.psych.PsychFlxAnimate as FlxAnimate;
+import funkin.utils.engines.psych.PsychFlxAnimate as FlxAnimate;
 import flxanimate.*;
 #end
 
