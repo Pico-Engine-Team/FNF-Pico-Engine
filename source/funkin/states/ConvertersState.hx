@@ -37,7 +37,6 @@ class ConvertersState extends MusicBeatState
 	override function create()
 	{
 		super.create();
-
 		FlxG.camera.bgColor = FlxColor.BLACK;
 		bg = new FlxSprite().loadGraphic(Paths.image('menus/bg/menuDesat'));
 		bg.scrollFactor.set();
@@ -58,7 +57,6 @@ class ConvertersState extends MusicBeatState
 		statusText.setFormat(Paths.font('vcr.ttf'), 16, FlxColor.YELLOW, CENTER);
 		statusText.scrollFactor.set();
 		add(statusText);
-
 		setPage(PAGE_MAIN, false);
 	}
 
@@ -79,43 +77,17 @@ class ConvertersState extends MusicBeatState
 
 		options = switch(page)
 		{
-			case PAGE_CHARTS:
-				[
-					'Godot Chart',
-					'NightmareVision Chart',
-					'Codename Engine Chart',
-					'V-Slice Chart',
-					'Back'
-				];
-			case PAGE_CHARACTERS:
-				[
-					'Godot Character',
-					'Codename Engine Character',
-					'V-Slice Character',
-					'Forever Engine Character',
-					'Back'
-				];
-			case PAGE_STAGES:
-				[
-					'Codename Engine Stage XML',
-					'V-Slice Stage JSON',
-					'Back'
-				];
-			default:
-				[
-					'Charts Converter',
-					'Characters Converter',
-					'Stages Converter',
-					'Back'
-				];
+			case PAGE_CHARTS: ['Godot Chart', 'NightmareVision Chart', 'Codename Engine Chart', 'V-Slice Chart', 'Back'];
+			case PAGE_CHARACTERS: ['Godot Character', 'Codename Engine Character', 'V-Slice Character', 'Forever Engine Character', 'Back'];
+			case PAGE_STAGES: ['Codename Engine Stage XML', 'V-Slice Stage JSON', 'Back'];
+			default: ['Charts Converter', 'Characters Converter', 'Stages Converter', 'Back'];
 		}
-
 		title.text = switch(page)
 		{
-			case PAGE_CHARTS: 'Charts Converter';
-			case PAGE_CHARACTERS: 'Characters Converter';
-			case PAGE_STAGES: 'Stages Converter';
-			default: 'Chart Converter';
+			case PAGE_CHARTS: 'Charts Converters';
+			case PAGE_CHARACTERS: 'Characters Converters';
+			case PAGE_STAGES: 'Stages Converters';
+			default: 'Converters Menu';
 		}
 
 		rebuildMenuItems();
@@ -166,34 +138,20 @@ class ConvertersState extends MusicBeatState
 	{
 		return switch(option)
 		{
-			case 'Charts Converter':
-				'Convert chart JSONs from Godot, NightmareVision, Codename Engine and V-Slice formats.';
-			case 'Characters Converter':
-				'Convert character data from Godot, Codename Engine, V-Slice or Forever Engine.';
-			case 'Stages Converter':
-				'Convert Codename Engine stage XML or V-Slice stage JSON.';
-			case 'Godot Chart':
-				'Convert one Another FNF Engine Made In Godot chart JSON.';
-			case 'NightmareVision Chart':
-				'Convert one NightmareVision chart JSON.';
-			case 'Codename Engine Chart':
-				'Open Codename Engine chart.json + meta.json, then export one chart JSON.';
-			case 'V-Slice Chart':
-				'Open a V-Slice chart JSON and metadata JSON, then export chart JSON files.';
-			case 'Godot Character':
-				'Convert one Another FNF Engine Made In Godot character JSON.';
-			case 'Codename Engine Character':
-				'Convert one Codename Engine character XML or JSON.';
-			case 'V-Slice Character':
-				'Convert one Friday Night Funkin V-Slice character JSON.';
-			case 'Forever Engine Character':
-				'Convert one Forever Engine character JSON.';
-			case 'Codename Engine Stage XML':
-				'Convert one Codename Engine stage XML.';
-			case 'V-Slice Stage JSON':
-				'Convert one V-Slice stage JSON.';
-			default:
-				page == PAGE_MAIN ? 'Return to the editor menu.' : 'Return to the previous converter menu.';
+			case 'Charts Converters': 'Convert charts.json in Different Formats';
+			case 'Characters Converters': 'Convert characters.json in Different Formats';
+			case 'Stages Converters': 'Convert stages.json in Different Formats';
+			case 'Godot Charts': 'Convert one Another FNF Engine Made In Godot chart JSON.';
+			case 'Nightmare-Vision Charts': 'Convert one NightmareVision chart JSON.';
+			case 'Codename Engine Charts': 'Open Codename Engine chart.json + meta.json, then export one chart JSON.';
+			case 'VSlice Charts': 'Open a VSlice chart.json and metadata.json, then export chart JSON files.';
+			case 'Godot Characters':'Convert one Another FNF Engine Made In Godot character JSON.';
+			case 'Codename Engine Characters': 'Convert one Codename Engine character XML or JSON.';
+			case 'V-Slice Characters': 'Convert one Friday Night Funkin V-Slice character JSON.';
+			case 'Forever Engine Characters': 'Convert one Forever Engine character JSON.';
+			case 'Codename Engine Stages': 'Convert Stage Codename Engine';
+			case 'VSlice Stages': 'Convert one V-Slice stage JSON.';
+			default: page == PAGE_MAIN ? 'Return to the editor menu.' : 'Return to the previous converter menu.';
 		}
 	}
 
@@ -201,34 +159,20 @@ class ConvertersState extends MusicBeatState
 	{
 		switch(options[curSelected])
 		{
-			case 'Charts Converter':
-				setPage(PAGE_CHARTS);
-			case 'Characters Converter':
-				setPage(PAGE_CHARACTERS);
-			case 'Stages Converter':
-				setPage(PAGE_STAGES);
-			case 'Godot Chart':
-				openGodotChartToPico();
-			case 'NightmareVision Chart':
-				openNightmareVisionChartToPico();
-			case 'Codename Engine Chart':
-				openCodenameChartToPico();
-			case 'V-Slice Chart':
-				openVSliceChartToPico();
-			case 'Godot Character':
-				openCharacter(SOURCE_GODOT);
-			case 'Codename Engine Character':
-				openCharacter(SOURCE_CODENAME);
-			case 'V-Slice Character':
-				openCharacter(SOURCE_VSLICE);
-			case 'Forever Engine Character':
-				openCharacter(SOURCE_FOREVER);
-			case 'Codename Engine Stage XML':
-				openStage(SOURCE_CODENAME);
-			case 'V-Slice Stage JSON':
-				openStage(SOURCE_VSLICE);
-			default:
-				back();
+			case 'Charts Converters': setPage(PAGE_CHARTS);
+			case 'Characters Converters': setPage(PAGE_CHARACTERS);
+			case 'Stages Converters': setPage(PAGE_STAGES);
+			case 'Godot Charts': openGodotChartToPico();
+			case 'Nightmare-Vision Charts': openNightmareVisionChartToPico();
+			case 'Codename Engine Charts': openCodenameChartToPico();
+			case 'VSlice Charts': openVSliceChartToPico();
+			case 'Godot Characters': openCharacter(SOURCE_GODOT);
+			case 'Codename Engine Characters': openCharacter(SOURCE_CODENAME);
+			case 'VSlice Characters': openCharacter(SOURCE_VSLICE);
+			case 'Forever Engine Characters': openCharacter(SOURCE_FOREVER);
+			case 'Codename Engine Stages': openStage(SOURCE_CODENAME);
+			case 'VSlice Stages': openStage(SOURCE_VSLICE);
+			default: back();
 		}
 	}
 
@@ -567,19 +511,21 @@ class ConvertersState extends MusicBeatState
 		var objects:Array<Dynamic> = [];
 		collectStageObjects(root, objects, 0);
 
-		var stage:Dynamic =
-		{
+		var stage:Dynamic = {
 			directory: xmlStringAny(root, ['directory', 'folder', 'assetFolder', 'library', 'week'], defaultStage.directory),
 			defaultZoom: xmlFloatAny(root, ['defaultZoom', 'zoom', 'camZoom', 'cameraZoom', 'stageZoom', 'startCamZoom'], defaultStage.defaultZoom),
 			stageUI: xmlStringAny(root, ['stageUI', 'uiStyle', 'ui', 'uiType'], defaultStage.stageUI),
+
 			boyfriend: xmlStagePoint(root, bfNode, ['boyfriend', 'bf', 'player'], defaultStage.boyfriend),
 			girlfriend: xmlStagePoint(root, gfNode, ['girlfriend', 'gf'], defaultStage.girlfriend),
 			opponent: xmlStagePoint(root, dadNode, ['opponent', 'dad', 'enemy'], defaultStage.opponent),
 			hide_girlfriend: hideGF,
+
 			camera_boyfriend: xmlStageCameraPoint(root, bfNode, ['boyfriend', 'bf', 'player'], defaultStage.camera_boyfriend),
 			camera_opponent: xmlStageCameraPoint(root, dadNode, ['opponent', 'dad', 'enemy'], defaultStage.camera_opponent),
 			camera_girlfriend: xmlStageCameraPoint(root, gfNode, ['girlfriend', 'gf'], defaultStage.camera_girlfriend),
 			camera_speed: xmlFloatAny(root, ['camera_speed', 'cameraSpeed', 'camSpeed', 'followSpeed'], defaultStage.camera_speed),
+
 			_editorMeta: {
 				boyfriend: xmlCharacterName(bfNode, 'bf'),
 				gf: xmlCharacterName(gfNode, 'gf'),
@@ -621,19 +567,21 @@ class ConvertersState extends MusicBeatState
 			}
 		}
 
-		var stage:Dynamic =
-		{
+		var stage:Dynamic = {
 			directory: vSliceString(data, ['directory', 'folder', 'assetFolder', 'library', 'week'], defaultStage.directory),
 			defaultZoom: vSliceFloat(data, ['defaultZoom', 'cameraZoom', 'camZoom', 'zoom', 'stageZoom'], defaultStage.defaultZoom),
 			stageUI: vSliceString(data, ['stageUI', 'uiStyle', 'ui', 'uiType'], defaultStage.stageUI),
+
 			boyfriend: vSlicePoint(bfData, ['position', 'pos', 'offset', 'offsets'], [770, 100]),
 			girlfriend: vSlicePoint(gfData, ['position', 'pos', 'offset', 'offsets'], [400, 130]),
 			opponent: vSlicePoint(dadData, ['position', 'pos', 'offset', 'offsets'], [100, 100]),
 			hide_girlfriend: vSliceBool(data, ['hide_girlfriend', 'hideGirlfriend', 'hideGF'], false),
+
 			camera_boyfriend: vSlicePoint(bfData, ['cameraOffsets', 'cameraOffset', 'camera_position', 'cameraPosition', 'camera', 'cam', 'camOffset'], defaultStage.camera_boyfriend),
 			camera_opponent: vSlicePoint(dadData, ['cameraOffsets', 'cameraOffset', 'camera_position', 'cameraPosition', 'camera', 'cam', 'camOffset'], defaultStage.camera_opponent),
 			camera_girlfriend: vSlicePoint(gfData, ['cameraOffsets', 'cameraOffset', 'camera_position', 'cameraPosition', 'camera', 'cam', 'camOffset'], defaultStage.camera_girlfriend),
 			camera_speed: vSliceFloat(data, ['camera_speed', 'cameraSpeed', 'camSpeed', 'followSpeed'], defaultStage.camera_speed),
+
 			_editorMeta: {
 				boyfriend: vSliceCharacterName(bfData, 'bf'),
 				gf: vSliceCharacterName(gfData, 'gf'),
