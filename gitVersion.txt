@@ -1,1 +1,1 @@
-2.26.7-(pre-release-build)
+v2.26.7-pre-release
