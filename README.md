@@ -13,6 +13,11 @@
 </table>
 </div>
 
+# You can also download/play the mod at the following links
+- [Gamebana](https://gamebanana.com/tools/22943)
+- [GameJolt](https://gamejolt.com/games/funkin-engine/948902)
+- [itch.io (Legacy Build)](https://lucas-sanches.itch.io/funkin-pico)
+
 # About
 This project is a custom [Friday Night Funkin'](https://github.com/FunkinCrew/Funkin) engine based on [Psych Engine](https://github.com/ShadowMario/FNF-PsychEngine) developed with a primary focus on delivering an optimized experience for creating Pico-centered mods.
 
