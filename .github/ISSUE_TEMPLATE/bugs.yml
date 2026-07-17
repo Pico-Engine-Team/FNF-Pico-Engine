@@ -1,4 +1,4 @@
-name: Bug report
+name: Bug Report
 description: Report bugs with the engine here
 labels: [bug]
 body:
@@ -20,9 +20,10 @@ body:
   - type: dropdown
     id: modding
     attributes:
-      label: "Are you modding a build from source or with Lua?"
+      label: "Are you modding a build from source or with Lua Programming?, or Haxe Programming?"
       options:
-        - Lua
+        - Lua Programming
+        - Haxe Programming
         - Source
     validations:
       required: true
@@ -33,11 +34,7 @@ body:
       label: "What is your build target?"
       options:
         - "Windows"
-        - "Linux"
-        - "Mac"
         - "HTML5"
-        - "Flash/Air-based target"
-        - "Neko, HashLink, or other build system"
     validations:
       required: true
 

@@ -12,10 +12,12 @@ body:
   - type: dropdown
     id: modding
     attributes:
-      label: "Are you modding a build from source or with Lua?"
+      label: "Are you modding a build from source or with Lua Programming?, or Haxe Programming?"
       options:
-        - Lua
+        - Lua Programming
+        - Haxe Programming
         - Source
+        - others
     validations:
       required: true
 
@@ -26,11 +28,7 @@ body:
       options:
         - "Windows x64"
         - "Windows x86/x32"
-        - "Linux"
-        - "Mac"
         - "HTML5/Browser"
-        - "Flash/Air-based target"
-        - "Neko, HashLink, or other build system"
     validations:
       required: true
 
