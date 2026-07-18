@@ -1,9 +1,6 @@
 # Friday Night Funkin': - Pico Engine
 ![FNFModBanner](art/banner.png)
 
-<p align="center">Made With</a></p>
-<p align="center"><img src="https://img.shields.io/badge/-HAXE-262626.svg?logo=haxe&style=for-the-badge">
-
 <div align='center'>
 <table>
   <tr>
@@ -13,7 +10,9 @@
 </table>
 </div>
 
-# You can also download/play the mod at the following links
+<p align="center"><img src="https://img.shields.io/badge/-HAXE-262626.svg?logo=haxe&style=for-the-badge">
+
+# You can also play this title at the following links
 - [Gamebana](https://gamebanana.com/tools/22943)
 - [GameJolt](https://gamejolt.com/games/funkin-engine/948902)
 - [itch.io (Legacy Build)](https://lucas-sanches.itch.io/funkin-pico)
