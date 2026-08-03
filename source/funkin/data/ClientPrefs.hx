@@ -7,7 +7,6 @@ import flixel.util.FlxSave;
 import flixel.input.keyboard.FlxKey;
 import flixel.input.gamepad.FlxGamepadInputID;
 
-// Add a variable here and it will get automatically saved
 @:structInit class SaveVariables {
 	public var downScroll:Bool = false;
 	public var middleScroll:Bool = false;
@@ -21,20 +20,18 @@ import flixel.input.gamepad.FlxGamepadInputID;
 	public var noteSkin:String = 'Default';
 	public var splashSkin:String = 'Psych';
 	public var Quality:String = 'Low';
+	public var vsync:String = 'Off';
 	public var splashAlpha:Float = 0.6;
 	public var shaders:Bool = true;
 	public var cacheOnGPU:Bool = #if !switch false #else true #end;
 	public var camZooms:Bool = true;
 	public var comboCam:String = 'camHud';
 	public var hideHud:Bool = false;
-	public var comboEnabled:Bool = false;
-	public var HoldCover:Bool = false;
-	public var HoldAnimation:Bool = true;
-	public var noteHold:Bool = false;
-	public var modcharts:Bool = true;
-	public var hub:Bool = false;
-	public var SliceHub:Bool = false;
-	public var noteskinsCharacters:String = 'Disabled';
+	public var useCombo:Bool = true;
+	public var useHoldCover:Bool = false;
+	public var useHoldAnimation:Bool = false;
+	public var modcharts:Bool = false;
+	public var useNoteSkins:String = 'Both';
 
 	public var noteOffset:Int = 0;
 	public var arrowRGB:Array<Array<FlxColor>> = [
@@ -54,6 +51,7 @@ import flixel.input.gamepad.FlxGamepadInputID;
 	public var noReset:Bool = false;
 	public var healthBarAlpha:Float = 1;
 	public var hitsoundVolume:Float = 0;
+	public var menuMusic:String = 'freakyMenu';
 	public var pauseMusic:String = 'None';
 	public var checkForUpdates:Bool = true;
 	public var comboStacking:Bool = true;
@@ -97,7 +95,6 @@ class ClientPrefs {
 		return data.Quality == 'High';
 
 	public static var keyBinds:Map<String, Array<FlxKey>> = [
-		//Key Bind, Name for ControlsSubState
 		'note_up'		=> [W, UP],
 		'note_left'		=> [A, LEFT],
 		'note_down'		=> [S, DOWN],
@@ -180,9 +177,8 @@ class ClientPrefs {
 		defaultButtons = gamepadBinds.copy();
 	}
 
-	public static function saveSettings() {
-		data.hub = data.SliceHub;
-
+	public static function saveSettings():Void
+	{
 		for (key in Reflect.fields(data))
 			Reflect.setField(FlxG.save.data, key, Reflect.field(data, key));
 
@@ -220,9 +216,6 @@ class ClientPrefs {
 			if (key != 'gameplaySettings' && Reflect.hasField(FlxG.save.data, key))
 				Reflect.setField(data, key, Reflect.field(FlxG.save.data, key));
 
-		if(Reflect.hasField(FlxG.save.data, 'hub') && !Reflect.hasField(FlxG.save.data, 'SliceHub'))
-			data.SliceHub = FlxG.save.data.hub;
-		data.hub = data.SliceHub;
 		normalizeDebugDisplayBG();
 		normalizeComboCamera();
 		
