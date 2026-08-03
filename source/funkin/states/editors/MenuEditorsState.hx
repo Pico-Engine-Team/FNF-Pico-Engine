@@ -1,12 +1,12 @@
-package funkin.utils;
+package funkin.states.editors;
 
 import funkin.data.WeekData;
 import funkin.menus.freeplay.FreeplayMenuState;
 import funkin.data.objects.game.characters.Character;
 
-class MenuEditorsState extends MusicBeatState
+class EditorsMenus extends MusicBeatState
 {
-	private var options:Array<String> = ['Chart Editor', 'Character Editor', 'Stage Editor', 'Week Editor', 'Note Splash Editor', 'Dialogue Editor', 'Dialogue Portrait Editor', 'Menu Character Editor', 'Converters Menu'];
+	private var options:Array<String> = ['Chart Editor', 'Character Editor', 'Stage Editor', 'Week Editor', 'Note Splash Editor', 'Dialogue Editor', 'Dialogue Portrait Editor', 'Menu Character Editor', 'Converters'];
 
 	private var grpTexts:FlxTypedGroup<Alphabet>;
 	private var directories:Array<String> = [null];
@@ -96,15 +96,15 @@ class MenuEditorsState extends MusicBeatState
 		{
 			switch(options[curSelected])
 			{
-				case 'Chart Editor': LoadingScreenState.loadAndSwitchState(new funkin.data.editors.ChartingState(), false);
-				case 'Character Editor': LoadingScreenState.loadAndSwitchState(new funkin.data.editors.CharacterEditorState(Character.DEFAULT_CHARACTER, false));
-				case 'Stage Editor': LoadingScreenState.loadAndSwitchState(new funkin.data.editors.StageEditorState());
-				case 'Week Editor': MusicBeatState.switchState(new funkin.data.editors.WeekEditorState());
-				case 'Menu Character Editor': MusicBeatState.switchState(new funkin.data.editors.MenuCharacterEditorState());
-				case 'Dialogue Editor': LoadingScreenState.loadAndSwitchState(new funkin.data.editors.DialogueEditorState(), false);
-				case 'Dialogue Portrait Editor': LoadingScreenState.loadAndSwitchState(new funkin.data.editors.DialogueCharacterEditorState(), false);
-				case 'Note Splash Editor': MusicBeatState.switchState(new funkin.data.editors.NoteSplashEditorState());
-				case 'Converters Menu': MusicBeatState.switchState(new funkin.states.ConvertersState());
+				case 'Chart Editor': LoadingScreenState.loadAndSwitchState(new funkin.states.editors.data.ChartingState(), false);
+				case 'Character Editor': LoadingScreenState.loadAndSwitchState(new funkin.states.editors.data.CharacterEditorState(Character.DEFAULT_CHARACTER, false));
+				case 'Stage Editor': LoadingScreenState.loadAndSwitchState(new funkin.states.editors.data.StageEditorState());
+				case 'Week Editor': MusicBeatState.switchState(new funkin.states.editors.data.WeekEditorState());
+				case 'Menu Character Editor': MusicBeatState.switchState(new funkin.states.editors.data.MenuCharacterEditorState());
+				case 'Dialogue Editor': LoadingScreenState.loadAndSwitchState(new funkin.states.editors.data.DialogueEditorState(), false);
+				case 'Dialogue Portrait Editor': LoadingScreenState.loadAndSwitchState(new funkin.states.editors.data.DialogueCharacterEditorState(), false);
+				case 'Note Splash Editor': MusicBeatState.switchState(new funkin.states.editors.data.NoteSplashEditorState());
+				case 'Converters': MusicBeatState.switchState(new funkin.states.ConvertersState());
 			}
 			FlxG.sound.music.volume = 0;
 			FreeplayMenuState.destroyFreeplayVocals();
