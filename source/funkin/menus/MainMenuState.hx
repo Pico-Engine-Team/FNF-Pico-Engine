@@ -14,19 +14,19 @@ class MainMenuState extends MusicBeatState
 {
 	public static var curSelected:Int = 0;
 	public static var curColumn:MainMenuColumn = CENTER;
-	public static var PicoVersion:String = '2.26.7-(Pre Release Build)'; // Version of Pico Engine
-	public static var FunkinVersion:String = '0.8.4'; // Version of Friday Night Funkin'
+	public static var PicoVersion:String = '2.26.7'; // Version of Pico Engine
 	public static var PsychVersion:String = '1.0.4'; // Version of Psych Engine
+	public static var FunkinVersion:String = '0.8.4'; // Version of Friday Night Funkin'
 
 	var allowMouse:Bool = true;
 	var menuItems:FlxTypedGroup<FlxSprite>;
 	var leftItem:FlxSprite;
 	var rightItem:FlxSprite;
 
-	var optionShit:Array<String> = ['story_mode', 'freeplay', 'options', 'credits'];
+	var optionShit:Array<String> = ['story_mode', 'freeplay', #if MODS_ALLOWED 'mods', #end 'credits', 'donate'];
 
-	var leftOption:String = null;
-	var rightOption:String = null;
+	var rightOption:String = 'options';
+	var leftOption:String = #if ACHIEVEMENTS_ALLOWED 'achievements' #else null #end;
 
 	var magenta:FlxSprite;
 	var camFollow:FlxObject;
@@ -94,18 +94,14 @@ class MainMenuState extends MusicBeatState
 		add(mobileVer);
 		#end
 
-		var picoVer:FlxText = new FlxText(12, FlxG.height - 44, 0, "Pico Engine v" + PicoVersion, 12);
+		var fnfVer:FlxText = new FlxText(0, FlxG.height - 18, FlxG.width, 'v${PicoVersion}', 12);
 		var psychVer:FlxText = new FlxText(0, FlxG.height - 18, FlxG.width, "Psych Engine v" + PsychVersion, 12);
-		var fnfVer:FlxText = new FlxText(12, FlxG.height - 24, 0, "Friday Night Funkin' v" + FunkinVersion, 12);
 
-		picoVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.GREEN, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-		psychVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, RIGHT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		fnfVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		psychVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, RIGHT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 
 		psychVer.scrollFactor.set();
-		picoVer.scrollFactor.set();
 		fnfVer.scrollFactor.set();
-		add(picoVer);
 		add(psychVer);
 		add(fnfVer);
 		changeItem();
@@ -316,9 +312,16 @@ class MainMenuState extends MusicBeatState
 					switch (option)
 					{
 						case 'story_mode':MusicBeatState.switchState(new funkin.menus.StoryMenuState());
+							trace("Story Mode Menu Selected"); // By BETADCIU
+
 						case 'freeplay': MusicBeatState.switchState(new funkin.menus.freeplay.FreeplayMenuState());
+							trace("Freeplay Menu Selected"); // By BETADCIU
+
 						case 'credits':MusicBeatState.switchState(new funkin.states.CreditsState());
+							trace("Credits Menu Selected"); // By BETADCIU
+
 						case 'options':MusicBeatState.switchState(new funkin.states.options.OptionsState());
+							trace("options Menu Selected"); // By BETADCIU
 							OptionsState.onPlayState = false;
 							if (PlayState.SONG != null)
 							{
@@ -326,7 +329,10 @@ class MainMenuState extends MusicBeatState
 								PlayState.SONG.splashSkin = null;
 								PlayState.stageUI = 'normal';
 							}
-
+						case 'donate':
+							CoolUtil.browserLoad('https://lucas-sanches.itch.io/pico-funkin');
+							selectedSomethin = false;
+							item.visible = true;
 						default:
 							trace('Menu Item ${option} doesn\'t do anything');
 							selectedSomethin = false;
@@ -347,7 +353,7 @@ class MainMenuState extends MusicBeatState
 			{
 				selectedSomethin = true;
 				FlxG.mouse.visible = false;
-				MusicBeatState.switchState(new funkin.utils.EditorsMenus());
+				MusicBeatState.switchState(new funkin.states.editors.EditorsMenus());
 			}
 			#end
 		}
