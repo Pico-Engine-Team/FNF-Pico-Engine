@@ -1,7 +1,7 @@
 package funkin.states.options.data;
 
-import funkin.data.objects.game.characters.Character;
 import funkin.states.options.config.*;
+import funkin.data.objects.game.characters.Character;
 
 class GraphicsSettingsSubState extends BaseOptionsMenu
 {
@@ -12,9 +12,8 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 		title = Language.getPhrase('graphics_menu', 'Graphics Settings');
 		rpcTitle = 'Graphics Settings Menu';
 
-		boyfriend = new Character(0, 0, 'gf', true);
+		boyfriend = new Character(0, 350, 'bf', true);
 		boyfriend.setGraphicSize(Std.int(boyfriend.width * 0.9));
-		boyfriend.flipX = true;
 		boyfriend.updateHitbox();
 		boyfriend.dance();
 		boyfriend.animation.finishCallback = function (name:String) boyfriend.dance();
@@ -46,13 +45,21 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 			'cacheOnGPU',
 			BOOL);
 		addOption(option);
+
+		var option:Option = new Option('VSync',
+			"Synchronizes the game's frame rate with your monitor's refresh rate.\nOn = Always on\nOff = Always off\nAdaptive = Turns on only when FPS is high enough (reduces tearing + less input lag).",
+			'vsync',
+			STRING);
+		addOption(option);
+		option.options = ['On', 'Off', 'Adaptive'];
+		option.onChange = onChangeVSync;
 		
 	#if !html5
 		var option:Option = new Option('Framerate',
 			"Pretty self explanatory, isn't it?",
 			'framerate',
 			INT);
-		addOption(option);
+		option.onChange = onChangeFramerate;
 
 		final refreshRate:Int = FlxG.stage.application.window.displayMode.refreshRate;
 		option.minValue = 30;
@@ -76,6 +83,29 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 				castedSprite.antialiasing = ClientPrefs.data.antialiasing;
 			}
 		}
+	}
+
+	function onChangeVSync()
+	{
+		#if desktop
+		var displayRefresh:Int = 60;
+
+		if (FlxG.stage != null && FlxG.stage.application != null && FlxG.stage.application.window != null)
+		{
+			try {
+				if (FlxG.stage.application.window.displayMode != null) displayRefresh = FlxG.stage.application.window.displayMode.refreshRate;
+				// Map VSync option to window.frameRate since Window has no 'vsync' field
+				switch (ClientPrefs.data.vsync)
+				{
+					case 'On': FlxG.stage.application.window.frameRate = displayRefresh;
+					case 'Adaptive': FlxG.stage.application.window.frameRate = Math.max(ClientPrefs.data.framerate, displayRefresh);
+					default: FlxG.stage.application.window.frameRate = ClientPrefs.data.framerate;
+				}
+			} catch (e:Dynamic) {
+				trace('Error applying VSync/frameRate: ' + e);
+			}
+		}
+		#end
 	}
 
 	function onChangeFramerate()
