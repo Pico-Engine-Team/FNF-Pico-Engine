@@ -5,14 +5,18 @@ import funkin.play.Highscore;
 import funkin.play.Difficulty;
 import funkin.stages.StageData;
 
+import funkin.data.objects.HealthIcon;
 import funkin.data.objects.game.characters.Character;
 import funkin.data.objects.game.notes.config.Note;
 import funkin.data.objects.game.notes.data.StrumNote;
-import funkin.data.objects.HealthIcon;
 
+import funkin.utils.engines.psych.PsychJsonPrinter;
+import funkin.utils.editors.EditorPlayState;
+import funkin.utils.editors.ChartingGridSprite;
 import funkin.utils.editors.MetaNote;
 import funkin.utils.editors.VSlice;
 import funkin.utils.editors.Prompt;
+import funkin.utils.editors.FileDialogHandler;
 using DateTools;
 
 typedef UndoStruct = {
@@ -4008,7 +4012,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		var btn:PsychUIButton = new PsychUIButton(btnX, btnY, '  Exit', function()
 		{
 			PlayState.chartingMode = false;
-			MusicBeatState.switchState(new states.editors.MasterEditorMenu());
+			MusicBeatState.switchState(new funkin.states.editors.EditorsMenus());
 			FlxG.sound.playMusic(Paths.music('freakyMenu'));
 			FlxG.mouse.visible = false;
 		}, btnWid);
@@ -4608,7 +4612,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			note.rgbShader.enabled = !noRGBCheckBox.checked;
 			if(note.rgbShader.enabled)
 			{
-				var data = backend.NoteTypesConfig.loadNoteTypeData(note.noteType);
+				var data = funkin.data.objects.game.notes.config.NoteTypesConfig.loadNoteTypeData(note.noteType);
 				if(data == null || data.length < 1) continue;
 
 				for (line in data)
@@ -4791,7 +4795,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		setSongPlaying(false);
 		updateChartData();
 		StageData.loadDirectory(PlayState.SONG);
-		LoadingState.loadAndSwitchState(new PlayState());
+		LoadingScreenState.loadAndSwitchState(new PlayState());
 		ClientPrefs.toggleVolumeKeys(true);
 	}
 	
@@ -4814,7 +4818,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 	override function destroy()
 	{
 		Note.globalRgbShaders = [];
-		backend.NoteTypesConfig.clearNoteTypesData();
+		funkin.data.objects.game.notes.config.NoteTypesConfig.clearNoteTypesData();
 
 		for (num => text in MetaNote.noteTypeTexts)
 			text.destroy();

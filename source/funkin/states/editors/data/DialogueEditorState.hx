@@ -1,9 +1,10 @@
-package funkin.data.editors;
+package funkin.states.editors.data;
 
-import funkin.utils.TypedAlphabet;
 import funkin.data.dialogue.DialogueBoxPsych;
 import funkin.data.dialogue.DialogueCharacter;
-import funkin.data.editors.content.Prompt;
+
+import funkin.utils.editors.Prompt;
+import funkin.utils.TypedAlphabet;
 
 import openfl.net.FileReference;
 import openfl.events.Event;
@@ -314,11 +315,11 @@ class DialogueEditorState extends MusicBeatState implements PsychUIEventHandler.
 			if(FlxG.keys.justPressed.ESCAPE) {
 				if(!unsavedProgress)
 				{
-					MusicBeatState.switchState(new funkin.utils.EditorsMenus());
+					MusicBeatState.switchState(new funkin.states.editors.EditorsMenus());
 					FlxG.sound.playMusic(Paths.music('freakyMenu'));
 					transitioning = true;
 				}
-				else openSubState(new ExitConfirmationPrompt(function() transitioning = true));
+				else openSubState(new funkin.utils.editors.Prompt.ExitConfirmationPrompt(function() transitioning = true));
 				return;
 			}
 			var negaMult:Array<Int> = [1, -1];

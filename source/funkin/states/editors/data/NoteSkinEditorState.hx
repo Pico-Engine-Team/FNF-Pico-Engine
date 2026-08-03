@@ -822,7 +822,7 @@ class NoteSkinEditorState extends MusicBeatState
 	{
 		if(controls.BACK)
 		{
-			MusicBeatState.switchState(new funkin.utils.EditorsMenus());
+			MusicBeatState.switchState(new funkin.states.editors.EditorsMenuss());
 			return;
 		}
 		super.update(elapsed);

@@ -1,8 +1,9 @@
-package funkin.data.editors;
+package funkin.states.editors.data;
 
 import funkin.data.dialogue.DialogueBoxPsych;
 import funkin.data.dialogue.DialogueCharacter;
-import funkin.data.editors.content.Prompt;
+
+import funkin.utils.editors.Prompt;
 import funkin.utils.TypedAlphabet;
 
 import openfl.net.FileReference;
@@ -601,11 +602,11 @@ class DialogueCharacterEditorState extends MusicBeatState implements PsychUIEven
 			if(FlxG.keys.justPressed.ESCAPE) {
 				if(!unsavedProgress)
 				{
-					MusicBeatState.switchState(new funkin.utils.EditorsMenus());
+					MusicBeatState.switchState(new funkin.states.editors.EditorsMenus());
 					FlxG.sound.playMusic(Paths.music('freakyMenu'));
 					transitioning = true;
 				}
-				else openSubState(new ExitConfirmationPrompt(function() transitioning = true));
+				else openSubState(new funkin.utils.editors.Prompt.ExitConfirmationPrompt(function() transitioning = true));
 			}
 
 			ghostLoop.setPosition(character.x, character.y);

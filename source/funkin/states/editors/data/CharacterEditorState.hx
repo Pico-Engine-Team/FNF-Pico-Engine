@@ -3,11 +3,11 @@ package funkin.states.editors.data;
 import funkin.play.Song;
 import funkin.data.objects.Bar;
 import funkin.data.objects.HealthIcon;
-import funkin.data.editors.content.Prompt;
-
-import funkin.utils.engines.psych.PsychJsonPrinter;
 import funkin.data.objects.game.notes.config.Note;
 import funkin.data.objects.game.characters.Character;
+
+import funkin.utils.editors.Prompt;
+import funkin.utils.engines.psych.PsychJsonPrinter;
 
 import flixel.graphics.FlxGraphic;
 import flixel.util.FlxDestroyUtil;
@@ -1184,10 +1184,10 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 			{
 				if(!unsavedProgress)
 				{
-					MusicBeatState.switchState(new funkin.utils.EditorsMenus());
+					MusicBeatState.switchState(new funkin.states.editors.EditorsMenus());
 					FlxG.sound.playMusic(Paths.music('freakyMenu'));
 				}
-				else openSubState(new ExitConfirmationPrompt());
+				else openSubState(new funkin.utils.editors.Prompt.ExitConfirmationPrompt());
 			}
 			else
 			{

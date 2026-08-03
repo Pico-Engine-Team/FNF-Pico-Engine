@@ -1,9 +1,10 @@
-package funkin.data.editors;
+package funkin.states.editors.data;
 
 import funkin.play.Difficulty;
 import funkin.data.WeekData;
 import funkin.data.objects.HealthIcon;
-import funkin.data.editors.content.Prompt;
+
+import funkin.utils.editors.Prompt;
 import funkin.data.objects.story.MenuItem;
 import funkin.data.objects.story.MenuCharacter;
 
@@ -16,7 +17,8 @@ import flash.net.FileFilter;
 import lime.system.Clipboard;
 import haxe.Json;
 
-class WeekEditorState extends MusicBeatState implements PsychUIEventHandler.PsychUIEvent {
+class WeekEditorState extends MusicBeatState implements PsychUIEventHandler.PsychUIEvent
+{
 	var txtWeekTitle:FlxText;
 	var bgSprite:FlxSprite;
 	var lock:FlxSprite;
@@ -468,10 +470,10 @@ class WeekEditorState extends MusicBeatState implements PsychUIEventHandler.Psyc
 			{
 				if(!unsavedProgress)
 				{
-					MusicBeatState.switchState(new funkin.utils.EditorsMenus());
+					MusicBeatState.switchState(new funkin.states.editors.EditorsMenus());
 					FlxG.sound.playMusic(Paths.music('freakyMenu'));
 				}
-				else openSubState(new ExitConfirmationPrompt(function() unsavedProgress = false));
+				else openSubState(new funkin.utils.editors.Prompt.ExitConfirmationPrompt(function() unsavedProgress = false));
 			}
 		}
 		else ClientPrefs.toggleVolumeKeys(false);
@@ -853,10 +855,10 @@ class WeekEditorFreeplayState extends MusicBeatState implements PsychUIEventHand
 			if(FlxG.keys.justPressed.ESCAPE) {
 				if(!WeekEditorState.unsavedProgress)
 				{
-					MusicBeatState.switchState(new funkin.utils.EditorsMenus());
+					MusicBeatState.switchState(new funkin.states.editors.EditorsMenus());
 					FlxG.sound.playMusic(Paths.music('freakyMenu'));
 				}
-				else openSubState(new ExitConfirmationPrompt());
+				else openSubState(new funkin.utils.editors.Prompt.ExitConfirmationPrompt());
 			}
 
 			if(controls.UI_UP_P) changeSelection(-1);

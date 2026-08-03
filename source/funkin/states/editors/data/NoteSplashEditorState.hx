@@ -1,4 +1,4 @@
-package funkin.data.editors;
+package funkin.states.editors.data;
 
 import funkin.data.objects.game.notes.data.NoteSplash;
 import funkin.data.objects.game.notes.data.StrumNote;
@@ -592,7 +592,7 @@ class NoteSplashEditorState extends MusicBeatState
         if (!blockInput)
         {
             if (controls.BACK)
-                MusicBeatState.switchState(new funkin.utils.EditorsMenus());
+                MusicBeatState.switchState(new funkin.states.editors.EditorsMenus());
             if (FlxG.keys.justPressed.F1)
                 openSubState(new NoteSplashEditorHelpSubState());
         }
