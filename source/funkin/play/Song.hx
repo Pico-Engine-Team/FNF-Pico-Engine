@@ -36,21 +36,7 @@ typedef SwagSong = {
 	@:optional var arrowSkin:String;
 	@:optional var splashSkin:String;
 	@:optional var variation:String;
-	
-	@:optional var artist:String;
-	@:optional var charter:String;
-	@:optional var album:String;
 	@:optional var noteStyle:String;
-	@:optional var previewStart:Float;
-	@:optional var previewEnd:Float;
-	@:optional var strumlines:Array<SwagStrumline>;
-}
-
-typedef SwagStrumline = {
-	@:optional var characters:Array<String>;
-	@:optional var type:String;
-	@:optional var stagePosition:String;
-	@:optional var visible:Bool;
 }
 
 typedef SwagSection = {
@@ -74,7 +60,6 @@ class Song {
 	public var variation:String;
 	public var artist:String;
 	public var charter:String;
-	public var pauseSong:String = 'breakfast';
 	public var disableNoteRGB:Bool = false;
 	public var speed:Float = 1;
 	public var stage:String;
@@ -82,6 +67,7 @@ class Song {
 	public var player2:String = 'bf-opponent';
 	public var gfVersion:String = 'gf';
 	public var noteStyle:String = 'funkin';
+	public var pauseSong:String = 'pauseMenu/breakfast';
 	public var format:String = 'Pico Engine Chart';
 	public var formatChart:String = 'Pico Engine Chart';
 	public var generatedBy:String = 'Pico Engine v${MainMenuState.PicoVersion}';
