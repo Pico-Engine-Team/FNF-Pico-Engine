@@ -164,7 +164,7 @@ class HScript extends Iris
 		set('ClientPrefs', funkin.data.ClientPrefs);
 
 		#if ACHIEVEMENTS_ALLOWED
-		set('Achievements', funkin.states.achievements.config.Achievements);
+		set('Achievements', funkin.states.achievements.data.Achievements);
 		#end
 
 		set('Character', funkin.data.objects.game.characters.Character);
