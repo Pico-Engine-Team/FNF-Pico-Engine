@@ -4,7 +4,7 @@ import funkin.data.WeekData;
 import funkin.play.Highscore;
 import funkin.stages.StageData;
 
-import funkin.utils.engines.vslice.VsliceOptions;
+import lucas.vslice.VsliceOptions;
 import funkin.data.objects.story.MenuItem;
 import funkin.data.objects.story.MenuCharacter;
 import funkin.substates.ResetScoreSubState;
@@ -54,7 +54,7 @@ class StoryMenuState extends MusicBeatState
 			FlxTransitionableState.skipNextTransIn = true;
 			persistentUpdate = false;
 			MusicBeatState.switchState(new funkin.states.ErrorState("NO LEVELS ADDED FOR STORY MODE\n\nPress ACCEPT to go to the Week Editor Menu.\nPress BACK to return to Main Menu.",
-			function() MusicBeatState.switchState(new funkin.data.editors.WeekEditorState()),
+			function() MusicBeatState.switchState(new funkin.states.editors.data.WeekEditorState()),
 			function() MusicBeatState.switchState(new funkin.menus.MainMenuState())));
 			return;
 		}
