@@ -31,12 +31,15 @@ class StrumNote extends FlxSprite
 
 		rgbShader = new RGBShaderReference(this, Note.initializeGlobalRGBShader(leData));
 		rgbShader.enabled = false;
-		if(PlayState.SONG != null && PlayState.SONG.disableNoteRGB) useRGBShader = false;
+
+		if(PlayState.SONG != null && PlayState.SONG.disableNoteRGB)
+			useRGBShader = false;
 		
 		var arr:Array<FlxColor> = ClientPrefs.data.arrowRGB[leData];
-		if(PlayState.isPixelStage) arr = ClientPrefs.data.arrowRGBPixel[leData];
+		if(PlayState.isPixelStage)
+			arr = ClientPrefs.data.arrowRGBPixel[leData];
 		
-		if(leData <= arr.length)
+		if(arr != null && leData > -1 && leData <= arr.length)
 		{
 			@:bypassAccessor
 			{
@@ -95,6 +98,10 @@ class StrumNote extends FlxSprite
 
 			antialiasing = false;
 			setGraphicSize(Std.int(width * Note.noteSkinScale(noteSkinConfig, assetType)));
+
+			// Agora também respeita o allowRGB no pixel
+			if(noteSkinConfig != null && !noteSkinConfig.allowRGB)
+				useRGBShader = false;
 		}
 		else
 		{

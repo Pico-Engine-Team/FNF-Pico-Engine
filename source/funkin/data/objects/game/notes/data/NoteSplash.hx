@@ -45,7 +45,7 @@ class NoteSplash extends FlxSprite
 	var spawned:Bool = false;
 	var noteDataMap:Map<Int, String> = new Map();
 
-	public static var defaultNoteSplash(default, never):String = "noteSplashes/noteSplashes";
+	public static var defaultNoteSplash(default, never):String = "data/splashes/noteSplashes";
 	public static var configs:Map<String, NoteSplashConfig> = new Map();
 
 	public function new(?x:Float = 0, ?y:Float = 0, ?splash:String)
@@ -76,11 +76,37 @@ class NoteSplash extends FlxSprite
 		for (candidate in candidates)
 		{
 			if(candidate == null || candidate.length < 1) continue;
-			if(!Paths.fileExists('images/$candidate.png', IMAGE) || !Paths.fileExists('images/$candidate.xml', TEXT)) continue;
 
-			texture = candidate;
-			frames = Paths.getSparrowAtlas(texture);
-			if(frames != null) break;
+			try
+			{
+				// shared images
+				if(Paths.fileExists('images/$candidate.png', IMAGE) && Paths.fileExists('images/$candidate.xml', TEXT))
+				{
+					var atlas = Paths.getSparrowAtlas(candidate);
+					if(atlas != null)
+					{
+						texture = candidate;
+						frames = atlas;
+						break;
+					}
+				}
+
+				// pico_assets (só se o arquivo existir — evita NPE no FlxAtlasFrames)
+				if(Note.noteSkinAtlasExists(candidate))
+				{
+					var picoFrames = Note.getNoteSkinAtlas(candidate);
+					if(picoFrames != null)
+					{
+						texture = candidate;
+						frames = picoFrames;
+						break;
+					}
+				}
+			}
+			catch(e:Dynamic)
+			{
+				trace('[NoteSplash] Failed to load splash "$candidate": $e');
+			}
 		}
 		if(frames == null) return;
 
@@ -199,15 +225,20 @@ class NoteSplash extends FlxSprite
 
 		if (!inEditor)
 		{
-			var loadedTexture:String = NoteData.notestyles.noteSplash(null, true);
-			if (note != null && note.noteSplashData.texture != null) loadedTexture = note.noteSplashData.texture;
+			var isPlayer:Bool = note != null ? note.mustPress : true;
+			var loadedTexture:String = NoteData.notestyles.noteSplash(null, isPlayer);
+			if (note != null && note.noteSplashData.texture != null && note.noteSplashData.texture.length > 0)
+				loadedTexture = note.noteSplashData.texture;
 			else
 			{
-				var songSplash:String = Note.songSplashSkinForMustPress(true);
-				if(songSplash != null && songSplash.length > 0) loadedTexture = songSplash;
+				var songSplash:String = Note.songSplashSkinForMustPress(isPlayer);
+				if(songSplash != null && songSplash.length > 0)
+					loadedTexture = songSplash;
 			}
 
 			if (texture != loadedTexture) loadSplash(loadedTexture);
+			// se o splash não carregou, não continua (evita NPE)
+			if (frames == null) return;
 		}
 
 		setPosition(x, y);
