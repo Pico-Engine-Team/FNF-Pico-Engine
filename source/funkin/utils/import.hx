@@ -1,6 +1,5 @@
 package funkin.utils;
 
-import funkin.utils.Alphabet;
 import funkin.utils.Controls;
 import funkin.utils.CoolUtil;
 import funkin.utils.CustomFadeTransition;
