@@ -3,6 +3,7 @@ package funkin.states;
 import funkin.play.Song;
 import funkin.play.Rating;
 import funkin.play.Highscore;
+import funkin.play.Rank;
 import funkin.stages.StageData;
 
 import funkin.data.WeekData;
@@ -10,11 +11,7 @@ import funkin.data.objects.Bar;
 import funkin.data.objects.HealthIcon;
 import funkin.data.dialogue.DialogueBoxPsych;
 import funkin.data.cutscenes.VideoSprite;
-
-import funkin.data.editors.ChartingState;
-import funkin.data.editors.StageEditorState;
 import funkin.data.shaders.ErrorHandledShader;
-import funkin.data.editors.CharacterEditorState;
 import funkin.data.objects.game.characters.Character;
 
 import funkin.data.objects.game.notes.NoteData;
@@ -27,6 +24,10 @@ import funkin.data.objects.game.notes.config.NoteTypesConfig;
 
 import funkin.states.PauseState;
 import funkin.states.GameOverState;
+import funkin.states.editors.data.ChartingState;
+import funkin.states.editors.data.StageEditorState;
+import funkin.states.editors.data.CharacterEditorState;
+
 import funkin.menus.MainMenuState;
 import funkin.menus.freeplay.FreeplayMenuState;
 
@@ -63,45 +64,12 @@ import crowplexus.hscript.Expr.Error as IrisError;
 import crowplexus.hscript.Printer;
 #end
 
-/**
- * This is where all the Gameplay stuff happens and is managed
- *
- * here's some useful tips if you are making a mod in source:
- *
- * If you want to add your stage to the game, copy states/stages/Template.hx,
- * and put your stage code there, then, on PlayState, search for
- * "switch (curStage)", and add your stage to that list.
- *
- * If you want to code Events, you can either code it on a Stage file or on PlayState, if you're doing the latter, search for:
- *
- * "function eventPushed" - Only called *one time* when the game loads, use it for precaching events that use the same assets, no matter the values
- * "function eventPushedUnique" - Called one time per event, use it for precaching events that uses different assets based on its values
- * "function eventEarlyTrigger" - Used for making your event start a few MILLISECONDS earlier
- * "function triggerEvent" - Called when the song hits your event's timestamp, this is probably what you were looking for
-**/
-
 class PlayState extends MusicBeatState
 {
 	public static var STRUM_X = 42;
 	public static var STRUM_X_MIDDLESCROLL = -278;
 
-	public static var ratingStuff:Array<Dynamic> = [
-		['You Suck', 0.2],
-		['Shit', 0.4],
-		['Bad', 0.5],
-		['Bruh', 0.6],
-		['Meh', 0.69],
-		['Nice', 0.7],
-		['Good', 0.8],
-		['Great', 0.9],
-		['Sick!', 0.99],
-		['Perfect!!', 1],
-		['Marvelous!!!', 1]
-	];
-
-	// Variables Events
 	private var isCameraOnForcedPos:Bool = false;
-
 	public var boyfriendMap:Map<String, Character> = new Map<String, Character>();
 	public var dadMap:Map<String, Character> = new Map<String, Character>();
 	public var gfMap:Map<String, Character> = new Map<String, Character>();
@@ -273,7 +241,7 @@ class PlayState extends MusicBeatState
 	public static function getSongVariationName(?song:SwagSong = null):String
 	{
 		if(song == null) song = SONG;
-		return song != null ? Difficulty.getChartSuffixName(song.variation) : '';
+		return song != null ? Difficulty.getChartSuffixName(song.songVariation) : '';
 	}
 
 	public static function getSongVariationFilePath(?song:SwagSong = null):String
@@ -633,14 +601,14 @@ class PlayState extends MusicBeatState
 		loadWeekDifficultiesForCurrentMode();
 		reloadStoryHiddenSongsFromCurrentWeek();
 
-		if(SONG.variation != null)
+		if(SONG.songVariation != null)
 		{
-			SONG.variation = Difficulty.getSuffixName(SONG.variation);
-			if(SONG.variation.length < 1) SONG.variation = null;
+			SONG.songVariation = Difficulty.getSuffixName(SONG.songVariation);
+			if(SONG.songVariation.length < 1) SONG.songVariation = null;
 		}
 		var difficultyVariation:String = Difficulty.getDifficultyVariationName(storyDifficulty);
 		if(difficultyVariation.length > 0)
-			SONG.variation = difficultyVariation;
+		SONG.songVariation = difficultyVariation;
 
 		#if DISCORD_ALLOWED
 		// String that contains the mode defined here so it isn't necessary to call changePresence for each mode
@@ -753,19 +721,8 @@ class PlayState extends MusicBeatState
 		
 		#if (LUA_ALLOWED || HSCRIPT_ALLOWED)
 		// "SCRIPTS FOLDER" SCRIPTS
-		for (folder in Mods.directoriesWithFile(Paths.getSharedPath(), 'scripts/Game/'))
-			for (file in FileSystem.readDirectory(folder))
-			{
-				#if LUA_ALLOWED
-				if(file.toLowerCase().endsWith('.lua'))
-					new FunkinLua(folder + file);
-				#end
-
-				#if HSCRIPT_ALLOWED
-				if(file.toLowerCase().endsWith('.hx'))
-					initHScript(folder + file);
-				#end
-			}
+		startScriptsInFolder('scripts/game/');
+		startScriptsInFolder('scripts/Game/');
 
 		// STATE SCRIPTS
 		for (folder in Mods.directoriesWithFile(Paths.getSharedPath(), 'scripts/states/'))
@@ -795,7 +752,10 @@ class PlayState extends MusicBeatState
 		#if (LUA_ALLOWED || HSCRIPT_ALLOWED)
 		// STAGE SCRIPTS
 		#if LUA_ALLOWED startLuasNamed('scripts/stages/' + curStage + '.lua'); #end
-		#if HSCRIPT_ALLOWED startHScriptsNamed('scripts/stages/' + curStage + '.hx'); #end
+		#if HSCRIPT_ALLOWED
+		startHScriptsNamed('scripts/stages/' + curStage + '.hx');
+		startHScriptsNamed('scripts/stages/' + curStage + '.hxc');
+		#end
 
 		// CHARACTER SCRIPTS
 		if(gf != null) startCharacterScripts(gf.curCharacter);
@@ -821,7 +781,7 @@ class PlayState extends MusicBeatState
 		if(ClientPrefs.data.downScroll) timeTxt.y = FlxG.height - 44;
 		if(ClientPrefs.data.timeBarType == 'Song Name' || ClientPrefs.data.timeBarType == 'Combined') timeTxt.text = SONG.song;
 
-		timeBar = new Bar(0, timeTxt.y + (timeTxt.height / 4), 'ui/timeBar', function() return songPercent, 0, 1);
+		timeBar = new Bar(0, timeTxt.y + (timeTxt.height / 4), 'ui/game/funkin/timeBar', function() return songPercent, 0, 1);
 		timeBar.scrollFactor.set();
 		timeBar.screenCenter(X);
 		timeBar.alpha = 0;
@@ -857,7 +817,7 @@ class PlayState extends MusicBeatState
 		FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
 		moveCameraSection();
 
-		healthBar = new Bar(0, FlxG.height * (!ClientPrefs.data.downScroll ? 0.89 : 0.11), 'ui/healthBar', function() return health, 0, 2);
+		healthBar = new Bar(0, FlxG.height * (!ClientPrefs.data.downScroll ? 0.89 : 0.11), 'ui/game/funkin/healthBar', function() return health, 0, 2);
 		healthBar.screenCenter(X);
 		healthBar.leftToRight = false;
 		healthBar.scrollFactor.set();
@@ -906,9 +866,15 @@ class PlayState extends MusicBeatState
 
 		#if HSCRIPT_ALLOWED
 		for (notetype in noteTypes)
+		{
 			startHScriptsNamed('scripts/events/notetypes/' + notetype + '.hx');
+			startHScriptsNamed('scripts/events/notetypes/' + notetype + '.hxc');
+		}
 		for (event in eventsPushed)
+		{
 			startHScriptsNamed('scripts/events/' + event + '.hx');
+			startHScriptsNamed('scripts/events/' + event + '.hxc');
+		}
 		#end
 		noteTypes = null;
 		eventsPushed = null;
@@ -916,19 +882,7 @@ class PlayState extends MusicBeatState
 		// SONG SPECIFIC SCRIPTS
 		#if (LUA_ALLOWED || HSCRIPT_ALLOWED)
 		for (scriptSongName in getSongIdVariationCandidates(songName, SONG, storyDifficulty))
-			for (folder in Mods.directoriesWithFile(Paths.getSharedPath(), 'scripts/songs/$scriptSongName/'))
-				for (file in FileSystem.readDirectory(folder))
-				{
-					#if LUA_ALLOWED
-					if(file.toLowerCase().endsWith('.lua'))
-						new FunkinLua(folder + file);
-					#end
-
-					#if HSCRIPT_ALLOWED
-					if(file.toLowerCase().endsWith('.hx'))
-						initHScript(folder + file);
-					#end
-				}
+			startScriptsInFolder('scripts/songs/$scriptSongName/');
 		#end
 
 		if(eventNotes.length > 0)
@@ -1307,6 +1261,7 @@ class PlayState extends MusicBeatState
 		#if HSCRIPT_ALLOWED
 		if(loadLua) {
 			startHScriptsNamed('scripts/stages/' + curStage + '.hx');
+			startHScriptsNamed('scripts/stages/' + curStage + '.hxc');
 			startModchartNamed('scripts/stages/$curStage/modchart');
 		}
 		#end
@@ -1421,60 +1376,15 @@ class PlayState extends MusicBeatState
 
 		// HScript
 		#if HSCRIPT_ALLOWED
-		var doPush:Bool = false;
-		var scriptFile:String = 'scripts/characters/' + name + '.hx';
-		#if MODS_ALLOWED
-		var replacePath:String = Paths.modFolders(scriptFile);
-		if(FileSystem.exists(replacePath))
-		{
-			scriptFile = replacePath;
-			doPush = true;
-		}
-		else
-		#end
-		{
-			scriptFile = Paths.getSharedPath(scriptFile);
-			if(FileSystem.exists(scriptFile))
-				doPush = true;
-		}
-
-		if(doPush)
-		{
-			if(Iris.instances.exists(scriptFile))
-				doPush = false;
-
-			if(doPush) initHScript(scriptFile);
-		}
+		startHScriptsNamed('scripts/characters/' + name + '.hx');
+		startHScriptsNamed('scripts/characters/' + name + '.hxc');
 		#end
 	}
 
 	function startSubstateScripts(name:String) {
-		// HScript
 		#if HSCRIPT_ALLOWED
-		var doPush:Bool = false;
-		var scriptFile:String = 'scripts/substate/' + name + '.hx';
-		#if MODS_ALLOWED
-		var replacePath:String = Paths.modFolders(scriptFile);
-		if(FileSystem.exists(replacePath))
-		{
-			scriptFile = replacePath;
-			doPush = true;
-		}
-		else
-		{
-			scriptFile = Paths.getSharedPath(scriptFile);
-			if(FileSystem.exists(scriptFile))
-				doPush = true;
-		}
-		#end
-
-		if(doPush)
-		{
-			if(Iris.instances.exists(scriptFile))
-				doPush = false;
-
-			if(doPush) initHScript(scriptFile);
-		}
+		startHScriptsNamed('scripts/substate/' + name + '.hx');
+		startHScriptsNamed('scripts/substate/' + name + '.hxc');
 		#end
 	}
 
@@ -1819,16 +1729,26 @@ class PlayState extends MusicBeatState
 
 	public dynamic function updateScoreText()
 	{
-		var str:String = Language.getPhrase('rating_$ratingName', ratingName);
+		var rankStr:String = (ratingName != null && ratingName.length > 0) ? ratingName : 'N/A';
+		var accStr:String = '0';
+
 		if(totalPlayed != 0)
-		{
-			var percent:Float = CoolUtil.floorDecimal(ratingPercent * 100, 2);
-			str += ' ${percent}% - ' + Language.getPhrase(ratingFC);
-		}
+			accStr = Rank.formatAccuracy(ratingPercent);
 
 		var tempScore:String;
-		if(!instakillOnMiss) tempScore = Language.getPhrase('score_text', 'Score: {1} | Rank: {2}', [songScore, str]);
-		else tempScore = Language.getPhrase('score_text_instakill', 'Score: {1} | Rating: {2}', [songScore, str]);
+		if(!instakillOnMiss)
+		{
+			// Score: 12345 | Misses: 2 | Accuracy: 98.5% [S]
+			tempScore = 'Score: ' + songScore
+				+ ' | Misses: ' + songMisses
+				+ ' | Accuracy: ' + accStr + '% [' + rankStr + ']';
+		}
+		else
+		{
+			tempScore = 'Score: ' + songScore
+				+ ' | Accuracy: ' + accStr + '% [' + rankStr + ']';
+		}
+
 		scoreTxt.text = tempScore;
 	}
 
@@ -1843,6 +1763,7 @@ class PlayState extends MusicBeatState
 	public dynamic function fullComboFunction()
 	{
 		var marvelouss:Int = getRatingHits('marvelous');
+		var perfects:Int = getRatingHits('perfect');
 		var sicks:Int = getRatingHits('sick');
 		var goods:Int = getRatingHits('good');
 		var bads:Int = getRatingHits('bad');
@@ -1851,13 +1772,14 @@ class PlayState extends MusicBeatState
 		ratingFC = "";
 		if(songMisses == 0)
 		{
-			if (bads > 0 || shits > 0) ratingFC = 'FC';
+			if (bads > 0 || shits > 0) ratingFC = 'Very Bad!';
 			else if (goods > 0) ratingFC = 'GFC';
-			else if (sicks > 0) ratingFC = 'PFC';
+			else if (sicks > 0) ratingFC = 'FC';
+			else if (perfects > 0) ratingFC = 'PFC'
 			else if (marvelouss > 0) ratingFC = 'MFC';
 		}
 		else {
-			if (songMisses < 100) ratingFC = 'SDCB';
+			if (songMisses < 20) ratingFC = 'SDCB';
 			else ratingFC = 'What?';
 		}
 	}
@@ -4278,6 +4200,7 @@ class PlayState extends MusicBeatState
 		#end
 		#if HSCRIPT_ALLOWED
 		startHScriptsNamed('$scriptBase.hx');
+		startHScriptsNamed('$scriptBase.hxc');
 		#end
 	}
 
@@ -4407,6 +4330,34 @@ class PlayState extends MusicBeatState
 			return true;
 		}
 		return false;
+	}
+
+	public function startScriptsInFolder(scriptFolder:String)
+	{
+		#if (LUA_ALLOWED || HSCRIPT_ALLOWED)
+		for (folder in Mods.directoriesWithFile(Paths.getSharedPath(), scriptFolder))
+		{
+			if(folder == null || !FileSystem.exists(folder) || !FileSystem.isDirectory(folder)) continue;
+			for (file in FileSystem.readDirectory(folder))
+			{
+				var path:String = folder;
+				if(!path.endsWith('/') && !path.endsWith('\\')) path += '/';
+				path += file;
+				if(FileSystem.isDirectory(path)) continue;
+
+				var lower:String = file.toLowerCase();
+				#if LUA_ALLOWED
+				if(lower.endsWith('.lua'))
+					startLuasNamed(scriptFolder + file);
+				#end
+
+				#if HSCRIPT_ALLOWED
+				if(isHScriptFile(file) && !Iris.instances.exists(path))
+					initHScript(path);
+				#end
+			}
+		}
+		#end
 	}
 
 	inline function isHScriptFile(file:String):Bool
@@ -4605,19 +4556,11 @@ class PlayState extends MusicBeatState
 			ratingName = 'N/A';
 			if(totalPlayed != 0) //Prevent divide by 0
 			{
-				// Rating Percent
+				// Accuracy (0.0 - 1.0)
 				ratingPercent = Math.min(1, Math.max(0, totalNotesHit / totalPlayed));
-				//trace((totalNotesHit / totalPlayed) + ', Total: ' + totalPlayed + ', notes hit: ' + totalNotesHit);
 
-				// Rating Name
-				ratingName = ratingStuff[ratingStuff.length-1][0]; //Uses last string
-				if(ratingPercent < 1)
-					for (i in 0...ratingStuff.length-1)
-						if(ratingPercent < ratingStuff[i][1])
-						{
-							ratingName = ratingStuff[i][0];
-							break;
-						}
+				// Rank from Accuracy (+ FC tag when no misses)
+				ratingName = Rank.applyToPlayState(ratingPercent, songMisses);
 			}
 			fullComboFunction();
 		}
