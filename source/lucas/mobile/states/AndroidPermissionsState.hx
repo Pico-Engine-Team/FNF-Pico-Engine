@@ -1,18 +1,18 @@
 #if android
-package mobile.states;
+package lucas.mobile.states;
 
-import backend.ClientPrefs;
-import backend.Language;
-import backend.ui.PsychUIButton;
-import mobile.backend.StorageUtil;
-import states.TitleState;
+import funkin.data.ClientPrefs;
+import funkin.states.TitleState;
+import funkin.translations.Language;
+import funkin.utils.engines.psych.ui.PsychUIButton;
+
+import lucas.mobile.backend.StorageUtil;
 
 class AndroidPermissionsState extends MusicBeatState
 {
 	var titleText:FlxText;
 	var statusText:FlxText;
 	var subtitleText:FlxText;
-
 	override function create():Void
 	{
 		Paths.clearStoredMemory();
@@ -92,6 +92,5 @@ class AndroidPermissionsState extends MusicBeatState
 }
 #else
 package mobile.states;
-
 class AndroidPermissionsState extends MusicBeatState {}
 #end

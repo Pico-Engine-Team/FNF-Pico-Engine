@@ -1,4 +1,4 @@
-package mobile.backend;
+package lucas.mobile.backend;
 
 import haxe.ds.Map;
 import haxe.Json;

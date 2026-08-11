@@ -1,13 +1,8 @@
-package mobile.objects;
+package lucas.mobile.objects;
 
 import flixel.util.FlxSignal.FlxTypedSignal;
 
-/**
- * ...
- * @author: Karim Akra
- */
-interface IMobileControls
-{
+interface IMobileControls {
 	public var buttonLeft:TouchButton;
 	public var buttonUp:TouchButton;
 	public var buttonRight:TouchButton;

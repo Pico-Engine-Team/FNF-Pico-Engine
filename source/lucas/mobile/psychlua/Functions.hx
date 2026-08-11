@@ -1,19 +1,17 @@
-package mobile.psychlua;
+package lucas.mobile.psychlua;
 
-import psychlua.CustomSubstate;
+import funkin.modding.scripting.psychlua.CustomSubstate;
+
 #if LUA_ALLOWED
+import funkin.modding.scripting.psychlua.FunkinLua;
+import funkin.modding.scripting.psychluas.LuaUtils;
+import lucas.mobile.backend.TouchUtil;
 import lime.ui.Haptic;
-import psychlua.FunkinLua;
-import psychlua.LuaUtils;
-import mobile.backend.TouchUtil;
+
 #if android
-import mobile.backend.PsychJNI;
+import lucas.mobile.backend.PsychJNI;
 #end
 
-/**
- * ...
- * @author: Karim Akra and Homura Akemi (HomuHomu833)
- */
 class MobileFunctions
 {
 	public static function implement(funk:FunkinLua)

@@ -1,16 +1,9 @@
-package mobile.objects;
+package lucas.mobile.objects;
 
-// I wanted to delete this but i have no idea how i coded MobileControlSelectSubState so idk how to implement IMobileControls into it... yet...
-
-/**
- * ...
- * @author: Karim Akra
- */
 class MobileControls extends FlxTypedSpriteGroup<MobileInputManager>
 {
 	public var touchPad:TouchPad = new TouchPad('NONE', 'NONE', NONE);
 	public var hitbox:Hitbox = new Hitbox(NONE);
-
 	public function new(?forceType:Int, ?extra:Bool = true)
 	{
 		super();

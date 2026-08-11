@@ -1,11 +1,13 @@
-package mobile.objects;
+package lucas.mobile.objects;
+
+import lucas.mobile.backend.MobileScaleMode;
 
 import openfl.display.BitmapData;
 import openfl.display.Shape;
+import openfl.geom.Matrix;
+
 import flixel.graphics.FlxGraphic;
 import flixel.util.FlxSignal.FlxTypedSignal;
-import openfl.geom.Matrix;
-import mobile.backend.MobileScaleMode;
 
 /**
  * A zone with 4 hint's (A hitbox).

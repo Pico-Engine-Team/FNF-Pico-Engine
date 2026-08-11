@@ -1,4 +1,4 @@
-package mobile.backend;
+package lucas.mobile.backend;
 
 import flixel.input.touch.FlxTouch;
 import flixel.math.FlxPoint;

@@ -1,4 +1,4 @@
-package mobile.objects;
+package lucas.mobile.objects;
 
 import flixel.input.FlxInput;
 import flixel.input.FlxPointer;
@@ -8,10 +8,6 @@ import flixel.util.FlxDestroyUtil.IFlxDestroyable;
 import flixel.input.mouse.FlxMouseButton;
 #end
 
-/**
- * A simple button class that calls a function when clicked by the touch.
- * @author: Karim Akra and Homura Akemi (HomuHomu833)
- */
 class TouchButton extends TypedTouchButton<FlxSprite>
 {
 	/**

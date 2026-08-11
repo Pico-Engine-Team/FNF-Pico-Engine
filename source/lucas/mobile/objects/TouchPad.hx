@@ -1,12 +1,8 @@
-package mobile.objects;
+package lucas.mobile.objects;
 
 import flixel.util.FlxSignal.FlxTypedSignal;
 
-/**
- * ...
- * @author: Karim Akra and Homura Akemi (HomuHomu833)
- */
-@:access(mobile.objects.TouchButton)
+@:access(lucas.mobile.objects.TouchButton)
 class TouchPad extends MobileInputManager implements IMobileControls
 {
 	public var buttonLeft:TouchButton = new TouchButton(0, 0, [MobileInputID.LEFT, MobileInputID.NOTE_LEFT]);

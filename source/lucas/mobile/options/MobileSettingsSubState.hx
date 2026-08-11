@@ -1,10 +1,10 @@
-package mobile.options;
+package lucas.mobile.options;
 
-import backend.Mods;
-import options.BaseOptionsMenu;
-import options.Option;
+import funkin.states.options.*;
+import funkin.modding.Mods;
+
 #if android
-import mobile.backend.StorageUtil;
+import lucas.mobile.backend.StorageUtil;
 #end
 
 class MobileSettingsSubState extends BaseOptionsMenu
@@ -122,7 +122,6 @@ class MobileSettingsSubState extends BaseOptionsMenu
 		};
 		addOption(option);
 		#end
-
 		super();
 	}
 }

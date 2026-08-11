@@ -1,4 +1,4 @@
-package mobile.backend;
+package lucas.mobile.backend;
 
 import lime.system.System as LimeSystem;
 import haxe.Timer;

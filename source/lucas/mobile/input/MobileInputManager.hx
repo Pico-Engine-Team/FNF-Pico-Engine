@@ -1,7 +1,7 @@
-package mobile.input;
+package lucas.mobile.input;
 
-import flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup;
 import haxe.ds.Map;
+import flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup;
 
 /**
  * A TouchButton group with functions for input handling
