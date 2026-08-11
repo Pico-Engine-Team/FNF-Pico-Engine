@@ -1,13 +1,5 @@
 package funkin.play;
 
-/**
- * Accuracy + Rank system (substitui o ratingStuff antigo na UI).
- *
- * Display style (freeplay):
- *   HIGHSCORE: 0 [N/A]
- *   ACCURACY: 0% [N/A]
- *   MISSES: 0
- */
 class Rank
 {
 	/**
@@ -114,11 +106,6 @@ class Rank
 			default:   0xFFFFFFFF;
 		};
 	}
-
-	/**
-	 * Hook for PlayState.RecalculateRating.
-	 * ratingName = Rank.applyToPlayState(ratingPercent, songMisses);
-	 */
 	public static function applyToPlayState(accuracy:Float, songMisses:Int = 0):String
 	{
 		return getRank(accuracy, songMisses, songMisses == 0 && accuracy > 0);
