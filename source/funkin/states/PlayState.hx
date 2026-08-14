@@ -633,7 +633,11 @@ class PlayState extends MusicBeatState
 
 		curStage = SONG.stage;
 		if(curStage == 'philly_remix' || curStage == 'philly-remix')
-			SONG.splashSkin = 'noteSplashes/noteSplashes-godot';
+		{
+			// noteStyle controls notes + splashes (no splashSkin)
+			if(SONG.noteStyle == null || SONG.noteStyle.trim().length < 1)
+				SONG.noteStyle = 'godot';
+		}
 
 		var stageData:StageFile = StageData.getStageFile(curStage);
 		defaultCamZoom = stageData.defaultZoom;
@@ -732,8 +736,11 @@ class PlayState extends MusicBeatState
 
 		startModchartNamed('scripts/songs/modchart');
 		startModchartNamed('scripts/stages/$curStage/modchart');
-		for (scriptSongName in getSongIdVariationCandidates(songName, SONG, storyDifficulty))
-			startModchartNamed('scripts/songs/$scriptSongName/modchart');
+		if(SONG == null || SONG.enableSongScripts != false)
+		{
+			for (scriptSongName in getSongIdVariationCandidates(songName, SONG, storyDifficulty))
+				startModchartNamed('scripts/songs/$scriptSongName/modchart');
+		}
 		#end
 			
 		var camPos:FlxPoint = FlxPoint.get(girlfriendCameraOffset[0], girlfriendCameraOffset[1]);
@@ -879,10 +886,15 @@ class PlayState extends MusicBeatState
 		noteTypes = null;
 		eventsPushed = null;
 
-		// SONG SPECIFIC SCRIPTS
+		// SONG SPECIFIC SCRIPTS (toggle via chart enableSongScripts)
 		#if (LUA_ALLOWED || HSCRIPT_ALLOWED)
-		for (scriptSongName in getSongIdVariationCandidates(songName, SONG, storyDifficulty))
-			startScriptsInFolder('scripts/songs/$scriptSongName/');
+		if(SONG == null || SONG.enableSongScripts != false)
+		{
+			for (scriptSongName in getSongIdVariationCandidates(songName, SONG, storyDifficulty))
+				startScriptsInFolder('scripts/songs/$scriptSongName/');
+		}
+		else
+			trace('[PlayState] Song scripts disabled (enableSongScripts = false)');
 		#end
 
 		if(eventNotes.length > 0)
@@ -1543,7 +1555,13 @@ class PlayState extends MusicBeatState
 
 	inline function noteStyleUiAntialias(assetName:String):Bool
 	{
-		return ClientPrefs.data.antialiasing && !Note.noteStyleUiIsPixel(assetName, isPixelStage);
+		var stylePixel:Bool = Note.noteStyleUsesPixel() || Note.noteStyleUiIsPixel(assetName, false);
+		return ClientPrefs.data.antialiasing && !stylePixel;
+	}
+
+	inline function noteStyleUiPixelFallback():Bool
+	{
+		return Note.noteStyleUsesPixel();
 	}
 
 	public function startCountdown()
@@ -1603,15 +1621,15 @@ class PlayState extends MusicBeatState
 						FlxG.sound.play(Paths.sound(Note.resolveNoteStyleUiSound('countdownThree', 'intro3' + introSoundsSuffix)), 0.6);
 						tick = THREE;
 					case 1:
-						countdownReady = createCountdownSprite(introAlts[0], noteStyleUiAntialias('countdownTwo'), noteStyleUiScale('countdownTwo', isPixelStage ? daPixelZoom : 1));
+						countdownReady = createCountdownSprite(introAlts[0], noteStyleUiAntialias('countdownTwo'), noteStyleUiScale('countdownTwo', noteStyleUiPixelFallback() ? daPixelZoom : 1));
 						FlxG.sound.play(Paths.sound(Note.resolveNoteStyleUiSound('countdownTwo', 'intro2' + introSoundsSuffix)), 0.6);
 						tick = TWO;
 					case 2:
-						countdownSet = createCountdownSprite(introAlts[1], noteStyleUiAntialias('countdownOne'), noteStyleUiScale('countdownOne', isPixelStage ? daPixelZoom : 1));
+						countdownSet = createCountdownSprite(introAlts[1], noteStyleUiAntialias('countdownOne'), noteStyleUiScale('countdownOne', noteStyleUiPixelFallback() ? daPixelZoom : 1));
 						FlxG.sound.play(Paths.sound(Note.resolveNoteStyleUiSound('countdownOne', 'intro1' + introSoundsSuffix)), 0.6);
 						tick = ONE;
 					case 3:
-						countdownGo = createCountdownSprite(introAlts[2], noteStyleUiAntialias('countdownGo'), noteStyleUiScale('countdownGo', isPixelStage ? daPixelZoom : 1));
+						countdownGo = createCountdownSprite(introAlts[2], noteStyleUiAntialias('countdownGo'), noteStyleUiScale('countdownGo', noteStyleUiPixelFallback() ? daPixelZoom : 1));
 						FlxG.sound.play(Paths.sound(Note.resolveNoteStyleUiSound('countdownGo', 'introGo' + introSoundsSuffix)), 0.6);
 						tick = GO;
 					case 4:
@@ -3457,7 +3475,8 @@ class PlayState extends MusicBeatState
 			comboSpr.y = rating.y + 80;
 		}
 
-		var popupScale:Float = !PlayState.isPixelStage ? 0.7 : daPixelZoom * 0.85;
+		// Scale do combo/rating vem do noteStyle (allowPixel define fallback pixel)
+		var popupScale:Float = !Note.noteStyleUsesPixel() ? 0.7 : daPixelZoom * 0.85;
 		rating.setGraphicSize(Std.int(rating.width * noteStyleUiScale(ratingUiAsset, popupScale)));
 		comboSpr.setGraphicSize(Std.int(comboSpr.width * noteStyleUiScale('combo', popupScale)));
 
@@ -3484,7 +3503,7 @@ class PlayState extends MusicBeatState
 				numScore.y = rating.y + 140;
 			}
 
-			numScore.setGraphicSize(Std.int(numScore.width * noteStyleUiScale(numberUiAsset, !PlayState.isPixelStage ? 0.5 : daPixelZoom)));
+			numScore.setGraphicSize(Std.int(numScore.width * noteStyleUiScale(numberUiAsset, !Note.noteStyleUsesPixel() ? 0.5 : daPixelZoom)));
 			numScore.updateHitbox();
 
 			numScore.acceleration.y = FlxG.random.int(200, 300) * playbackRate * playbackRate;
@@ -4208,6 +4227,7 @@ class PlayState extends MusicBeatState
 	public function startModchartNamed(scriptBase:String)
 	{
 		if(!ClientPrefs.data.modcharts) return;
+		if(SONG != null && SONG.useModcharts == false) return;
 
 		#if HSCRIPT_ALLOWED
 		startHScriptsNamed('$scriptBase.hx');
@@ -4219,6 +4239,7 @@ class PlayState extends MusicBeatState
 	public function startModchartXmlNamed(scriptFile:String):Bool
 	{
 		if(!ClientPrefs.data.modcharts) return false;
+		if(SONG != null && SONG.useModcharts == false) return false;
 
 		#if MODS_ALLOWED
 		var scriptToLoad:String = Paths.modFolders(scriptFile);
@@ -4250,6 +4271,7 @@ class PlayState extends MusicBeatState
 	function callOnModchartXmlPushed(event:EventNote)
 	{
 		if(!ClientPrefs.data.modcharts) return;
+		if(SONG != null && SONG.useModcharts == false) return;
 		if(modchartXmls.length < 1) return;
 
 		for (xml in modchartXmls)
