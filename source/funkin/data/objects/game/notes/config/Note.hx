@@ -3,6 +3,8 @@ package funkin.data.objects.game.notes.config;
 import funkin.data.shaders.RGBPalette;
 import funkin.data.objects.game.notes.data.StrumNote;
 import funkin.data.objects.game.notes.config.NoteTypesConfig;
+
+import funkin.data.objects.game.characters.Character;
 import funkin.data.shaders.RGBPalette.RGBShaderReference;
 import funkin.utils.engines.psych.PsychAnimationController;
 
@@ -159,9 +161,9 @@ class Note extends FlxSprite
 	public var noteSplashData:NoteSplashData = {
 		disabled: false,
 		texture: null,
-		antialiasing: !PlayState.isPixelStage,
+		antialiasing: !noteStyleUsesPixel(),
 		useGlobalShader: false,
-		useRGBShader: (PlayState.SONG != null) ? !(PlayState.SONG.disableNoteRGB == true) : true,
+		useRGBShader: true,
 		r: -1,
 		g: -1,
 		b: -1,
@@ -252,34 +254,33 @@ class Note extends FlxSprite
 		noteSplashData.texture = songSplashSkinForMustPress(mustPress);
 		defaultRGB();
 
-		if(noteData > -1 && noteType != value) {
-			switch(value) {
+		if(noteData > -1 && noteType != value)
+		{
+			switch(value)
+			{
 				case 'Hurt Note':
 					ignoreNote = mustPress;
-					//reloadNote('HURTNOTE_assets');
-					//this used to change the note texture to HURTNOTE_assets.png,
-					//but i've changed it to something more optimized with the implementation of RGBPalette:
 
-					// note colors
 					rgbShader.r = 0xFF101010;
 					rgbShader.g = 0xFFFF0000;
 					rgbShader.b = 0xFF990022;
 
-					// splash data and colors
 					noteSplashData.r = 0xFFFF0000;
 					noteSplashData.g = 0xFF101010;
 					noteSplashData.texture = 'noteSplashes/noteSplashes-electric';
-
-					// gameplay data
+					
 					lowPriority = true;
 					missHealth = isSustainNote ? 0.25 : 0.1;
 					hitCausesMiss = true;
 					hitsound = 'cancelMenu';
 					hitsoundChartEditor = false;
+
 				case 'Alt Animation':
 					animSuffix = '-alt';
+
 				case 'No Animation':
 					noAnimation = true;
+
 					noMissAnimation = true;
 				case 'GF Sing':
 					gfNote = true;
@@ -291,27 +292,58 @@ class Note extends FlxSprite
 		return value;
 	}
 
+	/**
+	 * Character noteStyle → pico_assets | Song/Chart noteStyle → data/notestyles
+	 */
 	public static function songArrowSkinForMustPress(mustPress:Bool):String
 	{
-		return songNoteStyle();
+		var charStyle:String = characterNoteStyleKey(mustPress);
+		if(charStyle != null && charStyle.length > 0)
+			return charStyle;
+
+		var songStyle:String = songNoteStyle();
+		if(songStyle != null && songStyle.length > 0)
+			return songStyle;
+
+		return defaultSongNoteStyle();
+	}
+
+	public static function usesCharacterNoteStyle(mustPress:Bool):Bool
+	{
+		var key:String = characterNoteStyleKey(mustPress);
+		return key != null && key.length > 0;
+	}
+
+	public static function characterNoteStyleKey(mustPress:Bool):String
+	{
+		if(PlayState.instance == null)
+			return null;
+
+		var char:Character = mustPress ? PlayState.instance.boyfriend : PlayState.instance.dad;
+		if(char == null || char.noteStyle == null || char.noteStyle.trim().length < 1)
+			return null;
+
+		var raw:String = char.noteStyle.trim();
+		var key:String = normalizeCharacterNoteStyleName(raw);
+		if(key != null && key.length > 0)
+			return key;
+		return raw;
 	}
 
 	public static function songNoteStyle():String
 	{
+		// ChartingState / SONG.noteStyle → only data/notestyles
 		var skin:String = null;
 		if(PlayState.SONG != null)
-		{
 			skin = PlayState.SONG.noteStyle;
-			if(skin == null || skin.trim().length < 1)
-				skin = PlayState.SONG.arrowSkin;
-		}
-		var clean:String = normalizeNoteStyleName(skin);
+		var clean:String = normalizeSongNoteStyleName(skin);
 		if(clean.length < 1 && PlayState.isPixelStage)
 			clean = defaultSongNoteStyle();
 		return clean;
 	}
 
-	public static function normalizeNoteStyleName(skin:String):String
+	/** Song/chart noteStyle: data/notestyles only (NOT pico_assets) */
+	public static function normalizeSongNoteStyleName(skin:String):String
 	{
 		if(skin == null) return '';
 
@@ -328,8 +360,6 @@ class Note extends FlxSprite
 			clean = clean.substr('data/notestyles/'.length);
 		if(clean.startsWith('notestyles/'))
 			clean = clean.substr('notestyles/'.length);
-		if(clean.startsWith('assets/images/'))
-			clean = clean.substr('assets/images/'.length);
 		if(clean.startsWith('assets/shared/data/notestyles/'))
 			clean = clean.substr('assets/shared/data/notestyles/'.length);
 
@@ -346,10 +376,64 @@ class Note extends FlxSprite
 		if(styleKey.length > 0 && textAssetExists('data/notestyles/$styleKey.json'))
 			return styleKey;
 
+		// Legacy shared noteSkins folder (still chart/shared, not pico)
 		if(clean.indexOf('/') < 0 && (imageAssetExists('noteSkins/$clean') || textAssetExists('images/noteSkins/$clean.json')))
-			clean = 'noteSkins/$clean';
+			return 'noteSkins/$clean';
 
-		return clean;
+		// Keep typed name so ChartingState can set future styles
+		return styleKey.length > 0 ? styleKey : clean;
+	}
+
+	/** Character noteStyle: pico_assets game/custom-notes only */
+	public static function normalizeCharacterNoteStyleName(skin:String):String
+	{
+		if(skin == null) return '';
+
+		var clean:String = skin.trim().replace('\\', '/');
+		if(clean.length < 1) return '';
+
+		var lower:String = clean.toLowerCase();
+		if(lower == 'default' || lower == 'normal')
+			return '';
+
+		if(clean.startsWith('game/custom-notes/data/'))
+			clean = clean.substr('game/custom-notes/data/'.length);
+		if(clean.startsWith('custom-notes/data/'))
+			clean = clean.substr('custom-notes/data/'.length);
+		if(clean.startsWith('data/'))
+			clean = clean.substr('data/'.length);
+
+		for (extension in ['.png', '.xml', '.json'])
+		{
+			if(clean.endsWith(extension))
+			{
+				clean = clean.substr(0, clean.length - extension.length);
+				break;
+			}
+		}
+
+		var styleKey:String = noteStyleKey(clean);
+		if(styleKey.length < 1) return clean;
+
+		var picoPath:String = picoCustomNoteJsonPath(styleKey);
+		if(picoPath != null && textAssetExists(picoPath))
+			return styleKey;
+
+		// Still return key — assets may load from pico images even without json
+		return styleKey;
+	}
+
+	/** @deprecated use normalizeSongNoteStyleName / normalizeCharacterNoteStyleName */
+	public static function normalizeNoteStyleName(skin:String):String
+	{
+		// Prefer song (data/notestyles), then character (pico)
+		var song:String = normalizeSongNoteStyleName(skin);
+		if(song.length > 0 && textAssetExists('data/notestyles/$song.json'))
+			return song;
+		var char:String = normalizeCharacterNoteStyleName(skin);
+		if(char.length > 0)
+			return char;
+		return song;
 	}
 
 	public static function defaultSongNoteStyle():String
@@ -365,22 +449,16 @@ class Note extends FlxSprite
 
 	public static function songSplashSkinForMustPress(mustPress:Bool):Null<String>
 	{
-		var skin:String = null;
-		if(PlayState.SONG != null)
+		// Splash vem do noteStyle (personagem / música) — arrowSkin/splashSkin removidos
+		var style:String = songArrowSkinForMustPress(mustPress);
+		if(style != null && style.length > 0)
 		{
-			skin = PlayState.SONG.splashSkin;
-			if(skin == null || skin.trim().length < 1)
-			{
-				var noteStyle:String = songNoteStyle();
-				if(noteStyle != null && noteStyle.length > 0)
-				{
-					var noteSkinConfig:NoteSkinConfig = getNoteSkinConfig(noteStyle);
-					if(noteSkinConfig != null)
-						skin = noteSkinConfig.noteSplashAssetPath;
-				}
-			}
+			var cfg:NoteSkinConfig = getNoteSkinConfig(style, usesCharacterNoteStyle(mustPress));
+			if(cfg != null && cfg.noteSplashAssetPath != null && cfg.noteSplashAssetPath.length > 0)
+				return cfg.noteSplashAssetPath;
 		}
-		return skin;
+
+		return null;
 	}
 
 	public static function getSongNoteSkinConfig():NoteSkinConfig
@@ -388,7 +466,7 @@ class Note extends FlxSprite
 		var noteStyle:String = songNoteStyle();
 		if(noteStyle == null || noteStyle.length < 1)
 			noteStyle = defaultSongNoteStyle();
-		return getNoteSkinConfig(noteStyle);
+		return getNoteSkinConfig(noteStyle, false); // data/notestyles only
 	}
 
 	public static function resolveNoteStyleUiAsset(assetName:String, fallback:String):String
@@ -447,7 +525,7 @@ class Note extends FlxSprite
 		if(noteData > -1)
 		{
 			rgbShader = new RGBShaderReference(this, initializeGlobalRGBShader(noteData));
-			if(PlayState.SONG != null && PlayState.SONG.disableNoteRGB) rgbShader.enabled = false;
+			// RGB é controlado por noteStyle.allowRGB
 			texture = '';
 
 			x += swagWidth * (noteData);
@@ -517,7 +595,7 @@ class Note extends FlxSprite
 		if(globalRgbShaders[noteData] == null)
 		{
 			var newRGB:RGBPalette = new RGBPalette();
-			var arr:Array<FlxColor> = (!PlayState.isPixelStage) ? ClientPrefs.data.arrowRGB[noteData] : ClientPrefs.data.arrowRGBPixel[noteData];
+			var arr:Array<FlxColor> = (!noteStyleUsesPixel(null, mustPress)) ? ClientPrefs.data.arrowRGB[noteData] : ClientPrefs.data.arrowRGBPixel[noteData];
 			
 			if (arr != null && noteData > -1 && noteData <= arr.length)
 			{
@@ -542,106 +620,115 @@ class Note extends FlxSprite
 	var noteSkinConfig:NoteSkinConfig;
 	public var originalHeight:Float = 6;
 	public var correctionOffset:Float = 0; //dont mess with this
-	public function reloadNote(texture:String = '', postfix:String = '') {
-		if(texture == null) texture = '';
-		if(postfix == null) postfix = '';
+public function reloadNote(texture:String = '', postfix:String = '') {
+	if(texture == null) texture = '';
+	if(postfix == null) postfix = '';
 
-		var skin:String = texture + postfix;
-		if(texture.length < 1)
+	var skin:String = texture + postfix;
+	if(texture.length < 1)
+	{
+		// usa noteStyle do personagem (mustPress) → música → default
+		skin = songArrowSkinForMustPress(mustPress);
+		if(skin == null || skin.length < 1)
+			skin = defaultSongNoteStyle();
+		if(postfix != null && postfix.length > 0 && skin.indexOf(postfix) < 0)
+			skin = skin + postfix;
+	}
+	// REMOVIDO: else rgbShader.enabled = false;
+	// Agora o allowRGB do note style decide corretamente
+
+	var animName:String = null;
+	if(animation.curAnim != null) {
+		animName = animation.curAnim.name;
+	}
+
+	var skinPixel:String = skin;
+	var lastScaleY:Float = scale.y;
+	var skinPostfix:String = getNoteSkinPostfix();
+	var customSkin:String = skin + skinPostfix;
+	if(customSkin == _lastValidChecked || Paths.fileExists('images/$customSkin.png', IMAGE))
+	{
+		skin = customSkin;
+		_lastValidChecked = customSkin;
+	}
+	else skinPostfix = '';
+
+	// Character → pico_assets; Song/Chart → data/notestyles
+	var fromChar:Bool = (texture.length < 1) && usesCharacterNoteStyle(mustPress);
+	noteSkinConfig = getNoteSkinConfig(skin, fromChar);
+	var usePixelNotes:Bool = noteStyleUsesPixel(noteSkinConfig);
+	if(usePixelNotes) {
+		var assetType:String = isSustainNote ? 'holdNotePixel' : 'notePixel';
+		var pixelAsset:String = resolveNoteSkinAsset(skin, noteSkinConfig, assetType);
+		if(noteSkinAtlasExists(pixelAsset))
 		{
-			skin = PlayState.SONG != null ? songNoteStyle() : null;
-			if(skin == null || skin.length < 1)
-				skin = defaultSongNoteStyle() + postfix;
+			frames = getNoteSkinAtlas(pixelAsset);
 		}
-		else rgbShader.enabled = false;
-
-		var animName:String = null;
-		if(animation.curAnim != null) {
-			animName = animation.curAnim.name;
-		}
-
-		var skinPixel:String = skin;
-		var lastScaleY:Float = scale.y;
-		var skinPostfix:String = getNoteSkinPostfix();
-		var customSkin:String = skin + skinPostfix;
-		if(customSkin == _lastValidChecked || Paths.fileExists('images/$customSkin.png', IMAGE))
+		else
 		{
-			skin = customSkin;
-			_lastValidChecked = customSkin;
-		}
-		else skinPostfix = '';
-
-		noteSkinConfig = getNoteSkinConfig(skin);
-		if(PlayState.isPixelStage) {
-			var assetType:String = isSustainNote ? 'holdNotePixel' : 'notePixel';
-			var pixelAsset:String = resolveNoteSkinAsset(skin, noteSkinConfig, assetType);
-			if(noteSkinAtlasExists(pixelAsset))
+			if(!noteSkinImageExists(pixelAsset))
 			{
-				frames = getNoteSkinAtlas(pixelAsset);
+				var fallbackAsset:String = fallbackNoteSkinAsset(skin, assetType);
+				if(noteSkinImageExists(fallbackAsset))
+					pixelAsset = fallbackAsset;
 			}
-			else
+
+			var graphic = getNoteSkinGraphic(pixelAsset);
+			if(graphic == null)
 			{
-				if(!noteSkinImageExists(pixelAsset))
-				{
-					var fallbackAsset:String = fallbackNoteSkinAsset(skin, assetType);
-					if(noteSkinImageExists(fallbackAsset))
-						pixelAsset = fallbackAsset;
-				}
-
-				var graphic = getNoteSkinGraphic(pixelAsset);
-				if(graphic == null)
-				{
-					var defaultPixelAsset:String = isSustainNote ? 'noteSkins/pixel/NOTE_assetsENDS' : 'noteSkins/pixel/NOTE_assets';
-					graphic = getNoteSkinGraphic(defaultPixelAsset);
-					if(graphic != null)
-						pixelAsset = defaultPixelAsset;
-				}
-				if(graphic == null)
-					return;
-
-				var columns:Int = noteSkinColumns(noteSkinConfig, assetType);
-				var rows:Int = noteSkinRows(noteSkinConfig, assetType);
-				if(columns < 1) columns = 1;
-				if(rows < 1) rows = 1;
-				loadGraphic(graphic, true, Math.floor(graphic.width / columns), Math.floor(graphic.height / rows));
-				if(isSustainNote)
-					originalHeight = graphic.height / rows;
+				var defaultPixelAsset:String = isSustainNote ? 'noteSkins/pixel/NOTE_assetsENDS' : 'noteSkins/pixel/NOTE_assets';
+				graphic = getNoteSkinGraphic(defaultPixelAsset);
+				if(graphic != null)
+					pixelAsset = defaultPixelAsset;
 			}
-			loadNoteAnims(assetType);
-			antialiasing = false;
-			if(noteSkinConfig != null && !noteSkinConfig.allowRGB)
-				rgbShader.enabled = false;
-
-			if(isSustainNote) {
-				offsetX += _lastNoteOffX;
-				_lastNoteOffX = (width - 7) * (PlayState.daPixelZoom / 2);
-				offsetX -= _lastNoteOffX;
-			}
-		} else {
-			var noteAsset:String = resolveNoteSkinAsset(skin, noteSkinConfig, isSustainNote ? 'sustain' : 'note');
-			if(!noteSkinAtlasExists(noteAsset))
-				noteAsset = 'noteSkins/NOTE_assets';
-			frames = noteSkinAtlasExists(noteAsset) ? getNoteSkinAtlas(noteAsset) : null;
-			if(frames == null)
+			if(graphic == null)
 				return;
-			loadNoteAnims(isSustainNote ? 'sustain' : 'note');
-			if(noteSkinConfig != null && !noteSkinConfig.allowRGB)
-				rgbShader.enabled = false;
-			if(!isSustainNote)
-			{
-				centerOffsets();
-				centerOrigin();
-			}
+
+			var columns:Int = noteSkinColumns(noteSkinConfig, assetType);
+			var rows:Int = noteSkinRows(noteSkinConfig, assetType);
+			if(columns < 1) columns = 1;
+			if(rows < 1) rows = 1;
+			loadGraphic(graphic, true, Math.floor(graphic.width / columns), Math.floor(graphic.height / rows));
+			if(isSustainNote)
+				originalHeight = graphic.height / rows;
 		}
+		loadNoteAnims(assetType);
+		antialiasing = false;
+		if(noteSkinConfig != null && !noteSkinConfig.allowRGB)
+			rgbShader.enabled = false;
 
 		if(isSustainNote) {
-			scale.y = lastScaleY;
+			offsetX += _lastNoteOffX;
+			_lastNoteOffX = (width - 7) * (PlayState.daPixelZoom / 2);
+			offsetX -= _lastNoteOffX;
 		}
-		updateHitbox();
-
-		if(animName != null)
-			animation.play(animName, true);
+	} else {
+		var noteAsset:String = resolveNoteSkinAsset(skin, noteSkinConfig, isSustainNote ? 'sustain' : 'note');
+		if(!noteSkinAtlasExists(noteAsset))
+			noteAsset = 'noteSkins/NOTE_assets';
+		frames = noteSkinAtlasExists(noteAsset) ? getNoteSkinAtlas(noteAsset) : null;
+		if(frames == null)
+			return;
+		var normalType:String = isSustainNote ? 'holdNote' : 'note';
+		loadNoteAnims(isSustainNote ? 'sustain' : 'note');
+		if(noteSkinConfig != null && !noteSkinConfig.allowRGB)
+			rgbShader.enabled = false;
+		setGraphicSize(Std.int(width * noteSkinScale(noteSkinConfig, normalType)));
+		if(!isSustainNote)
+		{
+			centerOffsets();
+			centerOrigin();
+		}
 	}
+
+	if(isSustainNote) {
+		scale.y = lastScaleY;
+	}
+	updateHitbox();
+
+	if(animName != null)
+		animation.play(animName, true);
+}
 
 	public static function getNoteSkinPostfix()
 	{
@@ -666,7 +753,10 @@ class Note extends FlxSprite
 		updateHitbox();
 	}
 
-	public static function getNoteSkinConfig(texture:String):NoteSkinConfig
+	/**
+	 * @param fromCharacter true = load from pico_assets only; false = data/notestyles only; null = auto
+	 */
+	public static function getNoteSkinConfig(texture:String, ?fromCharacter:Null<Bool> = null):NoteSkinConfig
 	{
 		if(texture == null || texture.length < 1) return createNoteSkinConfig();
 
@@ -675,13 +765,36 @@ class Note extends FlxSprite
 		var picoJsonPath:String = styleKey.length > 0 ? picoCustomNoteJsonPath(styleKey) : null;
 		var hasPicoJson:Bool = picoJsonPath != null && textAssetExists(picoJsonPath);
 		var hasStyleJson:Bool = styleKey.length > 0 && textAssetExists(styleJsonPath);
-		var cachePath:String = hasPicoJson ? picoJsonPath : (hasStyleJson ? 'data/notestyles/$styleKey' : 'images/$texture');
+
+		// Separate sources:
+		// - Character noteStyle → pico_assets
+		// - Chart/Song noteStyle → data/notestyles
+		var usePico:Bool = false;
+		var useShared:Bool = false;
+		if(fromCharacter == true)
+		{
+			usePico = hasPicoJson;
+			useShared = false;
+		}
+		else if(fromCharacter == false)
+		{
+			usePico = false;
+			useShared = hasStyleJson;
+		}
+		else
+		{
+			// auto: prefer matching path that exists
+			usePico = hasPicoJson;
+			useShared = !usePico && hasStyleJson;
+		}
+
+		var cachePath:String = usePico ? picoJsonPath : (useShared ? 'data/notestyles/$styleKey' : 'images/$texture');
 		if(noteSkinConfigs.exists(cachePath))
 			return noteSkinConfigs.get(cachePath);
 
 		var config:NoteSkinConfig = createNoteSkinConfig();
 		var loadedPath:String = null;
-		if(hasPicoJson)
+		if(usePico)
 		{
 			try
 			{
@@ -694,11 +807,11 @@ class Note extends FlxSprite
 			}
 			catch(e:Dynamic)
 			{
-				trace('[NoteSkin] Failed to parse $picoJsonPath: $e');
+				trace('[NoteSkin] Failed to parse pico $picoJsonPath: $e');
 			}
 		}
 
-		if(loadedPath == null && hasStyleJson)
+		if(loadedPath == null && useShared)
 		{
 			try
 			{
@@ -779,7 +892,7 @@ class Note extends FlxSprite
 			pixelHoldScale: PlayState.daPixelZoom,
 			pixelStrumScale: PlayState.daPixelZoom,
 			allowRGB: true,
-			allowPixel: true,
+			allowPixel: false,
 			noteAssetPath: null,
 			holdAssetPath: null,
 			strumAssetPath: null,
@@ -827,7 +940,9 @@ class Note extends FlxSprite
 		config.pixelHoldScale = PlayState.daPixelZoom;
 		config.pixelStrumScale = PlayState.daPixelZoom;
 		config.allowRGB = noteSkinBool(Reflect.field(raw, 'allowRGB'), config.allowRGB);
-		config.allowPixel = noteSkinBool(Reflect.field(raw, 'allowPixel'), config.allowPixel);
+		// allowPixel / isPixel no root → pixel mode do estilo (sem stageUI)
+		var rootPixel:Bool = noteSkinBool(Reflect.field(raw, 'isPixel'), false);
+		config.allowPixel = noteSkinBool(Reflect.field(raw, 'allowPixel'), rootPixel);
 		parseNoteSplashAsset(config, firstNoteSkinField(raw, ['noteSplashes', 'noteSplash', 'splashSkin']));
 
 		var assets:Dynamic = Reflect.field(raw, 'assets');
@@ -1322,7 +1437,18 @@ class Note extends FlxSprite
 
 	public static function noteSkinAtlasExists(assetPath:String):Bool
 	{
-		return imageAssetExists(assetPath) && textAssetExists('images/$assetPath.xml');
+		if(!imageAssetExists(assetPath))
+			return false;
+
+		if(textAssetExists('images/$assetPath.xml'))
+			return true;
+
+		#if sys
+		var picoXml:String = picoNoteSkinAssetPath(assetPath, 'xml');
+		if(picoXml != null && sys.FileSystem.exists(picoXml))
+			return true;
+		#end
+		return false;
 	}
 
 	static function textAssetExists(key:String):Bool
@@ -1360,23 +1486,48 @@ class Note extends FlxSprite
 
 	public static function getNoteSkinAtlas(assetPath:String):FlxAtlasFrames
 	{
+		if(assetPath == null || assetPath.length < 1)
+			return null;
+
 		#if sys
 		var picoXml:String = picoNoteSkinAssetPath(assetPath, 'xml');
 		if(picoXml != null && sys.FileSystem.exists(picoXml))
 		{
 			var graphic:FlxGraphic = getNoteSkinGraphic(assetPath);
 			if(graphic != null)
-				return FlxAtlasFrames.fromSparrow(graphic, sys.io.File.getContent(picoXml));
+			{
+				try
+				{
+					var xmlData:String = sys.io.File.getContent(picoXml);
+					if(xmlData != null && xmlData.length > 0)
+						return FlxAtlasFrames.fromSparrow(graphic, xmlData);
+				}
+				catch(e:Dynamic)
+				{
+					trace('[NoteSkin] Failed atlas from pico $assetPath: $e');
+				}
+			}
 		}
 		#end
-		return Paths.getSparrowAtlas(assetPath);
+
+		try
+		{
+			if(Paths.fileExists('images/$assetPath.png', IMAGE) && Paths.fileExists('images/$assetPath.xml', TEXT))
+				return Paths.getSparrowAtlas(assetPath);
+		}
+		catch(e:Dynamic)
+		{
+			trace('[NoteSkin] Failed atlas $assetPath: $e');
+		}
+		return null;
 	}
 
 	static function picoCustomNoteJsonPath(styleKey:String):String
 	{
 		if(styleKey == null || styleKey.length < 1)
 			return null;
-		return Paths.getPicoFunkinFolder('game/custom-notes/$styleKey.json');
+
+		return Paths.getPicoFunkinFolder('game/custom-notes/data/$styleKey.json');
 	}
 
 	static function picoNoteSkinAssetPath(assetPath:String, extension:String):String
@@ -1389,6 +1540,21 @@ class Note extends FlxSprite
 			return Paths.getPicoFunkinFolder('$clean.$extension');
 		if(clean.startsWith('ui/notes/'))
 			return Paths.getPicoFunkinFolder('game/$clean.$extension');
+
+		// custom-notes/images/<asset>
+		var customImg:String = Paths.getPicoFunkinFolder('game/custom-notes/images/$clean.$extension');
+		#if sys
+		if(customImg != null && sys.FileSystem.exists(customImg))
+			return customImg;
+		#end
+
+		// custom-notes/<asset> (fallback)
+		var customRoot:String = Paths.getPicoFunkinFolder('game/custom-notes/$clean.$extension');
+		#if sys
+		if(customRoot != null && sys.FileSystem.exists(customRoot))
+			return customRoot;
+		#end
+
 		return null;
 	}
 
@@ -1495,6 +1661,44 @@ class Note extends FlxSprite
 		var tempConfig:NoteSkinConfig = createNoteSkinConfig();
 		tempConfig.animations.set(animName, anim);
 		return addAnimationFromConfig(controller, animName, tempConfig, animName, fallbackPrefix, 24, coverPart == 'hold');
+	}
+
+	/**
+	 * Pixel mode from noteStyle.allowPixel / isPixel — does NOT require PlayState.isPixelStage.
+	 */
+	public static function noteStyleUsesPixel(?config:NoteSkinConfig = null, ?mustPress:Null<Bool> = null):Bool
+	{
+		if(config == null)
+		{
+			if(mustPress != null)
+				config = getNoteSkinConfig(songArrowSkinForMustPress(mustPress), usesCharacterNoteStyle(mustPress));
+			else
+				config = getSongNoteSkinConfig();
+		}
+		if(config == null) return false;
+		return config.allowPixel == true;
+	}
+
+	/** Scale for notes/strums/holds from the active noteStyle */
+	public static function noteStyleScale(assetType:String, ?mustPress:Null<Bool> = null, fallback:Float = 0.7):Float
+	{
+		var config:NoteSkinConfig = null;
+		if(mustPress != null)
+			config = getNoteSkinConfig(songArrowSkinForMustPress(mustPress), usesCharacterNoteStyle(mustPress));
+		else
+			config = getSongNoteSkinConfig();
+		if(config == null) return fallback;
+
+		var usePixel:Bool = noteStyleUsesPixel(config);
+		var type:String = assetType;
+		if(usePixel)
+		{
+			if(type == 'note' || type == '') type = 'notePixel';
+			else if(type == 'holdNote' || type == 'sustain') type = 'holdNotePixel';
+			else if(type == 'noteStrumline' || type == 'strum') type = 'noteStrumlinePixel';
+		}
+		var scale:Float = noteSkinScale(config, type);
+		return scale > 0 ? scale : fallback;
 	}
 
 	public static function noteSkinScale(config:NoteSkinConfig, assetType:String):Float
