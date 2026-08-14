@@ -224,7 +224,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		chartEditorSave = new FlxSave();
 		chartEditorSave.bind('chart_editor_data', CoolUtil.getSavePath());
 
-		bg = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
+		bg = new FlxSprite().loadGraphic(Paths.image('menus/bg/menuDesat'));
 		bg.antialiasing = ClientPrefs.data.antialiasing;
 		bg.scrollFactor.set();
 		add(bg);
@@ -254,7 +254,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		dummyArrow.scrollFactor.x = 0;
 		add(dummyArrow);
 
-		vortexIndicator = new FlxSprite(gridBg.x - GRID_SIZE, FlxG.height/2).loadGraphic(Paths.image('editors/vortex_indicator'));
+		vortexIndicator = new FlxSprite(gridBg.x - GRID_SIZE, FlxG.height/2).loadGraphic(Paths.image('editors/chart-editor/notes/vortex_indicator'));
 		vortexIndicator.setGraphicSize(GRID_SIZE);
 		vortexIndicator.updateHitbox();
 		vortexIndicator.scrollFactor.set();
@@ -310,7 +310,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		var iconY:Float = 50;
 		if(SHOW_EVENT_COLUMN)
 		{
-			eventIcon = new FlxSprite(0, iconY).loadGraphic(Paths.image('editors/eventIcon'));
+			eventIcon = new FlxSprite(0, iconY).loadGraphic(Paths.image('editors/chart-editor/unknown-event'));
 			eventIcon.antialiasing = ClientPrefs.data.antialiasing;
 			eventIcon.alpha = 0.6;
 			eventIcon.setGraphicSize(30, 30);
@@ -372,7 +372,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		mainBox.cameras = [camUI];
 		add(mainBox);
 
-		autoSaveIcon = new FlxSprite(50).loadGraphic(Paths.image('editors/autosave'));
+		autoSaveIcon = new FlxSprite(50).loadGraphic(Paths.image('editors/chart-editor/chart-events/chart-autosave'));
 		autoSaveIcon.screenCenter(Y);
 		autoSaveIcon.scale.set(0.6, 0.6);
 		autoSaveIcon.antialiasing = ClientPrefs.data.antialiasing;
@@ -407,11 +407,9 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		{
 			openNewChart();
 		}
-
 		updateJsonData();
 		
-		// TABS
-		////// for main box
+		// TABS For MainBox
 		addChartingTab();
 		addDataTab();
 		addEventsTab();
@@ -419,11 +417,10 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		addSectionTab();
 		addSongTab();
 		
-		////// for upper box
+		// For UpperBox
 		addFileTab();
 		addEditTab();
 		addViewTab();
-		//
 
 		loadMusic();
 		reloadNotesDropdowns();
@@ -440,24 +437,16 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		updateGridVisibility();
 
 		// CHARACTERS FOR THE DROP DOWNS
-		var gameOverCharacters:Array<String> = loadFileList('characters/', 'data/characterList.txt');
-		var characterList:Array<String> = gameOverCharacters.filter((name:String) -> (!name.endsWith('-dead') && !name.endsWith('-death')));
+		var allCharacters:Array<String> = loadFileList('data/characters/', 'data/characterList.txt');
+		var characterList:Array<String> = allCharacters.filter((name:String) -> (!name.endsWith('-dead') && !name.endsWith('-death')));
 		playerDropDown.list = characterList;
 		opponentDropDown.list = characterList;
 		girlfriendDropDown.list = characterList;
 
-		gameOverCharacters.insert(0, '');
-		gameOverCharacters.sort(function(a:String, b:String)
-		{
-			if((a == '' || a.endsWith('-dead') || a.endsWith('-death')) && !(b == '' || b.endsWith('-dead') || b.endsWith('-death'))) return -1; //Prioritize "-dead" or "-death" characters
-			return 0;
-		});
-		gameOverCharDropDown.list = gameOverCharacters;
-
-		stageDropDown.list = loadFileList('stages/', 'data/stageList.txt');
+		stageDropDown.list = loadFileList('data/stages/', 'data/stages/list.txt');
 		onChartLoaded();
 
-		var tipText:FlxText = new FlxText(FlxG.width - 210, FlxG.height - 30, 200, 'Press F1 for Help', 20);
+		var tipText:FlxText = new FlxText(FlxG.width - 210, FlxG.height - 30, 200, 'Press F1 To Help', 20);
 		tipText.cameras = [camUI];
 		tipText.setFormat(null, 16, FlxColor.WHITE, RIGHT);
 		tipText.borderColor = FlxColor.BLACK;
@@ -629,15 +618,11 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		StageData.loadDirectory(PlayState.SONG);
 
 		// DATA TAB
-		gameOverCharDropDown.selectedLabel = PlayState.SONG.gameOverChar;
-		gameOverSndInputText.text = PlayState.SONG.gameOverSound;
-		gameOverLoopInputText.text = PlayState.SONG.gameOverLoop;
-		gameOverRetryInputText.text = PlayState.SONG.gameOverEnd;
 
-		noRGBCheckBox.checked = (PlayState.SONG.disableNoteRGB == true);
-
-		noteTextureInputText.text = PlayState.SONG.arrowSkin;
-		noteSplashesInputText.text = PlayState.SONG.splashSkin;
+		noteStyleInputText.text = PlayState.SONG.noteStyle != null ? PlayState.SONG.noteStyle : '';
+		pauseSongInputText.text = PlayState.SONG.pauseSong != null ? PlayState.SONG.pauseSong : '';
+		enableSongScriptsCheckBox.checked = (PlayState.SONG.enableSongScripts != false);
+		useModchartsCheckBox.checked = (PlayState.SONG.useModcharts != false);
 	}
 	
 	var noteSelectionSine:Float = 0;
@@ -2396,106 +2381,69 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		tab_group.add(opponentMuteCheckBox);
 	}
 
-	var gameOverCharDropDown:PsychUIDropDownMenu;
-	var gameOverSndInputText:PsychUIInputText;
-	var gameOverLoopInputText:PsychUIInputText;
-	var gameOverRetryInputText:PsychUIInputText;
-	var noRGBCheckBox:PsychUICheckBox;
-	var noteTextureInputText:PsychUIInputText;
-	var noteSplashesInputText:PsychUIInputText;
+	var noteStyleInputText:PsychUIInputText;
+	var pauseSongInputText:PsychUIInputText;
+	var enableSongScriptsCheckBox:PsychUICheckBox;
+	var useModchartsCheckBox:PsychUICheckBox;
 	function addDataTab()
 	{
 		var tab_group = mainBox.getTab('Data').menu;
 		var objX = 10;
 		var objY = 25;
-		gameOverCharDropDown = new PsychUIDropDownMenu(objX, objY, [''], function(id:Int, character:String)
+		noteStyleInputText = new PsychUIInputText(objX, objY, 120, '');
+		noteStyleInputText.unfocus = function()
 		{
-			PlayState.SONG.gameOverChar = character;
-			if(character.length < 1) Reflect.deleteField(PlayState.SONG, 'gameOverChar');
-			trace('selected $character');
-		});
+			var style:String = noteStyleInputText.text != null ? noteStyleInputText.text.trim() : '';
+			var prev:String = PlayState.SONG.noteStyle;
+			PlayState.SONG.noteStyle = (style.length > 0) ? Song.cleanNoteStyleName(style) : null;
+			// noteStyle controls notes + splashes (arrowSkin/splashSkin removed)
+			PlayState.SONG.arrowSkin = null;
+			PlayState.SONG.splashSkin = null;
 
-		objY += 40;
-		gameOverSndInputText = new PsychUIInputText(objX, objY, 120, '', 8);
-		gameOverSndInputText.onChange = function(old:String, cur:String)
-		{
-			PlayState.SONG.gameOverSound = cur;
-			if(cur.trim().length < 1) Reflect.deleteField(PlayState.SONG, 'gameOverSound');
-		}
-		objY += 40;
-		gameOverLoopInputText = new PsychUIInputText(objX, objY, 120, '', 8);
-		gameOverLoopInputText.onChange = function(old:String, cur:String)
-		{
-			PlayState.SONG.gameOverLoop = cur;
-			if(cur.trim().length < 1) Reflect.deleteField(PlayState.SONG, 'gameOverLoop');
-		}
-		objY += 40;
-		gameOverRetryInputText = new PsychUIInputText(objX, objY, 120, '', 8);
-		gameOverRetryInputText.onChange = function(old:String, cur:String)
-		{
-			PlayState.SONG.gameOverEnd = cur;
-			if(cur.trim().length < 1) Reflect.deleteField(PlayState.SONG, 'gameOverEnd');
-		}
-
-		objY += 35;
-		noRGBCheckBox = new PsychUICheckBox(objX, objY, 'Disable Note RGB', 100, updateNotesRGB);
-		
-		objY += 40;
-		noteTextureInputText = new PsychUIInputText(objX, objY, 120, '');
-		noteTextureInputText.unfocus = function()
-		{
-			var changed:Bool = false;
-			if(PlayState.SONG.arrowSkin != noteTextureInputText.text) changed = true;
-			PlayState.SONG.arrowSkin = noteTextureInputText.text.trim();
-			if(PlayState.SONG.arrowSkin.trim().length < 1) PlayState.SONG.arrowSkin = null;
-
-			if(changed)
+			if(prev != PlayState.SONG.noteStyle)
 			{
-				var textureLoad:String = 'images/${noteTextureInputText.text}.png';
-				if(Paths.fileExists(textureLoad, IMAGE) || noteTextureInputText.text.trim() == '')
+				for (note in notes)
 				{
-					for (note in notes)
-					{
-						if(note == null) continue;
-						note.reloadNote(note.texture);
-		
-						if(note.width > note.height)
-							note.setGraphicSize(GRID_SIZE);
-						else
-							note.setGraphicSize(0, GRID_SIZE);
-		
-						note.updateHitbox();
-					}
-					if(noteTextureInputText.text.trim().length > 0) showOutput('Reloaded notes to: "$textureLoad"');
-					else showOutput('Reloaded notes to default texture');
-					
+					if(note == null) continue;
+					note.reloadNote(note.texture);
+					if(note.width > note.height)
+						note.setGraphicSize(GRID_SIZE);
+					else
+						note.setGraphicSize(0, GRID_SIZE);
+					note.updateHitbox();
 				}
-				else showOutput('ERROR: "$textureLoad" not found.', true);
+				if(style.length > 0) showOutput('Note Style set to: "$style"');
+				else showOutput('Note Style reset to default');
 			}
 		};
 
-		noteSplashesInputText = new PsychUIInputText(objX + 140, objY, 120, '');
-		noteSplashesInputText.onChange = function(old:String, cur:String)
+		pauseSongInputText = new PsychUIInputText(objX + 140, objY, 120, '');
+		pauseSongInputText.onChange = function(old:String, cur:String)
 		{
-			PlayState.SONG.splashSkin = cur;
-			if(cur.trim().length < 1) PlayState.SONG.splashSkin = null;
-		}
-	
-		tab_group.add(new FlxText(gameOverCharDropDown.x, gameOverCharDropDown.y - 15, 120, 'Game Over Character:'));
-		tab_group.add(new FlxText(gameOverSndInputText.x, gameOverSndInputText.y - 15, 180, 'Game Over Death Sound (sounds/):'));
-		tab_group.add(new FlxText(gameOverLoopInputText.x, gameOverLoopInputText.y - 15, 180, 'Game Over Loop Music (music/):'));
-		tab_group.add(new FlxText(gameOverRetryInputText.x, gameOverRetryInputText.y - 15, 180, 'Game Over Retry Music (music/):'));
-		tab_group.add(gameOverSndInputText);
-		tab_group.add(gameOverLoopInputText);
-		tab_group.add(gameOverRetryInputText);
-		tab_group.add(noRGBCheckBox);
+			var val:String = cur != null ? cur.trim() : '';
+			PlayState.SONG.pauseSong = (val.length > 0) ? val : null;
+		};
 
-		tab_group.add(new FlxText(noteTextureInputText.x, noteTextureInputText.y - 15, 100, 'Note Texture:'));
-		tab_group.add(new FlxText(noteSplashesInputText.x, noteSplashesInputText.y - 15, 120, 'Note Splashes Texture:'));
-		tab_group.add(noteTextureInputText);
-		tab_group.add(noteSplashesInputText);
+		objY += 40;
+		enableSongScriptsCheckBox = new PsychUICheckBox(objX, objY, 'Enable Song Scripts', 140, function()
+		{
+			PlayState.SONG.enableSongScripts = enableSongScriptsCheckBox.checked;
+		});
+		enableSongScriptsCheckBox.checked = (PlayState.SONG.enableSongScripts != false);
 
-		tab_group.add(gameOverCharDropDown); //lowest priority to display properly
+		useModchartsCheckBox = new PsychUICheckBox(objX + 160, objY, 'Use Modcharts', 120, function()
+		{
+			PlayState.SONG.useModcharts = useModchartsCheckBox.checked;
+		});
+		useModchartsCheckBox.checked = (PlayState.SONG.useModcharts != false);
+
+		tab_group.add(new FlxText(noteStyleInputText.x, noteStyleInputText.y - 15, 100, 'Note Style:'));
+		tab_group.add(new FlxText(pauseSongInputText.x, pauseSongInputText.y - 15, 120, 'Pause Song (music/):'));
+		tab_group.add(noteStyleInputText);
+		tab_group.add(pauseSongInputText);
+		tab_group.add(enableSongScriptsCheckBox);
+		tab_group.add(useModchartsCheckBox);
+
 	}
 
 	var eventDropDown:PsychUIDropDownMenu;
@@ -4601,32 +4549,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		return PlayState.SONG.notes != null ? PlayState.SONG.notes[curSec] : null;
 	}
 
-	function updateNotesRGB()
-	{
-		PlayState.SONG.disableNoteRGB = noRGBCheckBox.checked;
-
-		for (note in notes)
-		{
-			if(note == null) continue;
-
-			note.rgbShader.enabled = !noRGBCheckBox.checked;
-			if(note.rgbShader.enabled)
-			{
-				var data = funkin.data.objects.game.notes.config.NoteTypesConfig.loadNoteTypeData(note.noteType);
-				if(data == null || data.length < 1) continue;
-
-				for (line in data)
-				{
-					var prop:String = line.property.join('.');
-					if(prop == 'rgbShader.enabled')
-						note.rgbShader.enabled = line.value;
-				}
-			}
-		}
-
-		for (note in strumLineNotes)
-			note.rgbShader.enabled = !noRGBCheckBox.checked;
-	}
 
 	function updateGridVisibility()
 	{
