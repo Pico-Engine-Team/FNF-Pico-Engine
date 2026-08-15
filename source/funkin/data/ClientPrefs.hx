@@ -107,25 +107,26 @@ class ClientPrefs {
 		'ui_left'		=> [A, LEFT],
 		'ui_down'		=> [S, DOWN],
 		'ui_right'		=> [D, RIGHT],
-		'screenshot'    => [F3],
 		
 		'accept'		=> [ENTER],
 		'back'			=> [BACKSPACE],
 		'pause'			=> [ENTER, ESCAPE],
 		'reset'			=> [R],
-		'reload_state'	=> [F5],
 		
 		'volume_mute'	=> [ZERO],
 		'volume_up'		=> [NUMPADPLUS, PLUS],
 		'volume_down'	=> [NUMPADMINUS, MINUS],
-		
-		'favorites_ui'	=> [E],
+
+		'screenshot'    => [F3],
+		'reload_state'	=> [F5],
+		'favorites_ui'	=> [F],
 		
 		'debug_0'		=> [E],
 		'debug_1'		=> [SEVEN],
 		'debug_2'		=> [EIGHT],
-		'fps_display_toggle' => [F6]
+		'fps_display_toggle' => [F5]
 	];
+	
 	public static var gamepadBinds:Map<String, Array<FlxGamepadInputID>> = [
 		'note_up'		=> [DPAD_UP, Y],
 		'note_left'		=> [DPAD_LEFT, X],
