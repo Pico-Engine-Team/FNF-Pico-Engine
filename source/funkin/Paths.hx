@@ -1,10 +1,11 @@
 package funkin;
 
-import flixel.graphics.frames.FlxFrame.FlxFrameAngle;
-import flixel.graphics.frames.FlxAtlasFrames;
-import flixel.graphics.FlxGraphic;
+import flash.media.Sound;
 import flixel.math.FlxRect;
 import flixel.system.FlxAssets;
+import flixel.graphics.FlxGraphic;
+import flixel.graphics.frames.FlxAtlasFrames;
+import flixel.graphics.frames.FlxFrame.FlxFrameAngle;
 
 import openfl.display.BitmapData;
 import openfl.display3D.textures.RectangleTexture;
@@ -14,7 +15,6 @@ import openfl.system.System;
 import openfl.geom.Rectangle;
 
 import lime.utils.Assets;
-import flash.media.Sound;
 import haxe.Json;
 
 #if flxanimate
@@ -36,7 +36,7 @@ class Paths
 			dumpExclusions.push(key);
 	}
 
-	public static var dumpExclusions:Array<String> = ['assets/shared/music/freakyMenu.$SOUND_EXT'];
+	public static var dumpExclusions:Array<String> = ['assets/shared/music/menu/freakyMenu.$SOUND_EXT'];
 	// haya I love you for the base cache dump I took to the max
 	public static function clearUnusedMemory()
 	{
@@ -196,10 +196,10 @@ class Paths
 		return getSharedPath(file);
 	}
 
-	inline static public function getPicoFunkinFolder(file:String, folder = "pico_assets")
+	inline static public function getFolderPath(file:String, folder = "shared")
 		return 'assets/$folder/$file';
 
-	inline static public function getFolderPath(file:String, folder = "shared")
+	inline static public function getPicoFunkinFolder(file:String, folder = "pico_assets")
 		return 'assets/$folder/$file';
 
 	inline public static function getSharedPath(file:String = '')
@@ -819,10 +819,6 @@ class Paths
 				animationJson = getTextFromFile('images/$originalPath/Animation.json');
 			}
 		}
-
-		//trace(folderOrImg);
-		//trace(spriteJson);
-		//trace(animationJson);
 		spr.loadAtlasEx(folderOrImg, spriteJson, animationJson);
 	}
 	#end
