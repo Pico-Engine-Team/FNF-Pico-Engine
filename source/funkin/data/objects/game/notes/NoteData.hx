@@ -1,14 +1,22 @@
 package funkin.data.objects.game.notes;
 
-import haxe.Json;
 import funkin.data.objects.game.notes.data.Note;
 import funkin.data.objects.game.notes.data.Note.NoteSkinConfig;
 import funkin.data.objects.game.notes.data.Note.NoteSkinUiAsset;
 import funkin.data.objects.game.notes.data.Note.HoldNoteCoverConfig;
 import funkin.data.objects.game.notes.data.NoteSplash;
 import funkin.data.objects.game.characters.Character;
-
 using StringTools;
+
+/**
+ * noteStyle controller (Pico Engine).
+ *
+ * Song / chart styles  → data/notestyles/<name>.json
+ * Character styles     → pico_assets custom-notes
+ *
+ * Note.hx keeps Psych-style reloadNote (texture / NOTE_assets / frames)
+ * and calls into NoteData for style name + flags.
+ */
 
 class NoteData
 {
@@ -25,12 +33,14 @@ class NoteData
 
 class NoteStyleData
 {
-	public var configs:Map<String, NoteSkinConfig> = new Map();
-
 	public function new() {}
 
 	public function clearCache():Void
-		configs = new Map();
+	{
+		try { Note.noteSkinConfigs.clear(); } catch(e:Dynamic) {}
+	}
+
+	// ---------- Style resolution ----------
 
 	public function songStyle(?mustPress:Bool = true):String
 	{
@@ -53,10 +63,12 @@ class NoteStyleData
 
 	public function characterNoteStyleKey(mustPress:Bool):String
 	{
-		if(PlayState.instance == null) return null;
+		if(PlayState.instance == null)
+			return null;
 
 		var char:Character = mustPress ? PlayState.instance.boyfriend : PlayState.instance.dad;
-		if(char == null) return null;
+		if(char == null)
+			return null;
 
 		var rawStyle:Dynamic = Reflect.field(char, 'noteStyle');
 		if(rawStyle == null || Std.string(rawStyle).trim().length < 1)
@@ -87,26 +99,14 @@ class NoteStyleData
 
 	public function defaultSongNoteStyle():String
 	{
-		if(PlayState.isPixelStage && textAssetExists('data/notestyles/pixel.json'))
+		if(PlayState.isPixelStage && textExists('data/notestyles/pixel.json'))
 			return 'pixel';
-		if(textAssetExists('data/notestyles/funkin.json'))
+		if(textExists('data/notestyles/funkin.json'))
 			return 'funkin';
 		return Note.defaultNoteSkin;
 	}
 
-	public function normalizeStyle(?style:String):String
-	{
-		if(style == null || style.trim().length < 1)
-			return defaultSongNoteStyle();
-		var song:String = normalizeSongNoteStyleName(style);
-		if(song.length > 0 && textAssetExists('data/notestyles/' + song + '.json'))
-			return song;
-		var character:String = normalizeCharacterNoteStyleName(style);
-		if(character.length > 0)
-			return character;
-		return song.length > 0 ? song : defaultSongNoteStyle();
-	}
-
+	/** Chart / SONG.noteStyle → data/notestyles only */
 	public function normalizeSongNoteStyleName(skin:String):String
 	{
 		if(skin == null) return '';
@@ -118,19 +118,21 @@ class NoteStyleData
 		if(clean.startsWith('images/')) clean = clean.substr(7);
 		if(clean.startsWith('data/notestyles/')) clean = clean.substr(16);
 		if(clean.startsWith('notestyles/')) clean = clean.substr(11);
+		if(clean.startsWith('assets/shared/data/notestyles/')) clean = clean.substr(30);
 
 		for (ext in ['.png', '.xml', '.json'])
 			if(clean.endsWith(ext))
 				clean = clean.substr(0, clean.length - ext.length);
 
 		var styleKey:String = noteStyleKey(clean);
-		if(styleKey.length > 0 && textAssetExists('data/notestyles/' + styleKey + '.json'))
+		if(styleKey.length > 0 && textExists('data/notestyles/' + styleKey + '.json'))
 			return styleKey;
-		if(clean.indexOf('/') < 0 && imageAssetExists('noteSkins/' + clean))
+		if(clean.indexOf('/') < 0 && imageExists('noteSkins/' + clean))
 			return 'noteSkins/' + clean;
 		return styleKey.length > 0 ? styleKey : clean;
 	}
 
+	/** Character noteStyle → pico custom-notes */
 	public function normalizeCharacterNoteStyleName(skin:String):String
 	{
 		if(skin == null) return '';
@@ -160,27 +162,31 @@ class NoteStyleData
 		return clean;
 	}
 
+	public function normalizeStyle(?style:String):String
+	{
+		if(style == null || style.trim().length < 1)
+			return defaultSongNoteStyle();
+		var song:String = normalizeSongNoteStyleName(style);
+		if(song.length > 0 && textExists('data/notestyles/' + song + '.json'))
+			return song;
+		var character:String = normalizeCharacterNoteStyleName(style);
+		if(character.length > 0)
+			return character;
+		return song.length > 0 ? song : defaultSongNoteStyle();
+	}
+
+	// ---------- Config (delegates parse/cache to Note) ----------
+
 	public function config(?style:String, ?fromCharacter:Null<Bool> = null):NoteSkinConfig
 		return getNoteSkinConfig(style, fromCharacter == true);
 
-	/** Prefer Note's loader so JSON parsing stays in one place during transition */
 	public function getNoteSkinConfig(style:String, fromCharacter:Bool = false):NoteSkinConfig
 	{
 		var key:String = normalizeStyle(style);
-		var cacheKey:String = key + (fromCharacter ? '#char' : '#song');
-		if(configs.exists(cacheKey))
-			return configs.get(cacheKey);
-
-		var cfg:NoteSkinConfig = null;
-		try
-			cfg = Note.getNoteSkinConfig(key, fromCharacter);
-		catch(e:Dynamic)
+		try { return Note.getNoteSkinConfig(key, fromCharacter); } catch(e:Dynamic)
 		{
-			try cfg = Note.getNoteSkinConfig(key) catch(e2:Dynamic) cfg = null;
+			try { return Note.getNoteSkinConfig(key); } catch(e2:Dynamic) { return null; }
 		}
-		if(cfg != null)
-			configs.set(cacheKey, cfg);
-		return cfg;
 	}
 
 	public function getSongNoteSkinConfig():NoteSkinConfig
@@ -191,19 +197,18 @@ class NoteStyleData
 		return getNoteSkinConfig(name, false);
 	}
 
-	/** Psych: empty texture → resolve via noteStyle */
+	/**
+	 * Psych reloadNote: empty texture → resolve via noteStyle.
+	 * Usage: texture = NoteData.noteStyle.psychTexture(texture, mustPress);
+	 */
 	public function psychTexture(?texture:String, ?mustPress:Bool = true):String
 	{
 		if(texture != null && texture.trim().length > 0)
 			return texture.trim();
-
-		var style:String = songStyle(mustPress);
-		var pixel:Bool = noteStyleUsesPixel(getNoteSkinConfig(style, usesCharacterNoteStyle(mustPress)));
-		try if(!pixel && PlayState.isPixelStage) pixel = true; catch(e:Dynamic) {}
-
-		var path:String = note(style, pixel);
-		return (path != null && path.length > 0) ? path : Note.defaultNoteSkin;
+		return songStyle(mustPress);
 	}
+
+	// ---------- Assets / flags ----------
 
 	public function note(?style:String, ?pixel:Bool = false):String
 		return asset(style, pixel ? 'notePixel' : 'note');
@@ -214,16 +219,28 @@ class NoteStyleData
 	public function noteStrumline(?style:String, ?pixel:Bool = false):String
 		return asset(style, pixel ? 'noteStrumlinePixel' : 'noteStrumline');
 
+	public function asset(?style:String, assetType:String):String
+	{
+		var resolvedStyle:String = normalizeStyle(style);
+		var cfg:NoteSkinConfig = getNoteSkinConfig(resolvedStyle, false);
+		try
+		{
+			var r:String = Note.resolveNoteSkinAsset(resolvedStyle, cfg, assetType);
+			if(r != null && r.length > 0) return r;
+		}
+		catch(e:Dynamic) {}
+		if(assetType.indexOf('Pixel') >= 0)
+			return 'noteSkins/pixel/NOTE_assets';
+		return Note.defaultNoteSkin;
+	}
+
 	public function noteSplash(?style:String, ?mustPress:Bool = true):String
 	{
 		var resolved:String = style != null ? normalizeStyle(style) : songStyle(mustPress);
-		var skinConfig:NoteSkinConfig = getNoteSkinConfig(resolved, usesCharacterNoteStyle(mustPress));
-		if(skinConfig != null && skinConfig.noteSplashAssetPath != null && skinConfig.noteSplashAssetPath.length > 0)
-			return skinConfig.noteSplashAssetPath;
-		try
-			return NoteSplash.defaultNoteSplash + NoteSplash.getSplashSkinPostfix();
-		catch(e:Dynamic)
-			return 'noteSplashes';
+		var cfg:NoteSkinConfig = getNoteSkinConfig(resolved, usesCharacterNoteStyle(mustPress));
+		if(cfg != null && cfg.noteSplashAssetPath != null && cfg.noteSplashAssetPath.length > 0)
+			return cfg.noteSplashAssetPath;
+		try { return NoteSplash.defaultNoteSplash + NoteSplash.getSplashSkinPostfix(); } catch(e:Dynamic) { return 'noteSplashes'; }
 	}
 
 	public function songSplashSkinForMustPress(mustPress:Bool):Null<String>
@@ -234,21 +251,6 @@ class NoteStyleData
 		if(cfg != null && cfg.noteSplashAssetPath != null && cfg.noteSplashAssetPath.length > 0)
 			return cfg.noteSplashAssetPath;
 		return null;
-	}
-
-	public function asset(?style:String, assetType:String):String
-	{
-		var resolvedStyle:String = normalizeStyle(style);
-		var cfg:NoteSkinConfig = getNoteSkinConfig(resolvedStyle);
-		try
-		{
-			var r:String = Note.resolveNoteSkinAsset(resolvedStyle, cfg, assetType);
-			if(r != null && r.length > 0) return r;
-		}
-		catch(e:Dynamic) {}
-		if(assetType.indexOf('Pixel') >= 0) return 'pixelUI/NOTE_assets';
-		if(resolvedStyle == 'funkin') return Note.defaultNoteSkin;
-		return resolvedStyle;
 	}
 
 	public function allowRGB(?style:String):Bool
@@ -274,6 +276,8 @@ class NoteStyleData
 		}
 		return cfg != null && cfg.allowPixel == true;
 	}
+
+	// ---------- UI ----------
 
 	public function ui(assetName:String, fallback:String):String
 	{
@@ -317,10 +321,46 @@ class NoteStyleData
 		return cfg.uiAssets.get(assetName);
 	}
 
+	// ---------- Hold cover (delegate Note) ----------
+
 	public function holdNoteCover(?style:String, noteData:Int = 0):String
 	{
-		try return Note.resolveHoldNoteCoverAsset(config(style), noteData);
-		catch(e:Dynamic) return null;
+		try { return Note.resolveHoldNoteCoverAsset(config(style), noteData); } catch(e:Dynamic) { return null; }
+	}
+
+	public function holdNoteCoverEnabled(?style:String):Bool
+	{
+		try { return Note.holdNoteCoverEnabled(config(style)); } catch(e:Dynamic) { return false; }
+	}
+
+	public function holdNoteCoverScale(?style:String):Float
+	{
+		try { return Note.holdNoteCoverScale(config(style)); } catch(e:Dynamic) { return 1; }
+	}
+
+	public function holdNoteCoverIsPixel(?style:String):Bool
+	{
+		try { return Note.holdNoteCoverIsPixel(config(style)); } catch(e:Dynamic) { return false; }
+	}
+
+	public function holdNoteCoverColumns(?style:String):Int
+	{
+		try { return Note.holdNoteCoverColumns(config(style)); } catch(e:Dynamic) { return 4; }
+	}
+
+	public function holdNoteCoverRows(?style:String):Int
+	{
+		try { return Note.holdNoteCoverRows(config(style)); } catch(e:Dynamic) { return 2; }
+	}
+
+	public function holdNoteCoverOffset(?style:String):Array<Float>
+	{
+		try { return Note.holdNoteCoverOffset(config(style)); } catch(e:Dynamic) { return [0, 0]; }
+	}
+
+	public function holdNoteCoverCenterOnStrum(?style:String):Bool
+	{
+		try { return Note.holdNoteCoverCenterOnStrum(config(style)); } catch(e:Dynamic) { return true; }
 	}
 
 	public function holdNoteCoverConfig(?style:String):HoldNoteCoverConfig
@@ -329,63 +369,13 @@ class NoteStyleData
 		return c != null ? c.holdNoteCover : null;
 	}
 
-	public function holdNoteCoverEnabled(?style:String):Bool
+	function textExists(key:String):Bool
 	{
-		try return Note.holdNoteCoverEnabled(config(style));
-		catch(e:Dynamic) return false;
+		try { return Paths.fileExists(key, TEXT); } catch(e:Dynamic) { return false; }
 	}
 
-	public function holdNoteCoverScale(?style:String):Float
+	function imageExists(key:String):Bool
 	{
-		try return Note.holdNoteCoverScale(config(style));
-		catch(e:Dynamic) return 1;
-	}
-
-	public function holdNoteCoverIsPixel(?style:String):Bool
-	{
-		try return Note.holdNoteCoverIsPixel(config(style));
-		catch(e:Dynamic) return false;
-	}
-
-	public function holdNoteCoverColumns(?style:String):Int
-	{
-		try return Note.holdNoteCoverColumns(config(style));
-		catch(e:Dynamic) return 4;
-	}
-
-	public function holdNoteCoverRows(?style:String):Int
-	{
-		try return Note.holdNoteCoverRows(config(style));
-		catch(e:Dynamic) return 2;
-	}
-
-	public function holdNoteCoverOffset(?style:String):Array<Float>
-	{
-		try return Note.holdNoteCoverOffset(config(style));
-		catch(e:Dynamic) return [0, 0];
-	}
-
-	public function holdNoteCoverCenterOnStrum(?style:String):Bool
-	{
-		try return Note.holdNoteCoverCenterOnStrum(config(style));
-		catch(e:Dynamic) return true;
-	}
-
-	public function hasImage(assetPath:String):Bool
-		return imageAssetExists(assetPath);
-
-	public function hasAtlas(assetPath:String):Bool
-		return imageAssetExists(assetPath) && textAssetExists('images/' + assetPath + '.xml');
-
-	public function imageAssetExists(assetPath:String):Bool
-	{
-		if(assetPath == null || assetPath.length < 1) return false;
-		return Paths.fileExists('images/' + assetPath + '.png', IMAGE);
-	}
-
-	public function textAssetExists(key:String):Bool
-	{
-		if(key == null || key.length < 1) return false;
-		return Paths.fileExists(key, TEXT);
+		try { return Paths.fileExists('images/' + key + '.png', IMAGE); } catch(e:Dynamic) { return false; }
 	}
 }
