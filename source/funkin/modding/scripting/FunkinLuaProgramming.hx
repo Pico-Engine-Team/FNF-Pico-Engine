@@ -1,27 +1,22 @@
 #if LUA_ALLOWED
 package funkin.modding.scripting;
 
+// New Souce Code For Pico Engine
 import funkin.play.Song;
 import funkin.play.Highscore;
 
 import funkin.data.WeekData;
-import funkin.data.objects.game.notes.config.Note;
-import funkin.data.objects.game.notes.data.NoteSplash;
-import funkin.data.objects.game.notes.data.StrumNote;
-
-import funkin.data.objects.game.characters.Character;
 import funkin.data.dialogue.DialogueBoxPsych;
+import funkin.data.objects.game.notes.data.Note;
+import funkin.data.objects.game.notes.data.NoteSplash;
+import funkin.data.objects.game.notes.config.StrumNote;
+import funkin.data.objects.game.characters.Character;
 
 import funkin.states.PauseState;
 import funkin.states.GameOverState;
 
 import funkin.menus.MainMenuState;
 import funkin.menus.freeplay.FreeplayMenuState;
-
-import funkin.modding.scripting.psychlua.DebugLuaText;
-import funkin.modding.scripting.psychlua.ModchartSprite;
-import funkin.modding.scripting.psychlua.LuaUtils;
-import funkin.modding.scripting.psychlua.LuaUtils.LuaTweenOptions;
 
 import openfl.Lib;
 import openfl.utils.Assets;
@@ -35,15 +30,21 @@ import flixel.FlxState;
 import flixel.addons.display.FlxRuntimeShader;
 #end
 
+import funkin.modding.scripting.psychlua.LuaUtils;
+import funkin.modding.scripting.psychlua.LuaUtils.LuaTweenOptions;
+
 #if HSCRIPT_ALLOWED
-import funkin.modding.scripting.HScript;
+import funkin.modding.scripting.FunkinHSProgramming;
 #end
+
+import funkin.modding.scripting.psychlua.DebugLuaText;
+import funkin.modding.scripting.psychlua.ModchartSprite;
 
 import flixel.input.keyboard.FlxKey;
 import flixel.input.gamepad.FlxGamepadInputID;
 import haxe.Json;
 
-class FunkinLua
+class FunkinLuaProgramming
 {
 	public var lua:State = null;
 	public var camTarget:FlxCamera;
@@ -52,13 +53,14 @@ class FunkinLua
 	public var closed:Bool = false;
 
 	#if HSCRIPT_ALLOWED
-	public var hscript:HScript = null;
+	public var hscript:FunkinHSProgramming = null;
 	#end
 
 	public var callbacks:Map<String, Dynamic> = new Map<String, Dynamic>();
 	public static var customFunctions:Map<String, Dynamic> = new Map<String, Dynamic>();
 
-	public function new(scriptName:String) {
+	public function new(scriptName:String)
+	{
 		lua = LuaL.newstate();
 		LuaL.openlibs(lua);
 
@@ -206,6 +208,11 @@ class FunkinLua
 		set('splashSkinPostfix', NoteSplash.getSplashSkinPostfix());
 		set('splashAlpha', ClientPrefs.data.splashAlpha);
 
+		set('useCombo', ClientPrefs.data.useCombo);
+		set('useHoldCover', ClientPrefs.data.useHoldCover);
+		set('useHoldAnimation', ClientPrefs.data.useHoldAnimation);
+		set('useNoteSkins', ClientPrefs.data.useNoteSkins);
+
 		// build target (windows, mac, linux, etc.)
 		set('buildTarget', LuaUtils.getBuildTarget());
 
@@ -304,7 +311,7 @@ class FunkinLua
 							return;
 						}
 
-				new FunkinLua(luaPath);
+				new FunkinLuaProgramming(luaPath);
 				return;
 			}
 			luaTrace("addLuaScript: Script doesn't exist!", false, false, FlxColor.RED);
@@ -780,7 +787,7 @@ class FunkinLua
 
 			#if DISCORD_ALLOWED DiscordClient.resetClientID(); #end
 
-			FlxG.sound.playMusic(Paths.music('freakyMenu'));
+			FlxG.sound.playMusic(Paths.music('menu/freakyMenu'));
 			PlayState.changedDifficulty = false;
 			PlayState.chartingMode = false;
 			game.transitioning = true;
@@ -1557,7 +1564,7 @@ class FunkinLua
 			{
 				if(this.modFolder == null)
 				{
-					FunkinLua.luaTrace('getModSetting: Argument #2 is null and script is not inside a packed Mod folder!', false, false, FlxColor.RED);
+					FunkinLuaProgramming.luaTrace('getModSetting: Argument #2 is null and script is not inside a packed Mod folder!', false, false, FlxColor.RED);
 					return null;
 				}
 				modName = this.modFolder;
@@ -1580,7 +1587,7 @@ class FunkinLua
 		#if DISCORD_ALLOWED DiscordClient.addLuaCallbacks(lua); #end
 		#if ACHIEVEMENTS_ALLOWED Achievements.addLuaCallbacks(lua); #end
 		#if TRANSLATIONS_ALLOWED Language.addLuaCallbacks(lua); #end
-		HScript.implement(this);
+		FunkinHSProgramming.implement(this);
 		#if flxanimate FlxAnimateFunctions.implement(this); #end
 		ReflectionFunctions.implement(this);
 		TextFunctions.implement(this);
@@ -1624,9 +1631,9 @@ class FunkinLua
 		call('onCreate', []);
 	}
 
-	//main
+	// Main
 	public var lastCalledFunction:String = '';
-	public static var lastCalledScript:FunkinLua = null;
+	public static var lastCalledScript:FunkinLuaProgramming = null;
 	public function call(func:String, args:Array<Dynamic>):Dynamic {
 		if(closed) return LuaUtils.Function_Continue;
 
