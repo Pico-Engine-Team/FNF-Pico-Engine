@@ -1,5 +1,8 @@
 package funkin.menus;
 
+import funkin.states.options.OptionsState;
+import funkin.states.editors.EditorsMenus;
+
 import flixel.FlxObject;
 import flixel.effects.FlxFlicker;
 import lime.app.Application;
@@ -12,21 +15,26 @@ enum MainMenuColumn {
 
 class MainMenuState extends MusicBeatState
 {
+	public static var PicoVersion:String = '2.26.7';
+	public static var FunkinVersion:String = '0.8.6';
+	public static var PsychVersion:String = '1.0.4';
 	public static var curSelected:Int = 0;
 	public static var curColumn:MainMenuColumn = CENTER;
-	public static var PicoVersion:String = '2.26.7'; // Version of Pico Engine
-	public static var PsychVersion:String = '1.0.4'; // Version of Psych Engine
-	public static var FunkinVersion:String = '0.8.4'; // Version of Friday Night Funkin'
 
 	var allowMouse:Bool = true;
 	var menuItems:FlxTypedGroup<FlxSprite>;
 	var leftItem:FlxSprite;
 	var rightItem:FlxSprite;
 
-	var optionShit:Array<String> = ['story_mode', 'freeplay', #if MODS_ALLOWED 'mods', #end 'credits', 'donate'];
+	var optionShit:Array<String> = [
+		'story_mode',
+		'freeplay',
+		'credits',
+		#if MODS_ALLOWED 'mods' #end
+	];
 
-	var rightOption:String = 'options';
 	var leftOption:String = #if ACHIEVEMENTS_ALLOWED 'achievements' #else null #end;
+	var rightOption:String = 'options';
 
 	var magenta:FlxSprite;
 	var camFollow:FlxObject;
@@ -94,17 +102,16 @@ class MainMenuState extends MusicBeatState
 		add(mobileVer);
 		#end
 
-		var fnfVer:FlxText = new FlxText(0, FlxG.height - 18, FlxG.width, 'v${PicoVersion}', 12);
 		var psychVer:FlxText = new FlxText(0, FlxG.height - 18, FlxG.width, "Psych Engine v" + PsychVersion, 12);
+		var fnfVer:FlxText = new FlxText(0, FlxG.height - 18, FlxG.width, 'v${PicoVersion} (Friday Night Funkin v${FunkinVersion})', 12);
 
-		fnfVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		psychVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, RIGHT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		fnfVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 
 		psychVer.scrollFactor.set();
 		fnfVer.scrollFactor.set();
 		add(psychVer);
 		add(fnfVer);
-		changeItem();
 
 		#if ACHIEVEMENTS_ALLOWED
 		// Unlocks "Freaky on a Friday Night" achievement if it's a Friday and between 18:00 PM and 23:59 PM
@@ -126,27 +133,10 @@ class MainMenuState extends MusicBeatState
 		#end
 
 		FlxG.camera.follow(camFollow, null, 0.15);
-		applyMenuMusic();
 	}
 
-	function applyMenuMusic()
+	function createMenuItem(name:String, x:Float, y:Float):FlxSprite
 	{
-		if(ClientPrefs.data.menuMusic == 'None')
-		{
-			if(FlxG.sound.music != null)
-				FlxG.sound.music.stop();
-		}
-		else if(ClientPrefs.data.menuMusic == 'freakyMenu')
-		{
-			FlxG.sound.music.volume = 0;
-		}
-		else
-		{
-			FlxG.sound.playMusic(Paths.music(MainMenuState.resolveMenuMusicKey(ClientPrefs.data.menuMusic)));
-		}
-	}
-
-	function createMenuItem(name:String, x:Float, y:Float):FlxSprite {
 		var menuItem:FlxSprite = new FlxSprite(x, y);
 		menuItem.frames = Paths.getSparrowAtlas('menus/mainmenu/menu_$name');
 		menuItem.animation.addByPrefix('idle', '$name idle', 24, true);
@@ -311,17 +301,27 @@ class MainMenuState extends MusicBeatState
 				{
 					switch (option)
 					{
-						case 'story_mode':MusicBeatState.switchState(new funkin.menus.StoryMenuState());
-							trace("Story Mode Menu Selected"); // By BETADCIU
+						case 'story_mode':
+							MusicBeatState.switchState(new StoryMenuState());
 
-						case 'freeplay': MusicBeatState.switchState(new funkin.menus.freeplay.FreeplayMenuState());
-							trace("Freeplay Menu Selected"); // By BETADCIU
+						case 'freeplay':
+							MusicBeatState.switchState(new FreeplayMenuState());
 
-						case 'credits':MusicBeatState.switchState(new funkin.states.CreditsState());
-							trace("Credits Menu Selected"); // By BETADCIU
+						#if MODS_ALLOWED
+						case 'mods':
+							MusicBeatState.switchState(new ModsMenuState());
+						#end
 
-						case 'options':MusicBeatState.switchState(new funkin.states.options.OptionsState());
-							trace("options Menu Selected"); // By BETADCIU
+						#if ACHIEVEMENTS_ALLOWED
+						case 'achievements':
+							MusicBeatState.switchState(new AchievementsMenuState());
+						#end
+
+						case 'credits':
+							MusicBeatState.switchState(new CreditsState());
+
+						case 'options':
+							MusicBeatState.switchState(new OptionsState());
 							OptionsState.onPlayState = false;
 							if (PlayState.SONG != null)
 							{
@@ -330,7 +330,7 @@ class MainMenuState extends MusicBeatState
 								PlayState.stageUI = 'normal';
 							}
 						case 'donate':
-							CoolUtil.browserLoad('https://lucas-sanches.itch.io/pico-funkin');
+							CoolUtil.browserLoad('https://ninja-muffin24.itch.io/funkin');
 							selectedSomethin = false;
 							item.visible = true;
 						default:
@@ -349,11 +349,11 @@ class MainMenuState extends MusicBeatState
 				}
 			}
 			#if desktop
-			if (controls.justPressed('debug_0'))
+			if (controls.justPressed('master_menu_Key'))
 			{
 				selectedSomethin = true;
 				FlxG.mouse.visible = false;
-				MusicBeatState.switchState(new funkin.states.editors.EditorsMenus());
+				MusicBeatState.switchState(new EditorsMenus());
 			}
 			#end
 		}
@@ -386,10 +386,5 @@ class MainMenuState extends MusicBeatState
 		selectedItem.animation.play('selected');
 		selectedItem.centerOffsets();
 		camFollow.y = selectedItem.getGraphicMidpoint().y;
-	}
-
-	public static function resolveMenuMusicKey(musicKey:String):String
-	{
-		return musicKey;
 	}
 }
