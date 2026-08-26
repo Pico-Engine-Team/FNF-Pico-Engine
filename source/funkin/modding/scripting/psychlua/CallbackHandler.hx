@@ -16,12 +16,12 @@ class CallbackHandler
 			if(cbf == null) 
 			{
 				//trace('checking last script');
-				var last:FunkinLua = FunkinLua.lastCalledScript;
+				var last:FunkinLuaProgramming = FunkinLuaProgramming.lastCalledScript;
 				if(last == null || last.lua != l)
 				{
 					//trace('looping thru scripts');
 					for (script in PlayState.instance.luaArray)
-						if(script != FunkinLua.lastCalledScript && script != null && script.lua == l)
+						if(script != FunkinLuaProgramming.lastCalledScript && script != null && script.lua == l)
 						{
 							//trace('found script');
 							cbf = script.callbacks.get(fname);

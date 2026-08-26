@@ -5,7 +5,7 @@ import openfl.utils.Assets;
 #if (LUA_ALLOWED && flxanimate)
 class FlxAnimateFunctions
 {
-	public static function implement(funk:FunkinLua)
+	public static function implement(funk:FunkinLuaProgramming)
 	{
 		var lua:State = funk.lua;
 		Lua_helper.add_callback(lua, "makeFlxAnimateSprite", function(tag:String, ?x:Float = 0, ?y:Float = 0, ?loadFolder:String = null) {
