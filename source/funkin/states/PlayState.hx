@@ -15,11 +15,11 @@ import funkin.data.shaders.ErrorHandledShader;
 import funkin.data.objects.game.characters.Character;
 
 import funkin.data.objects.game.notes.NoteData;
-import funkin.data.objects.game.notes.config.Note;
-import funkin.data.objects.game.notes.data.StrumNote;
+import funkin.data.objects.game.notes.data.Note;
 import funkin.data.objects.game.notes.data.NoteSplash;
 import funkin.data.objects.game.notes.data.HoldNoteCover;
-import funkin.data.objects.game.notes.config.Note.EventNote;
+import funkin.data.objects.game.notes.data.Note.EventNote;
+import funkin.data.objects.game.notes.config.StrumNote;
 import funkin.data.objects.game.notes.config.NoteTypesConfig;
 
 import funkin.states.PauseState;
@@ -34,6 +34,7 @@ import funkin.menus.freeplay.FreeplayMenuState;
 import funkin.stages.objects.*;
 import funkin.stages.data.levels.*;
 import funkin.utils.engines.pico.stages.StagesPicoEnigne;
+import funkin.utils.engines.pico.EnginePerformance;
 import funkin.utils.engines.vslice.stages.StagesVslice;
 
 import haxe.Json;
@@ -47,18 +48,18 @@ import openfl.filters.ShaderFilter;
 #end
 
 #if LUA_ALLOWED
-import funkin.modding.scripting.FunkinLua;
+import funkin.modding.scripting.FunkinLuaProgramming;
 import funkin.modding.scripting.psychlua.*;
 #else
 import funkin.modding.scripting.psychlua.LuaUtils;
 #end
 
 #if HSCRIPT_ALLOWED
-import funkin.modding.scripting.HScript;
+import funkin.modding.scripting.FunkinHSProgramming;
 #end
 
 #if HSCRIPT_ALLOWED
-import funkin.modding.scripting.HScript.HScriptInfos;
+import funkin.modding.scripting.FunkinHSProgramming.HScriptInfos;
 import crowplexus.iris.Iris;
 import crowplexus.hscript.Expr.Error as IrisError;
 import crowplexus.hscript.Printer;
@@ -75,7 +76,7 @@ class PlayState extends MusicBeatState
 	public var gfMap:Map<String, Character> = new Map<String, Character>();
 
 	#if HSCRIPT_ALLOWED
-	public var hscriptArray:Array<HScript> = [];
+	public var hscriptArray:Array<FunkinHSProgramming> = [];
 	#end
 	var modchartXmls:Array<Xml> = [];
 	var modchartXmlPaths:Array<String> = [];
@@ -475,6 +476,8 @@ class PlayState extends MusicBeatState
 	public var guitarHeroSustains:Bool = false;
 	public var instakillOnMiss:Bool = false;
 	public var cpuControlled:Bool = false;
+	/** When true, player controls the opponent side (dad notes/strums). */
+	public static var opponentMode:Bool = false;
 	public var practiceMode:Bool = false;
 	public var pressMissDamage:Float = 0.05;
 
@@ -530,7 +533,7 @@ class PlayState extends MusicBeatState
 
 	// Lua shit
 	public static var instance:PlayState;
-	#if LUA_ALLOWED public var luaArray:Array<FunkinLua> = []; #end
+	#if LUA_ALLOWED public var luaArray:Array<FunkinLuaProgramming> = []; #end
 
 	#if (LUA_ALLOWED || HSCRIPT_ALLOWED)
 	private var luaDebugGroup:FlxTypedGroup<funkin.modding.scripting.psychlua.DebugLuaText>;
@@ -558,6 +561,7 @@ class PlayState extends MusicBeatState
 			Language.reloadPhrases();
 		}
 		nextReloadAll = false;
+		try { EnginePerformance.beginSongLoad(); } catch(e:Dynamic) {}
 
 		startCallback = startCountdown;
 		endCallback = endSong;
@@ -578,6 +582,10 @@ class PlayState extends MusicBeatState
 		instakillOnMiss = ClientPrefs.getGameplaySetting('instakill');
 		practiceMode = ClientPrefs.getGameplaySetting('practice');
 		cpuControlled = ClientPrefs.getGameplaySetting('botplay');
+		opponentMode = readOpponentModeSetting();
+		// Chart flag can force Opponent Mode (Bool or string "true" from older charts)
+		if(SONG != null && isSongOpponentModeFlag(SONG))
+			opponentMode = true;
 		guitarHeroSustains = ClientPrefs.data.guitarHeroSustains;
 
 		// var gameCam:FlxCamera = FlxG.camera;
@@ -726,7 +734,6 @@ class PlayState extends MusicBeatState
 		#if (LUA_ALLOWED || HSCRIPT_ALLOWED)
 		// "SCRIPTS FOLDER" SCRIPTS
 		startScriptsInFolder('scripts/game/');
-		startScriptsInFolder('scripts/Game/');
 
 		// STATE SCRIPTS
 		for (folder in Mods.directoriesWithFile(Paths.getSharedPath(), 'scripts/states/'))
@@ -786,7 +793,7 @@ class PlayState extends MusicBeatState
 		timeTxt.borderSize = 2;
 		timeTxt.visible = updateTime = showTime;
 		if(ClientPrefs.data.downScroll) timeTxt.y = FlxG.height - 44;
-		if(ClientPrefs.data.timeBarType == 'Song Name' || ClientPrefs.data.timeBarType == 'Combined') timeTxt.text = SONG.song;
+		if(ClientPrefs.data.timeBarType == 'Song Name' || ClientPrefs.data.timeBarType == 'Combined') timeTxt.text = Song.getDisplayName(SONG, SONG.song);
 
 		timeBar = new Bar(0, timeTxt.y + (timeTxt.height / 4), 'ui/game/funkin/timeBar', function() return songPercent, 0, 1);
 		timeBar.scrollFactor.set();
@@ -826,7 +833,7 @@ class PlayState extends MusicBeatState
 
 		healthBar = new Bar(0, FlxG.height * (!ClientPrefs.data.downScroll ? 0.89 : 0.11), 'ui/game/funkin/healthBar', function() return health, 0, 2);
 		healthBar.screenCenter(X);
-		healthBar.leftToRight = false;
+		healthBar.leftToRight = opponentMode; // flip fill when playing as opponent
 		healthBar.scrollFactor.set();
 		healthBar.visible = !ClientPrefs.data.hideHud;
 		healthBar.alpha = ClientPrefs.data.healthBarAlpha;
@@ -852,7 +859,7 @@ class PlayState extends MusicBeatState
 		scoreTxt.visible = !ClientPrefs.data.hideHud && !showPlayModeText();
 		uiGroup.add(scoreTxt);
 
-		botplayTxt = new FlxText(400, healthBar.y + 50, FlxG.width - 800, getPlayModeText(), 32);
+		botplayTxt = new FlxText(400, healthBar.y + 50, FlxG.width - 800, getPlayModeDisplayText(), 32);
 		botplayTxt.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.GREEN);
 		botplayTxt.scrollFactor.set();
 		botplayTxt.borderSize = 1.25;
@@ -936,6 +943,7 @@ class PlayState extends MusicBeatState
 
 		super.create();
 		Paths.clearUnusedMemory();
+		try { EnginePerformance.endSongLoad(); } catch(e:Dynamic) {}
 
 		cacheCountdown();
 		cachePopUpScore();
@@ -1382,7 +1390,7 @@ class PlayState extends MusicBeatState
 					break;
 				}
 			}
-			if(doPush) new FunkinLua(luaFile);
+			if(doPush) new FunkinLuaProgramming(luaFile);
 		}
 		#end
 
@@ -2358,6 +2366,7 @@ class PlayState extends MusicBeatState
 		setOnScripts('curDecBeat', curDecBeat);
 
 		if(botplayTxt != null && botplayTxt.visible) {
+			botplayTxt.text = getPlayModeDisplayText();
 			botplaySine += 180 * elapsed;
 			botplayTxt.alpha = 1 - Math.sin((Math.PI * botplaySine) / 180);
 		}
@@ -2417,9 +2426,9 @@ class PlayState extends MusicBeatState
 			switch(ClientPrefs.data.timeBarType)
 			{
 				case 'Song Name':
-					timeTxt.text = SONG.song;
+					timeTxt.text = Song.getDisplayName(SONG, SONG.song);
 				case 'Combined':
-					timeTxt.text = SONG.song + ' (' + FlxStringUtil.formatTime(secondsTotal, false) + ')';
+					timeTxt.text = Song.getDisplayName(SONG, SONG.song) + ' (' + FlxStringUtil.formatTime(secondsTotal, false) + ')';
 				case 'Percentage':
 					var percent:Int = Math.floor(FlxMath.bound(songPercent, 0, 1) * 100);
 					timeTxt.text = percent + '%';
@@ -2495,11 +2504,20 @@ class PlayState extends MusicBeatState
 							var playerNote:Bool = isPlayerNote(daNote);
 							if(playerNote)
 							{
+								// Botplay on the side the player controls (BF or Opponent)
 								if(cpuControlled && !daNote.blockHit && daNote.canBeHit && (daNote.isSustainNote || daNote.strumTime <= Conductor.songPosition))
 									goodNoteHit(daNote);
 							}
-							else if (daNote.wasGoodHit && !daNote.hitByOpponent && !daNote.ignoreNote)
-								opponentNoteHit(daNote);
+							else
+							{
+								// CPU side (BF when Opponent Mode) — auto-hit when note reaches strum
+								if(!daNote.hitByOpponent && !daNote.ignoreNote && !daNote.blockHit
+									&& (daNote.wasGoodHit || daNote.strumTime <= Conductor.songPosition))
+								{
+									if(!daNote.isSustainNote || daNote.wasGoodHit || (daNote.prevNote != null && daNote.prevNote.wasGoodHit))
+										opponentNoteHit(daNote);
+								}
+							}
 
 							if(daNote.isSustainNote && strum.sustainReduce) daNote.clipToStrumNote(strum);
 
@@ -2542,6 +2560,7 @@ class PlayState extends MusicBeatState
 		#end
 
 		setOnScripts('botPlay', cpuControlled);
+		setOnScripts('opponentMode', opponentMode);
 		setOnScripts('playingAsBF', playsAsBF());
 		callOnScripts('onUpdatePost', [elapsed]);
 	}
@@ -2614,7 +2633,35 @@ class PlayState extends MusicBeatState
 	}
 
 	public static function playsAsBF():Bool
-		return true;
+		return !opponentMode;
+
+	/** Reads chart opponentMode whether stored as Bool or String */
+	public static function isSongOpponentModeFlag(?song:SwagSong = null):Bool
+	{
+		if(song == null) song = SONG;
+		if(song == null) return false;
+		var raw:Dynamic = Reflect.field(song, 'opponentMode');
+		if(raw == true || raw == false) return raw == true;
+		if(raw == null) return false;
+		var s:String = Std.string(raw).trim().toLowerCase();
+		return s == 'true' || s == '1' || s == 'on' || s == 'yes';
+	}
+
+	/** Gameplay Changers: opponentplay / opponentmode / playasopponent */
+	public static function readOpponentModeSetting():Bool
+	{
+		try
+		{
+			for (key in ['opponentplay', 'opponentmode', 'playasopponent', 'opponent'])
+			{
+				var value:Dynamic = ClientPrefs.getGameplaySetting(key);
+				if(value == true || value == 'true' || value == 1 || value == '1')
+					return true;
+			}
+		}
+		catch(e:Dynamic) {}
+		return false;
+	}
 
 	public static function isPlayerNote(note:Note):Bool
 		return note != null && isPlayerNoteSide(note.mustPress);
@@ -2644,7 +2691,18 @@ class PlayState extends MusicBeatState
 		return Language.getPhrase("Pico Bot").toUpperCase();
 
 	function showPlayModeText():Bool
-		return cpuControlled;
+		return cpuControlled || opponentMode;
+
+	function getPlayModeDisplayText():String
+	{
+		if(cpuControlled && opponentMode)
+			return 'BOTPLAY + OPPONENT';
+		if(opponentMode)
+			return 'OPPONENT MODE';
+		if(cpuControlled)
+			return getPlayModeText();
+		return '';
+	}
 
 	function addPlayerHealth(value:Float):Float
 	{
@@ -3233,7 +3291,7 @@ class PlayState extends MusicBeatState
 			var percent:Float = ratingPercent;
 			if(Math.isNaN(percent)) percent = 0;
 			var scoreSongName:String = Song.loadedSongName != null ? Song.loadedSongName : SONG.song;
-			Highscore.saveScore(scoreSongName, songScore, storyDifficulty, percent, getSongVariationName(SONG), WeekData.getCurrentWeek(), !isStoryMode);
+			Highscore.saveScore(scoreSongName, songScore, storyDifficulty, percent, getSongVariationName(SONG), WeekData.getCurrentWeek(), !isStoryMode, opponentMode, songMisses);
 			#end
 			playbackRate = 1;
 
@@ -3254,7 +3312,7 @@ class PlayState extends MusicBeatState
 				if (storyPlaylist.length <= 0)
 				{
 					Mods.loadTopMod();
-					FlxG.sound.playMusic(Paths.music('freakyMenu'));
+					FlxG.sound.playMusic(Paths.music('menu/freakyMenu'));
 					#if DISCORD_ALLOWED DiscordClient.resetClientID(); #end
 
 					canResync = false;
@@ -3262,7 +3320,7 @@ class PlayState extends MusicBeatState
 
 					if(!ClientPrefs.getGameplaySetting('practice') && !ClientPrefs.getGameplaySetting('botplay')) {
 						StoryMenuState.weekCompleted.set(WeekData.weeksList[storyWeek], true);
-						Highscore.saveWeekScore(WeekData.getWeekFileName(), campaignScore, storyDifficulty, WeekData.getCurrentWeek(), false);
+						Highscore.saveWeekScore(WeekData.getWeekFileName(), campaignScore, storyDifficulty, WeekData.getCurrentWeek(), false, opponentMode);
 
 						FlxG.save.data.weekCompleted = StoryMenuState.weekCompleted;
 						FlxG.save.flush();
@@ -3297,7 +3355,7 @@ class PlayState extends MusicBeatState
 
 				canResync = false;
 				MusicBeatState.switchState(new FreeplayMenuState());
-				FlxG.sound.playMusic(Paths.music('freakyMenu'));
+				FlxG.sound.playMusic(Paths.music('menu/freakyMenu'));
 				changedDifficulty = false;
 			}
 			transitioning = true;
@@ -3493,6 +3551,10 @@ class PlayState extends MusicBeatState
 		{
 			var digit:Int = Std.parseInt(separatedScore.charAt(i));
 			var numberUiAsset:String = 'comboNumber$digit';
+			// noteStyle: "hidden": true esconde este dígito (ex.: comboNumber0)
+			if(Note.noteStyleUiIsHidden(numberUiAsset))
+				continue;
+
 			var numScore:FlxSprite = new FlxSprite().loadGraphic(Paths.image(Note.resolveNoteStyleUiAsset(numberUiAsset, popUpNumberFallback(digit))));
 			numScore.screenCenter();
 			numScore.x = placement + (43 * daLoop) - 90 + ClientPrefs.data.comboOffset[2];
@@ -4004,7 +4066,7 @@ class PlayState extends MusicBeatState
 	public function spawnHoldNoteCoverOnNote(note:Note) {
 		if(note == null || !note.isSustainNote) return;
 
-		var strumGroup:FlxTypedGroup<StrumNote> = note.mustPress ? playerStrums : opponentStrums;
+		var strumGroup:FlxTypedGroup<StrumNote> = isPlayerNote(note) ? getPlayerStrums() : getOpponentStrums();
 		var strum:StrumNote = strumGroup.members[note.noteData];
 		if(strum == null) return;
 
@@ -4053,7 +4115,7 @@ class PlayState extends MusicBeatState
 			lua.stop();
 		}
 		luaArray = null;
-		FunkinLua.customFunctions.clear();
+		FunkinLuaProgramming.customFunctions.clear();
 		#end
 
 		#if HSCRIPT_ALLOWED
@@ -4088,6 +4150,7 @@ class PlayState extends MusicBeatState
 		NoteTypesConfig.clearNoteTypesData();
 
 		NoteSplash.configs.clear();
+		try { EnginePerformance.onExitSong(); } catch(e:Dynamic) {}
 		instance = null;
 		super.destroy();
 	}
@@ -4201,7 +4264,7 @@ class PlayState extends MusicBeatState
 			for (script in luaArray)
 				if(!script.closed && script.scriptName == luaToLoad) return false;
 
-			new FunkinLua(luaToLoad);
+			new FunkinLuaProgramming(luaToLoad);
 			return true;
 		}
 		return false;
@@ -4411,10 +4474,10 @@ class PlayState extends MusicBeatState
 
 	public function initHScript(file:String)
 	{
-		var newScript:HScript = null;
+		var newScript:FunkinHSProgramming = null;
 		try
 		{
-			newScript = new HScript(null, file);
+			newScript = new FunkinHSProgramming(null, file);
 			if (newScript.exists('onCreate')) newScript.call('onCreate');
 			trace('initialized hscript interp successfully: $file');
 			hscriptArray.push(newScript);
@@ -4423,7 +4486,7 @@ class PlayState extends MusicBeatState
 		{
 			var pos:HScriptInfos = cast {fileName: file, showLine: false};
 			Iris.error(Printer.errorToString(e, false), pos);
-			var newScript:HScript = cast (Iris.instances.get(file), HScript);
+			var newScript:FunkinHSProgramming = cast (Iris.instances.get(file), FunkinHSProgramming);
 			if(newScript != null)
 				newScript.destroy();
 		}
@@ -4448,7 +4511,7 @@ class PlayState extends MusicBeatState
 		if(exclusions == null) exclusions = [];
 		if(excludeValues == null) excludeValues = [LuaUtils.Function_Continue];
 
-		var arr:Array<FunkinLua> = [];
+		var arr:Array<FunkinLuaProgramming> = [];
 		for (script in luaArray)
 		{
 			if(script.closed)

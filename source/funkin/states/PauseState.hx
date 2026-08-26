@@ -1,14 +1,14 @@
 package funkin.states;
 
 import funkin.play.Song;
-import funkin.data.WeekData;
 import funkin.play.Highscore;
-import funkin.data.editors.ChartingState;
 
-import funkin.menus.freeplay.FreeplayMenuState;	
+import funkin.data.WeekData;
 import funkin.states.options.OptionsState;
-import funkin.utils.engines.pico.LocaleUtils; // By PlusEngine
+import funkin.states.editors.data.ChartingState;
 
+import funkin.menus.freeplay.FreeplayMenuState;
+import funkin.utils.engines.pico.LocaleUtils;
 import flixel.util.FlxStringUtil;
 
 class PauseState extends MusicBeatSubstate
@@ -364,7 +364,7 @@ class PauseState extends MusicBeatSubstate
 					else
 						MusicBeatState.switchState(new FreeplayMenuState());
 
-					FlxG.sound.playMusic(Paths.music('freakyMenu'));
+					FlxG.sound.playMusic(Paths.music('menu/freakyMenu'));
 					PlayState.changedDifficulty = false;
 					PlayState.chartingMode = false;
 					FlxG.camera.followLerp = 0;

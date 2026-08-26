@@ -3,8 +3,9 @@ package funkin.states;
 import funkin.play.Song;
 import funkin.stages.StageData;
 import funkin.data.objects.game.characters.Character;
-import funkin.data.objects.game.notes.config.Note;
+import funkin.data.objects.game.notes.data.Note;
 import funkin.data.objects.game.notes.data.NoteSplash;
+import funkin.data.PreloadData;
 
 import haxe.Json;
 import openfl.display.BitmapData;
@@ -24,7 +25,7 @@ import lime.utils.Assets;
 import lime.app.Future;
 
 #if HSCRIPT_ALLOWED
-import funkin.modding.scripting.HScript;
+import funkin.modding.scripting.FunkinHSProgramming;
 import crowplexus.iris.Iris;
 import crowplexus.hscript.Expr.Error as IrisError;
 import crowplexus.hscript.Printer;
@@ -89,7 +90,7 @@ class LoadingScreenState extends MusicBeatState
 	#end
 
 	#if HSCRIPT_ALLOWED
-	var hscript:HScript;
+	var hscript:FunkinHSProgramming;
 	#end
 	override function create()
 	{
@@ -117,7 +118,7 @@ class LoadingScreenState extends MusicBeatState
 			{
 				try
 				{
-					hscript = new HScript(null, scriptPath);
+					hscript = new FunkinHSProgramming(null, scriptPath);
 					hscript.set('getLoaded', function() return loaded);
 					hscript.set('getLoadMax', function() return loadMax);
 					hscript.set('barBack', barBack);
@@ -138,7 +139,7 @@ class LoadingScreenState extends MusicBeatState
 				{
 					var pos:HScriptInfos = cast {fileName: scriptPath, showLine: false};
 					Iris.error(Printer.errorToString(e, false), pos);
-					var hscript:HScript = cast (Iris.instances.get(scriptPath), HScript);
+					var hscript:FunkinHSProgramming = cast (Iris.instances.get(scriptPath), FunkinHSProgramming);
 				}
 				if(hscript != null) hscript.destroy();
 				hscript = null;
@@ -522,43 +523,32 @@ class LoadingScreenState extends MusicBeatState
 			else noteSplash += NoteSplash.getSplashSkinPostfix();
 			imagesToPrepare.push(noteSplash);
 
+			// Pico Engine preload: scripts/songs/<song>/preload.json (+ optional preload.lua later)
 			try
 			{
-				var path:String = Paths.chartJson('scripts/songs/$folder/preload');
-				var json:Dynamic = null;
+				var list = PreloadData.loadForSong(folder);
+				PreloadData.applyToLoadingScreenState(list);
 
-				#if MODS_ALLOWED
-				var moddyFile:String = Paths.modsJson('$folder/preload');
-				if (FileSystem.exists(moddyFile)) json = Json.parse(File.getContent(moddyFile));
-				else json = Json.parse(File.getContent(path));
-				#else
-				json = Json.parse(Assets.getText(path));
-				#end
 
-				if(json != null)
+				// Characters listed in preload.json (images resolved inside PreloadData + explicit preload)
+				if(list.characters != null)
 				{
-					var imgs:Array<String> = [];
-					var snds:Array<String> = [];
-					var mscs:Array<String> = [];
-					for (asset in Reflect.fields(json))
+					for (charId in list.characters)
 					{
-						var filters:Int = Reflect.field(json, asset);
-						var asset:String = asset.trim();
-
-						if(filters < 0 || StageData.validateVisibility(filters))
-						{
-							if(asset.startsWith('images/'))
-								imgs.push(asset.substr('images/'.length));
-							else if(asset.startsWith('sounds/'))
-								snds.push(asset.substr('sounds/'.length));
-							else if(asset.startsWith('music/'))
-								mscs.push(asset.substr('music/'.length));
-						}
+						if(charId == null || charId.length < 1) continue;
+						try { preloadCharacter(charId); } catch(e:Dynamic) {}
 					}
-					prepare(imgs, snds, mscs);
 				}
+
+				// Stage objects already merged into list.images by PreloadData
+				// Note types / events / scripts are available via PreloadData.lastList for Lua
+				if(PreloadData.hasPreloadLua(folder))
+					trace('[LoadingScreen] Found preload.lua for ' + folder + ' → ' + PreloadData.getPreloadLuaPath(folder));
 			}
-			catch(e:Dynamic) {}
+			catch(e:Dynamic)
+			{
+				trace('[LoadingScreen] preload.json failed: ' + e);
+			}
 			return true;
 		}, isIntrusive)
 		.then((_) -> new Future<Bool>(() -> {

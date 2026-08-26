@@ -2,8 +2,8 @@ package funkin.states;
 
 import funkin.play.Song;
 import funkin.stages.StageData;
-import funkin.data.editors.content.VSlice;
-import funkin.data.editors.content.FileDialogHandler;
+import funkin.utils.editors.VSlice;
+import funkin.utils.editors.FileDialogHandler;
 import funkin.utils.engines.psych.PsychJsonPrinter;
 
 import flash.net.FileFilter;
@@ -77,16 +77,16 @@ class ConvertersState extends MusicBeatState
 
 		options = switch(page)
 		{
-			case PAGE_CHARTS: ['Godot Chart', 'NightmareVision Chart', 'Codename Engine Chart', 'V-Slice Chart', 'Back'];
-			case PAGE_CHARACTERS: ['Godot Character', 'Codename Engine Character', 'V-Slice Character', 'Forever Engine Character', 'Back'];
-			case PAGE_STAGES: ['Codename Engine Stage XML', 'V-Slice Stage JSON', 'Back'];
-			default: ['Charts Converter', 'Characters Converter', 'Stages Converter', 'Back'];
+			case PAGE_CHARTS: ['Godot Charts', 'Nightmare-Vision Charts', 'Codename Engine Charts', 'VSlice Charts', 'Back'];
+			case PAGE_CHARACTERS: ['Godot Characters', 'Codename Engine Characters', 'VSlice Characters', 'Forever Engine Characters', 'Back'];
+			case PAGE_STAGES: ['Codename Engine Stages', 'VSlice Stages', 'Back'];
+			default: ['Chart Converters', 'Character Converters', 'Stage Converters', 'Back'];
 		}
 		title.text = switch(page)
 		{
-			case PAGE_CHARTS: 'Charts Converters';
-			case PAGE_CHARACTERS: 'Characters Converters';
-			case PAGE_STAGES: 'Stages Converters';
+			case PAGE_CHARTS: 'Chart Converters';
+			case PAGE_CHARACTERS: 'Character Converters';
+			case PAGE_STAGES: 'Stage Converters';
 			default: 'Converters Menu';
 		}
 
@@ -138,16 +138,16 @@ class ConvertersState extends MusicBeatState
 	{
 		return switch(option)
 		{
-			case 'Charts Converters': 'Convert charts.json in Different Formats';
-			case 'Characters Converters': 'Convert characters.json in Different Formats';
-			case 'Stages Converters': 'Convert stages.json in Different Formats';
+			case 'Chart Converters': 'Convert charts.json in Different Formats';
+			case 'Character Converters': 'Convert characters.json in Different Formats';
+			case 'Stage Converters': 'Convert stages.json in Different Formats';
 			case 'Godot Charts': 'Convert one Another FNF Engine Made In Godot chart JSON.';
-			case 'Nightmare-Vision Charts': 'Convert one NightmareVision chart JSON.';
+			case 'Nightmare-Vision Charts': 'Convert one Nightmare-Vision chart JSON.';
 			case 'Codename Engine Charts': 'Open Codename Engine chart.json + meta.json, then export one chart JSON.';
 			case 'VSlice Charts': 'Open a VSlice chart.json and metadata.json, then export chart JSON files.';
 			case 'Godot Characters':'Convert one Another FNF Engine Made In Godot character JSON.';
 			case 'Codename Engine Characters': 'Convert one Codename Engine character XML or JSON.';
-			case 'V-Slice Characters': 'Convert one Friday Night Funkin V-Slice character JSON.';
+			case 'VSlice Characters': 'Convert one Friday Night Funkin V-Slice character JSON.';
 			case 'Forever Engine Characters': 'Convert one Forever Engine character JSON.';
 			case 'Codename Engine Stages': 'Convert Stage Codename Engine';
 			case 'VSlice Stages': 'Convert one V-Slice stage JSON.';
@@ -159,9 +159,9 @@ class ConvertersState extends MusicBeatState
 	{
 		switch(options[curSelected])
 		{
-			case 'Charts Converters': setPage(PAGE_CHARTS);
-			case 'Characters Converters': setPage(PAGE_CHARACTERS);
-			case 'Stages Converters': setPage(PAGE_STAGES);
+			case 'Chart Converters': setPage(PAGE_CHARTS);
+			case 'Character Converters': setPage(PAGE_CHARACTERS);
+			case 'Stage Converters': setPage(PAGE_STAGES);
 			case 'Godot Charts': openGodotChartToPico();
 			case 'Nightmare-Vision Charts': openNightmareVisionChartToPico();
 			case 'Codename Engine Charts': openCodenameChartToPico();
@@ -2270,7 +2270,7 @@ class ConvertersState extends MusicBeatState
 	function back()
 	{
 		if(page == PAGE_MAIN)
-			MusicBeatState.switchState(new funkin.utils.EditorsMenus());
+			MusicBeatState.switchState(new funkin.states.editors.EditorsMenus());
 		else
 			setPage(PAGE_MAIN);
 	}
