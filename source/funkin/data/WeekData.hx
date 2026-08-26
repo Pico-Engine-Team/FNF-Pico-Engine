@@ -60,7 +60,7 @@ class WeekData
 
 			weekCharacters: ['dad', 'bf', 'gf'],
 			weekBackground: 'stage',
-			weekBefore: 'tutorial',
+			weekBefore: '',
 			storyName: 'Your New Week',
 			weekName: 'Custom Week',
 			startUnlocked: true,
@@ -383,7 +383,7 @@ class WeekData
 		return weeksList[PlayState.storyWeek];
 	}
 
-	//Used on LoadingState, nothing really too relevant
+	//Used on LoadingScreenState, nothing really too relevant
 	public static function getCurrentWeek():WeekData {
 		return weeksLoaded.get(weeksList[PlayState.storyWeek]);
 	}

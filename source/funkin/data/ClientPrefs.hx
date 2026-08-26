@@ -12,26 +12,32 @@ import flixel.input.gamepad.FlxGamepadInputID;
 	public var middleScroll:Bool = false;
 	public var opponentStrums:Bool = true;
 	public var framerate:Int = 60;
-	public var fpsDisplay:String = 'FPS Only';
-	public var debugDisplayBG:Float = 0.6;
+	public var fpsDisplay:String = 'Disabled'; // Pico Engine feature
+	public var debugDisplayBG:Float = 0.6; // Pico Engine feature
 	public var flashing:Bool = true;
 	public var autoPause:Bool = true;
 	public var antialiasing:Bool = true;
 	public var noteSkin:String = 'Default';
 	public var splashSkin:String = 'Psych';
 	public var Quality:String = 'Low';
-	public var vsync:String = 'Off';
+	public var vsync:String = 'Off'; // Pico Engine feature
 	public var splashAlpha:Float = 0.6;
 	public var shaders:Bool = true;
 	public var cacheOnGPU:Bool = #if !switch false #else true #end;
 	public var camZooms:Bool = true;
-	public var comboCam:String = 'camHud';
+	public var comboCam:String = 'camHud'; // Pico Engine feature By Betadciu Engine
 	public var hideHud:Bool = false;
-	public var useCombo:Bool = true;
-	public var useHoldCover:Bool = false;
-	public var useHoldAnimation:Bool = false;
-	public var modcharts:Bool = false;
-	public var useNoteSkins:String = 'Both';
+	public var useCombo:Bool = true; // Pico Engine feature 
+	public var useHoldCover:Bool = false; // Pico Engine feature
+	public var useHoldAnimation:Bool = false; // Pico Engine feature 
+	public var modcharts:Bool = false; // Pico Engine feature
+	public var useNoteSkins:String = 'Both'; // Pico Engine feature
+	public var devMode:Bool = false; // Pico Engine feature
+	public var showMemory:Bool = false; // Pico Engine feature
+	public var clearMemoryOnSongLoad:Bool = true; // Pico Engine feature
+	public var clearMemoryOnExitSong:Bool = true; // Pico Engine feature
+	public var aggressiveMemory:Bool = false; // Pico Engine feature
+	public var autoGcInterval:Int = 0; // seconds, 0 = off - Pico Engine feature
 
 	public var noteOffset:Int = 0;
 	public var arrowRGB:Array<Array<FlxColor>> = [
@@ -51,7 +57,6 @@ import flixel.input.gamepad.FlxGamepadInputID;
 	public var noReset:Bool = false;
 	public var healthBarAlpha:Float = 1;
 	public var hitsoundVolume:Float = 0;
-	public var menuMusic:String = 'freakyMenu';
 	public var pauseMusic:String = 'None';
 	public var checkForUpdates:Bool = true;
 	public var comboStacking:Bool = true;
@@ -63,14 +68,15 @@ import flixel.input.gamepad.FlxGamepadInputID;
 		'healthloss' => 1.0,
 		'instakill' => false,
 		'practice' => false,
+		'opponentplay' => false, // Pico Engine feature
 		'botplay' => false
 	];
 
 	public var comboOffset:Array<Int> = [0, 0, 0, 0];
 	public var ratingOffset:Int = 0;
-	public var useEpicRankings:Bool = true;
-	public var epicRankings:Float = 20.0;
-	public var marvelousWindow:Float = 20.0;
+	public var useEpicRankings:Bool = true; // Pico Engine feature
+	public var epicRankings:Float = 20.0; // Pico Engine feature
+	public var marvelousWindow:Float = 20.0; // Pico Engine feature
 	public var sickWindow:Float = 45.0;
 	public var goodWindow:Float = 90.0;
 	public var badWindow:Float = 135.0;
@@ -99,9 +105,8 @@ class ClientPrefs {
 		'note_left'		=> [A, LEFT],
 		'note_down'		=> [S, DOWN],
 		'note_right'	=> [D, RIGHT],
-		'hey_ui'		=> [Q],
-
-		'dodge_ui'		=> [SPACE],
+		'mechanic_dodge' => [SPACE], // Pico Engine feature
+		'hey_ui'		=> [Q], // Pico Engine feature
 		
 		'ui_up'			=> [W, UP],
 		'ui_left'		=> [A, LEFT],
@@ -116,17 +121,17 @@ class ClientPrefs {
 		'volume_mute'	=> [ZERO],
 		'volume_up'		=> [NUMPADPLUS, PLUS],
 		'volume_down'	=> [NUMPADMINUS, MINUS],
-
-		'screenshot'    => [F3],
-		'reload_state'	=> [F5],
-		'favorites_ui'	=> [F],
 		
-		'debug_0'		=> [E],
+		'reload_state'	=> [F4], // Pico Engine feature
+		'screenshot'    => [F5], // Pico Engine feature
+		'fps_display_toggle' => [F3], // Pico Engine feature
+		'favorites_ui'	=> [F], // Pico Engine feature
+		
+		'master_menu_Key'	=> [E], // Pico Engine feature
 		'debug_1'		=> [SEVEN],
 		'debug_2'		=> [EIGHT],
-		'fps_display_toggle' => [F5]
 	];
-	
+
 	public static var gamepadBinds:Map<String, Array<FlxGamepadInputID>> = [
 		'note_up'		=> [DPAD_UP, Y],
 		'note_left'		=> [DPAD_LEFT, X],
@@ -148,9 +153,9 @@ class ClientPrefs {
 		'reset'			=> [BACK],
 		'reload_state'	=> [NONE]
 	];
+	
 	public static var defaultKeys:Map<String, Array<FlxKey>> = null;
 	public static var defaultButtons:Map<String, Array<FlxGamepadInputID>> = null;
-
 	public static function resetKeys(controller:Null<Bool> = null) //Null = both, False = Keyboard, True = Controller
 	{
 		if(controller != true)
