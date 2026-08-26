@@ -1,10 +1,9 @@
 package funkin.data.objects.game.notes.data;
 
 import funkin.data.shaders.RGBPalette;
-import funkin.data.objects.game.notes.config.Note;
-import funkin.data.objects.game.notes.data.StrumNote;
+import funkin.data.objects.game.notes.data.Note;
+import funkin.data.objects.game.notes.config.StrumNote;
 import funkin.utils.engines.psych.PsychAnimationController;
-
 import flixel.system.FlxAssets.FlxShader;
 
 typedef RGB = {
@@ -259,7 +258,8 @@ class NoteSplash extends FlxSprite
 		if (config.allowRGB)
 		{
 			Note.initializeGlobalRGBShader(noteData % Note.colArray.length);
-			if (inEditor || (note == null || note.noteSplashData.useRGBShader) && (PlayState.SONG == null || !PlayState.SONG.disableNoteRGB))
+			// RGB via noteStyle.allowRGB / noteSplashData (disableNoteRGB removido)
+			if (inEditor || (note == null || note.noteSplashData.useRGBShader))
 			{
 				tempShader = new RGBPalette();
 				// If Note RGB is enabled:

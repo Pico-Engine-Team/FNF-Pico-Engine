@@ -1,10 +1,10 @@
 package funkin.data.objects.game.notes.data;
 
 import funkin.states.PlayState;
-import funkin.data.objects.game.notes.config.Note;
-import funkin.data.objects.game.notes.data.StrumNote;
+import funkin.data.objects.game.notes.data.Note;
+import funkin.data.objects.game.notes.config.StrumNote;
 import funkin.utils.engines.psych.PsychAnimationController;
-import funkin.data.objects.game.notes.config.Note.NoteSkinConfig;
+import funkin.data.objects.game.notes.data.Note.NoteSkinConfig;
 
 class HoldNoteCover extends FlxSprite
 {
