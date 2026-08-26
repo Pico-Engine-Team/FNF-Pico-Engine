@@ -1,8 +1,8 @@
 package funkin.substates;
 
+import funkin.states.options.config.*;
 import funkin.data.objects.AttachedText;
 import funkin.data.objects.CheckboxThingie;
-import funkin.states.options.config.*;
 import funkin.states.options.config.Option.OptionType;
 
 class GameplayChangersSubState extends MusicBeatSubstate
@@ -17,7 +17,8 @@ class GameplayChangersSubState extends MusicBeatSubstate
 	private var curOption(get, never):GameplayOption;
 	function get_curOption() return optionsArray[curSelected];
 
-	function getOptions() {
+	function getOptions()
+	{
 		var goption:GameplayOption = new GameplayOption('Scroll Type', 'scrolltype', STRING, 'multiplicative', ["multiplicative", "constant"]);
 		optionsArray.push(goption);
 
