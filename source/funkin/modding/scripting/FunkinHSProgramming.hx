@@ -6,7 +6,7 @@ import funkin.modding.scripting.psychlua.CustomSubstate;
 import flixel.FlxBasic;
 
 #if LUA_ALLOWED
-import funkin.modding.scripting.FunkinLua;
+import funkin.modding.scripting.FunkinLuaProgramming;
 #end
 
 #if HSCRIPT_ALLOWED
@@ -25,31 +25,31 @@ typedef HScriptInfos = {
 	#end
 }
 
-class HScript extends Iris
+class FunkinHSProgramming extends Iris
 {
 	public var filePath:String;
 	public var modFolder:String;
 	public var returnValue:Dynamic;
 
 	#if LUA_ALLOWED
-	public var parentLua:FunkinLua;
-	public static function initHaxeModule(parent:FunkinLua)
+	public var parentLua:FunkinLuaProgramming;
+	public static function initHaxeModule(parent:FunkinLuaProgramming)
 	{
 		if(parent.hscript == null)
 		{
 			trace('initializing haxe interp for: ${parent.scriptName}');
-			parent.hscript = new HScript(parent);
+			parent.hscript = new FunkinHSProgramming(parent);
 		}
 	}
 
-	public static function initHaxeModuleCode(parent:FunkinLua, code:String, ?varsToBring:Any = null)
+	public static function initHaxeModuleCode(parent:FunkinLuaProgramming, code:String, ?varsToBring:Any = null)
 	{
-		var hs:HScript = try parent.hscript catch (e) null;
+		var hs:FunkinHSProgramming = try parent.hscript catch (e) null;
 		if(hs == null)
 		{
 			trace('initializing haxe interp for: ${parent.scriptName}');
 			try {
-				parent.hscript = new HScript(parent, code, varsToBring);
+				parent.hscript = new FunkinHSProgramming(parent, code, varsToBring);
 			}
 			catch(e:IrisError) {
 				var pos:HScriptInfos = cast {fileName: parent.scriptName, isLua: true};
@@ -168,8 +168,8 @@ class HScript extends Iris
 		#end
 
 		set('Character', funkin.data.objects.game.characters.Character);
-		set('Alphabet', funkin.utils.Alphabet);
-		set('Note', funkin.data.objects.game.notes.config.Note);
+		set('Alphabet', funkin.data.objects.Alphabet);
+		set('Note', funkin.data.objects.game.notes.data.Note);
 		set('CustomSubstate', funkin.modding.scripting.psychlua.CustomSubstate);
 
 		#if (!flash && sys)
@@ -308,11 +308,11 @@ class HScript extends Iris
 				if(script != null && script.lua != null && !script.closed)
 					Lua_helper.add_callback(script.lua, name, func);
 
-			FunkinLua.customFunctions.set(name, func);
+			FunkinLuaProgramming.customFunctions.set(name, func);
 		});
 
 		// this one was tested
-		set('createCallback', function(name:String, func:Dynamic, ?funk:FunkinLua = null)
+		set('createCallback', function(name:String, func:Dynamic, ?funk:FunkinLuaProgramming = null)
 		{
 			if(funk == null) funk = parentLua;
 			
@@ -354,7 +354,7 @@ class HScript extends Iris
 	}
 
 	#if LUA_ALLOWED
-	public static function implement(funk:FunkinLua) {
+	public static function implement(funk:FunkinLuaProgramming) {
 		funk.addLocalCallback("runHaxeCode", function(codeToRun:String, ?varsToBring:Any = null, ?funcToRun:String = null, ?funcArgs:Array<Dynamic> = null):Dynamic {
 			initHaxeModuleCode(funk, codeToRun, varsToBring);
 			if (funk.hscript != null)
@@ -416,8 +416,8 @@ class HScript extends Iris
 			catch (e:IrisError) {
 				Iris.error(Printer.errorToString(e, false), pos);
 			}
-			FunkinLua.lastCalledScript = funk;
-			if (FunkinLua.getBool('luaDebugMode') && FunkinLua.getBool('luaDeprecatedWarnings'))
+			FunkinLuaProgramming.lastCalledScript = funk;
+			if (FunkinLuaProgramming.getBool('luaDebugMode') && FunkinLuaProgramming.getBool('luaDeprecatedWarnings'))
 				Iris.warn("addHaxeLibrary is deprecated! Import classes through \"import\" in HScript!", pos);
 		});
 	}
@@ -597,7 +597,7 @@ class CustomInterp extends crowplexus.hscript.Interp
 class HScript
 {
 	#if LUA_ALLOWED
-	public static function implement(funk:FunkinLua) {
+	public static function implement(funk:FunkinLuaProgramming) {
 		funk.addLocalCallback("runHaxeCode", function(codeToRun:String, ?varsToBring:Any = null, ?funcToRun:String = null, ?funcArgs:Array<Dynamic> = null):Dynamic {
 			PlayState.instance.addTextToDebug('HScript is not supported on this platform!', FlxColor.RED);
 			return null;
