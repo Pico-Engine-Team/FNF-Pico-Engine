@@ -2,7 +2,7 @@ package funkin.play;
 
 import funkin.play.Song;
 import funkin.play.Rating;
-import funkin.data.objects.game.notes.config.Note;
+import funkin.data.objects.game.notes.data.Note;
 
 typedef BPMChangeEvent ={
 	var stepTime:Int;
@@ -18,10 +18,7 @@ class Conductor
 	public static var stepCrochet:Float = crochet / 4;
 	public static var songPosition:Float = 0;
 	public static var offset:Float = 0;
-
-	//public static var safeFrames:Int = 10;
 	public static var safeZoneOffset:Float = 0; // is calculated in create(), is safeFrames in milliseconds
-
 	public static var bpmChangeMap:Array<BPMChangeEvent> = [];
 
 	public static function judgeNote(arr:Array<Rating>, diff:Float=0):Rating // die

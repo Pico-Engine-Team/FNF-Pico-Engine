@@ -3,7 +3,7 @@ package funkin.play;
 import funkin.modding.Mods;
 import funkin.stages.StageData;
 import funkin.menus.MainMenuState;
-import funkin.data.objects.game.notes.config.Note;
+import funkin.data.objects.game.notes.data.Note;
 
 import haxe.Json;
 import lime.utils.Assets;
@@ -11,6 +11,10 @@ using StringTools;
 
 typedef SwagSong = {
 	var song:String;
+	@:optional var displayName:String;
+	@:optional var opponentMode:String;
+	@:optional var artist:String;
+	@:optional var charter:String;
 	var notes:Array<SwagSection>;
 	var events:Array<Dynamic>;
 	var bpm:Float;
@@ -32,11 +36,21 @@ typedef SwagSong = {
 	@:optional var gameOverLoop:String;
 	@:optional var gameOverEnd:String;
 	
-	@:optional var disableNoteRGB:Bool;
+	/** @deprecated use noteStyle */
 	@:optional var arrowSkin:String;
+	/** @deprecated use noteStyle */
 	@:optional var splashSkin:String;
 	@:optional var variation:String;
+	@:optional var songVariation:String;
+	/** Difficulties available for this song (from meta / chart) */
+	@:optional var freeplayDifficulties:Array<String>;
+	/** Song variations from meta (e.g. erect, pico) */
+	@:optional var songVariations:Array<String>;
 	@:optional var noteStyle:String;
+	/** If false, song-specific scripts (scripts/songs/<song>/) are not loaded */
+	@:optional var enableSongScripts:Bool;
+	/** If false, modcharts for this song are not loaded */
+	@:optional var useModcharts:Bool;
 }
 
 typedef SwagSection = {
@@ -55,12 +69,16 @@ class Song {
 	public var events:Array<Dynamic>;
 	public var bpm:Float;
 	public var needsVoices:Bool = true;
+	/** @deprecated use noteStyle — kept only for old chart migration */
 	public var arrowSkin:String;
+	/** @deprecated use noteStyle — kept only for old chart migration */
 	public var splashSkin:String;
 	public var variation:String;
+	public var songVariation:String;
+	public var enableSongScripts:Bool = true;
+	public var useModcharts:Bool = true;
 	public var artist:String;
 	public var charter:String;
-	public var disableNoteRGB:Bool = false;
 	public var speed:Float = 1;
 	public var stage:String;
 	public var player1:String = 'bf';
@@ -192,7 +210,8 @@ class Song {
 	{
 		if(value == null) return '';
 
-		var skin:String = Note.normalizeNoteStyleName(value);
+		// Chart noteStyle always maps to data/notestyles (not pico_assets)
+		var skin:String = Note.normalizeSongNoteStyleName(value);
 		var styleKey:String = Note.noteStyleKey(skin);
 		return styleKey.length > 0 ? styleKey : '';
 	}
@@ -227,7 +246,43 @@ class Song {
 		#end
 			rawData = Assets.getText(_lastPath);
 
-		return rawData != null ? parseJSON(rawData, jsonInput) : null;
+		var song:SwagSong = rawData != null ? parseJSON(rawData, jsonInput) : null;
+		if(song != null)
+			applySongMeta(song, formattedFolder);
+		return song;
+	}
+
+	/** UI name: displayName → song → fallback */
+	public static function getDisplayName(?songData:SwagSong = null, ?fallback:String = null):String
+	{
+		if(songData != null)
+		{
+			if(songData.displayName != null && Std.string(songData.displayName).trim().length > 0)
+				return Std.string(songData.displayName).trim();
+			if(songData.song != null && Std.string(songData.song).trim().length > 0)
+				return Std.string(songData.song).trim();
+		}
+		if(fallback != null && fallback.trim().length > 0)
+			return fallback.trim();
+		if(loadedSongName != null && loadedSongName.trim().length > 0)
+			return loadedSongName.trim();
+		return '';
+	}
+
+	public static function applySongMeta(song:SwagSong, songFolder:String, ?formatOverride:String = null):Void
+	{
+		if(song == null || songFolder == null) return;
+		try
+		{
+			var meta = SongMeta.load(songFolder, formatOverride);
+			if(meta == null) return;
+			SongMeta.applyToSong(song, meta, false);
+			trace('[SongMeta] Applied ' + meta.loadedFormat + ' meta from ' + meta.loadedPath);
+		}
+		catch(e:Dynamic)
+		{
+			trace('[SongMeta] Failed for ' + songFolder + ': ' + e);
+		}
 	}
 
 	public static function parseJSON(rawData:String, ?nameForError:String = null, ?convertTo:String = 'psych_v1'):SwagSong
@@ -259,11 +314,26 @@ class Song {
 			}
 		}
 		normalizeChartInfo(songJson);
-		if(songJson.noteStyle == null && songJson.arrowSkin != null)
-			songJson.noteStyle = songJson.arrowSkin;
+		// Legacy: arrowSkin / splashSkin → noteStyle (noteStyle controls notes + splashes)
+		if(songJson.noteStyle == null || Std.string(songJson.noteStyle).trim().length < 1)
+		{
+			if(songJson.arrowSkin != null && Std.string(songJson.arrowSkin).trim().length > 0)
+				songJson.noteStyle = songJson.arrowSkin;
+		}
 
 		if(songJson.noteStyle != null)
 			songJson.noteStyle = cleanNoteStyleName(songJson.noteStyle);
+
+		if(songJson.songVariation == null && songJson.variation != null)
+			songJson.songVariation = songJson.variation;
+		if(songJson.variation == null && songJson.songVariation != null)
+			songJson.variation = songJson.songVariation;
+
+		if(songJson.enableSongScripts == null)
+			songJson.enableSongScripts = true;
+		if(songJson.useModcharts == null)
+			songJson.useModcharts = true;
+
 		return songJson;
 	}
 

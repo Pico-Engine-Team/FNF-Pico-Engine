@@ -10,42 +10,43 @@ class Highscore
 	public static var songMisses:Map<String, Int> = new Map<String, Int>();
 	public static var songDeaths:Map<String, Int> = new Map<String, Int>();
 
-	public static function resetSong(song:String, diff:Int = 0, ?variation:String = null, ?week:WeekData = null, ?freeplay:Bool = false):Void
+	/** Suffix used in save keys for Opponent Mode scores */
+	public static inline var OPPONENT_SUFFIX:String = '-opponent';
+
+	public static function resetSong(song:String, diff:Int = 0, ?variation:String = null, ?week:WeekData = null, ?freeplay:Bool = false, ?opponentMode:Bool = false):Void
 	{
-		var daSong:String = formatScore(song, diff, variation, week, freeplay);
+		var daSong:String = formatScore(song, diff, variation, week, freeplay, opponentMode);
 		setScore(daSong, 0);
 		setRating(daSong, 0);
+		setMisses(daSong, 0);
 	}
 
-	public static function resetWeek(week:String, diff:Int = 0, ?weekData:WeekData = null, ?freeplay:Bool = false):Void
+	public static function resetWeek(week:String, diff:Int = 0, ?weekData:WeekData = null, ?freeplay:Bool = false, ?opponentMode:Bool = false):Void
 	{
-		var daWeek:String = formatScore(week, diff, null, weekData, freeplay);
+		var daWeek:String = formatScore(week, diff, null, weekData, freeplay, opponentMode);
 		setWeekScore(daWeek, 0);
 	}
 
-	public static function saveScore(song:String, score:Int = 0, ?diff:Int = 0, ?rating:Float = -1, ?variation:String = null, ?week:WeekData = null, ?freeplay:Bool = false):Void
+	/**
+	 * Saves score/rating/misses. Opponent Mode uses a separate key (…-opponent).
+	 */
+	public static function saveScore(song:String, score:Int = 0, ?diff:Int = 0, ?rating:Float = -1, ?variation:String = null, ?week:WeekData = null, ?freeplay:Bool = false, ?opponentMode:Bool = false, ?misses:Int = -1):Void
 	{
 		if(song == null) return;
-		var daSong:String = formatScore(song, diff, variation, week, freeplay);
+		var daSong:String = formatScore(song, diff, variation, week, freeplay, opponentMode);
 
-		if (songScores.exists(daSong))
-		{
-			if (songScores.get(daSong) < score)
-			{
-				setScore(daSong, score);
-				if(rating >= 0) setRating(daSong, rating);
-			}
-		}
-		else
+		var improved:Bool = !songScores.exists(daSong) || songScores.get(daSong) < score;
+		if (improved)
 		{
 			setScore(daSong, score);
 			if(rating >= 0) setRating(daSong, rating);
+			if(misses >= 0) setMisses(daSong, misses);
 		}
 	}
 
-	public static function saveWeekScore(week:String, score:Int = 0, ?diff:Int = 0, ?weekData:WeekData = null, ?freeplay:Bool = false):Void
+	public static function saveWeekScore(week:String, score:Int = 0, ?diff:Int = 0, ?weekData:WeekData = null, ?freeplay:Bool = false, ?opponentMode:Bool = false):Void
 	{
-		var daWeek:String = formatScore(week, diff, null, weekData, freeplay);
+		var daWeek:String = formatScore(week, diff, null, weekData, freeplay, opponentMode);
 
 		if (weekScores.exists(daWeek))
 		{
@@ -55,19 +56,15 @@ class Highscore
 		else setWeekScore(daWeek, score);
 	}
 
-	/**
-	 * YOU SHOULD FORMAT SONG WITH formatSong() BEFORE TOSSING IN SONG VARIABLE
-	 */
 	static function setScore(song:String, score:Int):Void
 	{
-		// Reminder that I don't need to format this song, it should come formatted!
 		songScores.set(song, score);
 		FlxG.save.data.songScores = songScores;
 		FlxG.save.flush();
 	}
+
 	static function setWeekScore(week:String, score:Int):Void
 	{
-		// Reminder that I don't need to format this song, it should come formatted!
 		weekScores.set(week, score);
 		FlxG.save.data.weekScores = weekScores;
 		FlxG.save.flush();
@@ -75,7 +72,6 @@ class Highscore
 
 	static function setRating(song:String, rating:Float):Void
 	{
-		// Reminder that I don't need to format this song, it should come formatted!
 		songRating.set(song, rating);
 		FlxG.save.data.songRating = songRating;
 		FlxG.save.flush();
@@ -95,71 +91,94 @@ class Highscore
 		FlxG.save.flush();
 	}
 
-	public static function formatSong(song:String, diff:Int, ?variation:String = null, ?week:WeekData = null, ?freeplay:Bool = false):String
+	public static function formatSong(song:String, diff:Int, ?variation:String = null, ?week:WeekData = null, ?freeplay:Bool = false, ?opponentMode:Bool = false):String
 	{
-		loadDifficultyListForMode(week, freeplay);
-
-		var daSong:String = Paths.formatToSongPath(song);
-		return appendSuffix(daSong, Difficulty.getVariationAndDifficultyFilePath(variation, diff));
+		return formatScore(song, diff, variation, week, freeplay, opponentMode);
 	}
 
-	public static function formatScore(song:String, diff:Int, ?variation:String = null, ?week:WeekData = null, ?freeplay:Bool = false):String
+	/**
+	 * Builds the save key. Opponent Mode appends "-opponent" so scores never mix with normal play.
+	 * Example: "bopeebo-hard" vs "bopeebo-hard-opponent"
+	 */
+	public static function formatScore(song:String, diff:Int, ?variation:String = null, ?week:WeekData = null, ?freeplay:Bool = false, ?opponentMode:Bool = false):String
 	{
 		loadDifficultyListForMode(week, freeplay);
 
 		var daSong:String = Paths.formatToSongPath(song);
 		var difficultyVariation:String = Difficulty.getDifficultyVariationName(diff);
 		if(difficultyVariation.length > 0)
-			return appendSuffix(daSong, Difficulty.getVariationFilePath(difficultyVariation));
+			daSong = appendSuffix(daSong, Difficulty.getVariationFilePath(difficultyVariation));
+		else
+		{
+			daSong = appendSuffix(daSong, Difficulty.getVariationFilePath(variation));
+			daSong = appendSuffix(daSong, Difficulty.getFilePath(diff));
+		}
 
-		daSong = appendSuffix(daSong, Difficulty.getVariationFilePath(variation));
-		daSong = appendSuffix(daSong, Difficulty.getFilePath(diff));
+		if(opponentMode)
+			daSong = appendSuffix(daSong, OPPONENT_SUFFIX);
+
 		return daSong;
 	}
 
-	public static function getScore(song:String, diff:Int, ?variation:String = null, ?week:WeekData = null, ?freeplay:Bool = false):Int
+	public static function getScore(song:String, diff:Int, ?variation:String = null, ?week:WeekData = null, ?freeplay:Bool = false, ?opponentMode:Bool = false):Int
 	{
-		var daSong:String = formatScore(song, diff, variation, week, freeplay);
+		var daSong:String = formatScore(song, diff, variation, week, freeplay, opponentMode);
 		if (!songScores.exists(daSong))
 			setScore(daSong, 0);
 
 		return songScores.get(daSong);
 	}
 
-	public static function getRating(song:String, diff:Int, ?variation:String = null, ?week:WeekData = null, ?freeplay:Bool = false):Float
+	public static function getRating(song:String, diff:Int, ?variation:String = null, ?week:WeekData = null, ?freeplay:Bool = false, ?opponentMode:Bool = false):Float
 	{
-		var daSong:String = formatScore(song, diff, variation, week, freeplay);
+		var daSong:String = formatScore(song, diff, variation, week, freeplay, opponentMode);
 		if (!songRating.exists(daSong))
 			setRating(daSong, 0);
 
 		return songRating.get(daSong);
 	}
 
-	public static function getMisses(song:String, diff:Int, ?variation:String = null, ?week:WeekData = null, ?freeplay:Bool = false):Int
+	public static function getMisses(song:String, diff:Int, ?variation:String = null, ?week:WeekData = null, ?freeplay:Bool = false, ?opponentMode:Bool = false):Int
 	{
-		var daSong:String = formatScore(song, diff, variation, week, freeplay);
+		var daSong:String = formatScore(song, diff, variation, week, freeplay, opponentMode);
 		if (!songMisses.exists(daSong))
 			setMisses(daSong, 0);
 
 		return songMisses.get(daSong);
 	}
 
-	public static function getDeaths(song:String, diff:Int, ?variation:String = null, ?week:WeekData = null, ?freeplay:Bool = false):Int
+	public static function getDeaths(song:String, diff:Int, ?variation:String = null, ?week:WeekData = null, ?freeplay:Bool = false, ?opponentMode:Bool = false):Int
 	{
-		var daSong:String = formatScore(song, diff, variation, week, freeplay);
+		var daSong:String = formatScore(song, diff, variation, week, freeplay, opponentMode);
 		if (!songDeaths.exists(daSong))
 			setDeaths(daSong, 0);
 
 		return songDeaths.get(daSong);
 	}
 
-	public static function getWeekScore(week:String, diff:Int, ?weekData:WeekData = null, ?freeplay:Bool = false):Int
+	public static function getWeekScore(week:String, diff:Int, ?weekData:WeekData = null, ?freeplay:Bool = false, ?opponentMode:Bool = false):Int
 	{
-		var daWeek:String = formatScore(week, diff, null, weekData, freeplay);
+		var daWeek:String = formatScore(week, diff, null, weekData, freeplay, opponentMode);
 		if (!weekScores.exists(daWeek))
 			setWeekScore(daWeek, 0);
 
 		return weekScores.get(daWeek);
+	}
+
+	/** Reads current Opponent Mode gameplay setting (same keys as PlayState). */
+	public static function isOpponentModeSettingOn():Bool
+	{
+		try
+		{
+			for (key in ['opponentplay', 'opponentmode', 'playasopponent', 'opponent'])
+			{
+				var value:Dynamic = ClientPrefs.getGameplaySetting(key);
+				if(value == true || value == 'true' || value == 1 || value == '1')
+					return true;
+			}
+		}
+		catch(e:Dynamic) {}
+		return false;
 	}
 
 	static function loadDifficultyListForMode(?week:WeekData, ?freeplay:Bool = false):Void

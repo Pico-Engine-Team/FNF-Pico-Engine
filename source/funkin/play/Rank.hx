@@ -1,5 +1,13 @@
 package funkin.play;
 
+/**
+ * Accuracy + Rank system (substitui o ratingStuff antigo na UI).
+ *
+ * Display style (freeplay):
+ *   HIGHSCORE: 0 [N/A]
+ *   ACCURACY: 0% [N/A]
+ *   MISSES: 0
+ */
 class Rank
 {
 	/**
@@ -70,15 +78,22 @@ class Rank
 	 * ACCURACY: 98.5% [S]
 	 * MISSES: 2
 	 */
-	public static function formatFreeplayBox(score:Int, accuracy:Float, misses:Int):String
+	public static function formatFreeplayBox(score:Int, accuracy:Float, misses:Int, ?difficulty:String = null):String
 	{
-		var rank:String = (score <= 0 && accuracy <= 0) ? 'N/A' : getRank(accuracy, misses);
-		var accStr:String = formatAccuracy(accuracy);
+		// Freeplay box (tudo na mesma caixa):
+		// HIGHSCORE: 68816 [S (FC)]
+		// MISSES: 0
+		// < PICO >
+		var rank:String = (score <= 0 && (accuracy <= 0 || Math.isNaN(accuracy))) ? 'N/A' : getRank(accuracy, misses);
 		var missStr:String = Std.string(Std.int(Math.max(0, misses)));
 
-		return 'HIGHSCORE: ' + score + ' [' + rank + ']\n'
-			+ 'ACCURACY: ' + accStr + '% [' + rank + ']\n'
+		var text:String = 'HIGHSCORE: ' + score + ' [' + rank + ']\n'
 			+ 'MISSES: ' + missStr;
+
+		if(difficulty != null && difficulty.trim().length > 0)
+			text += '\n' + difficulty.trim();
+
+		return text;
 	}
 
 	public static function formatShort(accuracy:Float, ?misses:Int = -1):String
@@ -106,6 +121,11 @@ class Rank
 			default:   0xFFFFFFFF;
 		};
 	}
+
+	/**
+	 * Hook for PlayState.RecalculateRating.
+	 * ratingName = Rank.applyToPlayState(ratingPercent, songMisses);
+	 */
 	public static function applyToPlayState(accuracy:Float, songMisses:Int = 0):String
 	{
 		return getRank(accuracy, songMisses, songMisses == 0 && accuracy > 0);
