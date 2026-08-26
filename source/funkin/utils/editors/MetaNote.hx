@@ -1,6 +1,7 @@
 package funkin.utils.editors;
 
-import funkin.data.objects.game.notes.config.Note;
+import funkin.states.editors.data.ChartingState;
+import funkin.data.objects.game.notes.data.Note;
 import funkin.data.shaders.RGBPalette;
 import flixel.util.FlxDestroyUtil;
 

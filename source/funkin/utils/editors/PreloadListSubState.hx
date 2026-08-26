@@ -3,7 +3,7 @@ package funkin.utils.editors;
 import funkin.stages.StageData;
 import funkin.utils.engines.psych.ui.PsychUIEventHandler.PsychUIEvent;
 import funkin.utils.engines.psych.ui.PsychUIRadioGroup.PsychUIRadioItem;
-import funkin.data.editors.content.FileDialogHandler;
+import funkin.utils.editors.FileDialogHandler;
 
 import haxe.io.Path;
 import flixel.util.FlxDestroyUtil;

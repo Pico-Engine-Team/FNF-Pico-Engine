@@ -1,5 +1,6 @@
 package funkin.utils.editors;
 
+import funkin.states.editors.data.ChartingState;
 import flixel.addons.display.FlxGridOverlay;
 
 class ChartingGridSprite extends FlxSprite
