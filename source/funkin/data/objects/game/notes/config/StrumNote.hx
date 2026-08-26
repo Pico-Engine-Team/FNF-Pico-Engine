@@ -1,7 +1,7 @@
 package funkin.data.objects.game.notes.config;
 
 import funkin.data.shaders.RGBPalette;
-import funkin.data.objects.game.notes.config.Note;
+import funkin.data.objects.game.notes.data.Note;
 import funkin.data.shaders.RGBPalette.RGBShaderReference;
 import funkin.utils.engines.psych.PsychAnimationController;
 
