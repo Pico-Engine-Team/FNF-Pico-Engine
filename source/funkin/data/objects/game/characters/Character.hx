@@ -2,7 +2,7 @@ package funkin.data.objects.game.characters;
 
 import funkin.play.Song;
 import funkin.stages.objects.levels.week7.TankmenBG;
-import funkin.data.objects.game.notes.config.Note;
+import funkin.data.objects.game.notes.data.Note;
 import funkin.utils.engines.psych.PsychAnimationController;
 
 import flixel.util.FlxSort;
@@ -25,6 +25,12 @@ typedef CharacterFile = {
 	@:optional var offsets:Array<Float>;
 	@:optional var cameraOffsets:Array<Float>;
 	@:optional var camera_position:Array<Float>;
+	// BETADCIU-style player side offsets (quando o char é o player)
+	@:optional var player_position:Array<Float>;
+	@:optional var playerposition:Array<Float>;
+	@:optional var player_camera_position:Array<Float>;
+	@:optional var is_player_char:Bool;
+	@:optional var isPlayerChar:Bool;
 
 	var flip_x:Bool;
 	@:optional var isPixel:Bool;
@@ -38,6 +44,9 @@ typedef CharacterFile = {
 	@:optional var gameOverLoop:String;
 	@:optional var gameOverEnd:String;
 	@:optional var noteStyle:String;
+	@:optional var useNotestyle:Bool;
+	@:optional var useNoteStyle:Bool;
+	@:optional var renderType:String;
 	@:optional var _editor_isPlayer:Null<Bool>;
 }
 
@@ -50,12 +59,16 @@ typedef AnimArray = {
 	var loop:Bool;
 	var indices:Array<Int>;
 	var offsets:Array<Int>;
+	/** Offsets quando o personagem está no lado do player (BETADCIU-style) */
+	@:optional var playerOffsets:Array<Float>;
 }
 
 class Character extends FlxSprite {
 	public static final DEFAULT_CHARACTER:String = 'bf-opponent';
 
 	public var animOffsets:Map<String, Array<Dynamic>>;
+	/** Offsets por animação quando isPlayer (BETADCIU playerOffsets) */
+	public var animPlayerOffsets:Map<String, Array<Float>> = new Map();
 	public var debugMode:Bool = false;
 	public var extraData:Map<String, Dynamic> = new Map<String, Dynamic>();
 
@@ -96,6 +109,8 @@ class Character extends FlxSprite {
 	public var gameOverLoop:String = null;
 	public var gameOverEnd:String = null;
 	public var noteStyle:String = null;
+	public var useNotestyle:Bool = false;
+	public var renderType:String = null;
 
 	public function new(x:Float, y:Float, ?character:String = 'bf', ?isPlayer:Bool = false)
 	{
@@ -103,6 +118,7 @@ class Character extends FlxSprite {
 		animation = new PsychAnimationController(this);
 
 		animOffsets = new Map<String, Array<Dynamic>>();
+		animPlayerOffsets = new Map<String, Array<Float>>();
 		this.isPlayer = isPlayer;
 		changeCharacter(character);
 		
@@ -162,35 +178,15 @@ class Character extends FlxSprite {
 		var assetPath:String = getCharacterString(json, ['assetPath', 'image'], DEFAULT_CHARACTER);
 		var animationAssetPaths:String = collectAnimationAssetPaths(assetPath, cast Reflect.field(json, 'animations'));
 
-		#if flxanimate
-		var animToFind:String = Paths.getPath('images/' + assetPath + '/Animation.json', TEXT);
-		if (#if MODS_ALLOWED FileSystem.exists(animToFind) || #end Assets.exists(animToFind))
-			isAnimateAtlas = true;
-		#end
+		// renderType: sparrow | multisparrow | animateatlas (V-Slice / Psych-compatible)
+		renderType = normalizeRenderType(getCharacterString(json, ['renderType'], null));
+		if(renderType == null || renderType.length < 1)
+			renderType = detectRenderType(assetPath, animationAssetPaths);
 
 		scale.set(1, 1);
 		updateHitbox();
 
-		if(!isAnimateAtlas)
-		{
-			frames = Paths.getMultiAtlas(animationAssetPaths.split(','));
-		}
-		#if flxanimate
-		else
-		{
-			atlas = new FlxAnimate();
-			atlas.showPivot = false;
-			try
-			{
-				Paths.loadAnimateAtlas(atlas, assetPath);
-			}
-			catch(e:haxe.Exception)
-			{
-				FlxG.log.warn('Could not load atlas $assetPath: $e');
-				trace(e.stack);
-			}
-		}
-		#end
+		loadCharacterFrames(assetPath, animationAssetPaths, renderType);
 
 		imageFile = assetPath;
 		jsonScale = json.scale != null ? json.scale : 1;
@@ -200,8 +196,26 @@ class Character extends FlxSprite {
 		}
 
 		// positioning
-		positionArray = getCharacterFloatArray(json, ['positionOffsets', 'position', 'offsets'], [0, 0]);
-		cameraPosition = getCharacterFloatArray(json, ['cameraOffsets', 'camera_position'], [0, 0]);
+		// position: se isPlayer e tem player_position, usa ele (BETADCIU)
+		if(isPlayer)
+		{
+			var playerPos = getCharacterFloatArray(json, ['player_position', 'playerposition'], null);
+			if(playerPos != null)
+				positionArray = playerPos;
+			else
+				positionArray = getCharacterFloatArray(json, ['positionOffsets', 'position', 'offsets'], [0, 0]);
+
+			var playerCam = getCharacterFloatArray(json, ['player_camera_position'], null);
+			if(playerCam != null)
+				cameraPosition = playerCam;
+			else
+				cameraPosition = getCharacterFloatArray(json, ['cameraOffsets', 'camera_position'], [0, 0]);
+		}
+		else
+		{
+			positionArray = getCharacterFloatArray(json, ['positionOffsets', 'position', 'offsets'], [0, 0]);
+			cameraPosition = getCharacterFloatArray(json, ['cameraOffsets', 'camera_position'], [0, 0]);
+		}
 
 		// data
 		healthIcon = json.healthicon != null ? json.healthicon : 'face';
@@ -220,6 +234,14 @@ class Character extends FlxSprite {
 		gameOverLoop = getCharacterString(json, ['gameOverLoop'], null);
 		gameOverEnd = getCharacterString(json, ['gameOverEnd'], null);
 		noteStyle = getCharacterString(json, ['noteStyle'], null);
+		// PsychUICheckBox "Use NoteStyle for Character" ↔ useNotestyle
+		if(Reflect.hasField(json, 'useNotestyle') || Reflect.hasField(json, 'useNoteStyle'))
+			useNotestyle = (json.useNotestyle == true || json.useNoteStyle == true);
+		else
+			useNotestyle = (noteStyle != null && noteStyle.length > 0); // legacy: style set = enabled
+		if(!useNotestyle)
+			noteStyle = null;
+		// renderType already resolved in loadCharacterFrames above
 
 		// Pixel characters keep antialiasing disabled.
 		noAntialiasing = (json.isPixel == true || json.no_antialiasing == true);
@@ -255,8 +277,30 @@ class Character extends FlxSprite {
 				}
 				#end
 
-				if(anim.offsets != null && anim.offsets.length > 1) addOffset(anim.anim, anim.offsets[0], anim.offsets[1]);
-				else addOffset(anim.anim, 0, 0);
+				// offsets normais (opponent / default)
+				var baseOffX:Float = 0;
+				var baseOffY:Float = 0;
+				if(anim.offsets != null && anim.offsets.length > 1)
+				{
+					baseOffX = anim.offsets[0];
+					baseOffY = anim.offsets[1];
+				}
+
+				// playerOffsets (BETADCIU): offsets quando o char é o player
+				var pOff:Array<Float> = null;
+				if(Reflect.hasField(anim, 'playerOffsets') && anim.playerOffsets != null && anim.playerOffsets.length > 1)
+					pOff = [anim.playerOffsets[0], anim.playerOffsets[1]];
+
+				if(isPlayer && pOff != null)
+					addOffset(anim.anim, pOff[0], pOff[1]);
+				else
+					addOffset(anim.anim, baseOffX, baseOffY);
+
+				// guarda playerOffsets sempre (editor / troca de lado)
+				if(pOff != null)
+					addPlayerOffset(anim.anim, pOff[0], pOff[1]);
+				else
+					addPlayerOffset(anim.anim, baseOffX, baseOffY);
 			}
 		}
 		#if flxanimate
@@ -333,6 +377,7 @@ class Character extends FlxSprite {
 				return values;
 			}
 		}
+		if(fallback == null) return null;
 		return fallback.copy();
 	}
 
@@ -343,6 +388,109 @@ class Character extends FlxSprite {
 		if(clean == 'player' || clean == 'boyfriend' || clean == 'bf') return true;
 		if(clean == 'opponent' || clean == 'dad') return false;
 		return null;
+	}
+
+
+	/** V-Slice / Psych-compatible render types */
+	public static final RENDER_SPARROW:String = 'sparrow';
+	public static final RENDER_MULTISPARROW:String = 'multisparrow';
+	public static final RENDER_ANIMATE:String = 'animateatlas';
+
+	public static function normalizeRenderType(value:String):String
+	{
+		if(value == null) return '';
+		var clean:String = value.trim().toLowerCase().replace(' ', '').replace('_', '').replace('-', '');
+		if(clean.length < 1) return '';
+
+		switch(clean)
+		{
+			case 'sparrow', 'sparrowatlas', 'spritesheet':
+				return RENDER_SPARROW;
+			case 'multisparrow', 'multi', 'multiatlas':
+				return RENDER_MULTISPARROW;
+			case 'animateatlas', 'animate', 'atlas', 'textureatlas', 'flxanimate':
+				return RENDER_ANIMATE;
+			default:
+				return clean;
+		}
+	}
+
+	/**
+	 * Auto-detect like Psych 1.0.4 when renderType is missing.
+	 * Animation.json folder → animateatlas; multiple asset paths → multisparrow; else sparrow.
+	 */
+	public static function detectRenderType(assetPath:String, animationAssetPaths:String):String
+	{
+		#if flxanimate
+		var primary:String = assetPath != null ? assetPath.trim() : '';
+		if(primary.length > 0)
+		{
+			var animToFind:String = Paths.getPath('images/' + primary + '/Animation.json', TEXT);
+			if (#if MODS_ALLOWED FileSystem.exists(animToFind) || #end Assets.exists(animToFind))
+				return RENDER_ANIMATE;
+		}
+		// Paths.hasAnimateAtlas used by editor when available
+		#if (sys || MODS_ALLOWED)
+		try
+		{
+			if(Reflect.hasField(Paths, 'hasAnimateAtlas') && Reflect.callMethod(Paths, Reflect.field(Paths, 'hasAnimateAtlas'), [primary]) == true)
+				return RENDER_ANIMATE;
+		}
+		catch(e:Dynamic) {}
+		#end
+		#end
+
+		var paths:String = animationAssetPaths != null ? animationAssetPaths : assetPath;
+		if(paths != null && paths.indexOf(',') >= 0)
+			return RENDER_MULTISPARROW;
+
+		return RENDER_SPARROW;
+	}
+
+	/**
+	 * Loads frames based on renderType (Funkin V-Slice style, Psych-compatible fallback).
+	 */
+	public function loadCharacterFrames(assetPath:String, animationAssetPaths:String, type:String):Void
+	{
+		isAnimateAtlas = false;
+		var resolved:String = normalizeRenderType(type);
+		if(resolved.length < 1)
+			resolved = detectRenderType(assetPath, animationAssetPaths);
+		renderType = resolved;
+
+		switch(resolved)
+		{
+			#if flxanimate
+			case RENDER_ANIMATE:
+				atlas = new FlxAnimate();
+				atlas.showPivot = false;
+				try
+				{
+					Paths.loadAnimateAtlas(atlas, assetPath);
+					isAnimateAtlas = true;
+				}
+				catch(e:Dynamic)
+				{
+					FlxG.log.warn('Could not load animateatlas $assetPath: $e');
+					// Psych-compatible fallback to sparrow
+					renderType = RENDER_SPARROW;
+					frames = Paths.getMultiAtlas((animationAssetPaths != null ? animationAssetPaths : assetPath).split(','));
+				}
+			#end
+
+			case RENDER_MULTISPARROW:
+				var multiPaths:String = (animationAssetPaths != null && animationAssetPaths.length > 0)
+					? animationAssetPaths
+					: assetPath;
+				frames = Paths.getMultiAtlas(multiPaths.split(','));
+
+			default: // sparrow
+				var pathList:String = (animationAssetPaths != null && animationAssetPaths.length > 0)
+					? animationAssetPaths
+					: assetPath;
+				// Single path still works with getMultiAtlas (Psych 1.0.4 style)
+				frames = Paths.getMultiAtlas(pathList.split(','));
+		}
 	}
 
 	public static function collectAnimationAssetPaths(defaultAssetPath:String, animations:Array<AnimArray>):String
@@ -565,10 +713,16 @@ class Character extends FlxSprite {
 
 		if (hasAnimation(AnimName))
 		{
-			var daOffset = animOffsets.get(AnimName);
-			offset.set(daOffset[0], daOffset[1]);
+			var daOffset:Array<Dynamic> = null;
+			// BETADCIU: se for player e tiver playerOffsets, usa eles
+			if(isPlayer && animPlayerOffsets.exists(AnimName))
+				daOffset = animPlayerOffsets.get(AnimName);
+			else
+				daOffset = animOffsets.get(AnimName);
+
+			if(daOffset != null && daOffset.length > 1)
+				offset.set(daOffset[0], daOffset[1]);
 		}
-		//else offset.set(0, 0);
 
 		if (curCharacter.startsWith('gf-') || curCharacter == 'gf')
 		{
@@ -630,6 +784,18 @@ class Character extends FlxSprite {
 	public function addOffset(name:String, x:Float = 0, y:Float = 0)
 	{
 		animOffsets[name] = [x, y];
+	}
+
+	public function addPlayerOffset(name:String, x:Float = 0, y:Float = 0)
+	{
+		animPlayerOffsets.set(name, [x, y]);
+	}
+
+	public function getAnimPlayerOffset(name:String):Array<Float>
+	{
+		if(animPlayerOffsets.exists(name))
+			return animPlayerOffsets.get(name);
+		return [0, 0];
 	}
 
 	public function quickAnimAdd(name:String, anim:String)
