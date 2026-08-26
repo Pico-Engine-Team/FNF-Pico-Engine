@@ -56,6 +56,7 @@ class Option
 				if(defaultValue == null) defaultValue = false;
 			case INT, FLOAT:
 				if(defaultValue == null) defaultValue = 0;
+
 			case PERCENT:
 				if(defaultValue == null) defaultValue = 1;
 				displayFormat = '%v%';
@@ -64,10 +65,11 @@ class Option
 				maxValue = 1;
 				scrollSpeed = 0.5;
 				decimals = 2;
+
 			case STRING:
-				if(options.length > 0)
-					defaultValue = options[0];
-				if(defaultValue == null)
+			if(options != null && options.length > 0)
+				defaultValue = options[0];
+			if(defaultValue == null)
 					defaultValue = '';
 
 			case KEYBIND:
@@ -75,7 +77,6 @@ class Option
 				defaultKeys = {gamepad: 'NONE', keyboard: 'NONE'};
 				keys = {gamepad: 'NONE', keyboard: 'NONE'};
 		}
-
 		try
 		{
 			if(getValue() == null)

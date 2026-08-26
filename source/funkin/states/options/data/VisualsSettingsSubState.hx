@@ -1,11 +1,11 @@
 package funkin.states.options.data;
 
 import funkin.states.PauseState;
-import funkin.data.objects.game.notes.config.Note;
-import funkin.data.objects.game.notes.data.StrumNote;
+import funkin.data.objects.Alphabet;
+import funkin.data.objects.game.notes.data.Note;
 import funkin.data.objects.game.notes.data.NoteSplash;
+import funkin.data.objects.game.notes.config.StrumNote;
 
-import funkin.utils.Alphabet;
 import funkin.utils.windows.Main;
 import funkin.states.options.config.*;
 import funkin.substates.MusicBeatSubstate;
@@ -21,7 +21,6 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		title = Language.getPhrase('visuals_menu', 'Visuals Settings');
 		rpcTitle = 'Visuals Settings Menu';
 
-		// for note skins and splash skins
 		notes = new FlxTypedGroup<StrumNote>();
 		splashes = new FlxTypedGroup<NoteSplash>();
 		for (i in 0...Note.colArray.length)
@@ -38,7 +37,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 			splashes.add(splash);
 		}
 
-		var noteSkins:Array<String> = Mods.mergeAllTextsNamed('data/noteSkins-List.txt');
+		var noteSkins:Array<String> = Mods.mergeAllTextsNamed('data/notestyles/notestyles-list.txt');
 		if(noteSkins.length > 0)
 		{
 			if(!noteSkins.contains(ClientPrefs.data.noteSkin))
@@ -55,7 +54,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 			noteOptionID = optionsArray.length - 1;
 		}
 		
-		var noteSplashes:Array<String> = Mods.mergeAllTextsNamed('data/noteSplashes-List.txt');
+		var noteSplashes:Array<String> = Mods.mergeAllTextsNamed('data/splashes/list.txt');
 		if(noteSplashes.length > 0)
 		{
 			if(!noteSplashes.contains(ClientPrefs.data.splashSkin))
@@ -141,7 +140,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 		option.onChange = onChangeDebugDisplay;
 
-		var option:Option = new Option('Debug Display BG',
+		var option:Option = new Option('FPS Display BG',
 			'How visible the background behind the FPS display should be.',
 			'debugDisplayBG',
 			PERCENT);
@@ -155,10 +154,10 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		#end
 		
 		var option:Option = new Option('Pause Music:',
-			"What song do you prefer for the Pause Screen?",
+			"What song do you prefer for the Pause Menu?",
 			'pauseMusic',
 			STRING,
-			['None', 'Tea Time', 'Breakfast', 'Breakfast (Pico)']);
+			['None', 'breakfast', 'breakfast-pico', 'breakfast-pixel']);
 		addOption(option);
 		option.onChange = onChangePauseMusic;
 		
@@ -216,14 +215,16 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 	}
 
 	var changedMusic:Bool = false;
+	function onChangeMenuMusic()
+	{
+		// Menu music is applied by MainMenuState when the main menu is active.
+		// Keep the setting only; do not force immediate playback here.
+		changedMusic = true;
+	}
+
 	function onChangePauseMusic()
 	{
-		if(ClientPrefs.data.pauseMusic == 'None')
-			FlxG.sound.music.volume = 0;
-		else
-			FlxG.sound.playMusic(Paths.music(PauseState.resolvePauseMusicKey(ClientPrefs.data.pauseMusic)));
-
-		changedMusic = true;
+		// Pause music is selected here, and PauseState uses ClientPrefs.data.pauseMusic when opened.
 	}
 
 	function onChangeNoteSkin()
@@ -300,7 +301,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 
 	override function destroy()
 	{
-		if(changedMusic && !OptionsState.onPlayState) FlxG.sound.playMusic(Paths.music('freakyMenu'), 1, true);
+		if(changedMusic && !OptionsState.onPlayState) FlxG.sound.playMusic(Paths.music('menu/freakyMenu'), 1, true);
 		Note.globalRgbShaders = [];
 		super.destroy();
 	}

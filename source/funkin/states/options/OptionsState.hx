@@ -3,14 +3,14 @@ package funkin.states.options;
 class OptionsState extends MusicBeatState
 {
 	var options:Array<String> = [
-		'Note Colors',
-		'Controls',
-		'Adjust Delay and Combo',
-		'Graphics',
-		'Visuals',
-		'Gameplay',
-		#if PICO_ALLOWED 'Pico Engine', #end
-		#if TRANSLATIONS_ALLOWED  'Language' #end
+	'Note Colors',
+	'Controls',
+	'Adjust Delay and Combo',
+	'Graphics',
+	'Visuals',
+	'Gameplay', 
+	#if PICO_ALLOWED 'Pico Engine', #end
+	#if TRANSLATIONS_ALLOWED  'Language' #end
 	];
 
 	private var grpOptions:FlxTypedGroup<Alphabet>;
@@ -22,22 +22,14 @@ class OptionsState extends MusicBeatState
 	{
 		switch(label)
 		{
-			case 'Note Colors':
-				openSubState(new funkin.states.options.data.NotesColorSubState());
-			case 'Controls':
-				openSubState(new funkin.states.options.data.ControlsSubState());
-			case 'Graphics':
-				openSubState(new funkin.states.options.data.GraphicsSettingsSubState());
-			case 'Visuals':
-				openSubState(new funkin.states.options.data.VisualsSettingsSubState());
-			case 'Gameplay':
-				openSubState(new funkin.states.options.data.GameplaySettingsSubState());
-			case 'Adjust Delay and Combo':
-				MusicBeatState.switchState(new funkin.states.options.data.NoteOffsetState());
-			case 'Language':
-				openSubState(new funkin.translations.options.LanguageSubState());
-			case 'Pico Engine':
-				openSubState(new funkin.states.options.data.PicoEngineSubState());
+			case 'Note Colors': openSubState(new funkin.states.options.data.NotesColorSubState());
+			case 'Controls': openSubState(new funkin.states.options.data.ControlsSubState());
+			case 'Graphics': openSubState(new funkin.states.options.data.GraphicsSettingsSubState());
+			case 'Visuals': openSubState(new funkin.states.options.data.VisualsSettingsSubState());
+			case 'Gameplay': openSubState(new funkin.states.options.data.GameplaySettingsSubState());
+			case 'Adjust Delay and Combo': MusicBeatState.switchState(new funkin.states.options.data.NoteOffsetState());
+			case 'Language': openSubState(new funkin.translations.options.LanguageSubState());
+			case 'Pico Engine': openSubState(new funkin.states.options.data.PicoEngineSubState());
 		}
 	}
  
@@ -106,7 +98,7 @@ class OptionsState extends MusicBeatState
 			else
 			{
 				// Stop current menu (options) music and play the main menu music
-				FlxG.sound.playMusic(Paths.music('freakyMenu'));
+				FlxG.sound.playMusic(Paths.music('menu/freakyMenu'));
 				MusicBeatState.switchState(new funkin.menus.MainMenuState());
 			}
 		}

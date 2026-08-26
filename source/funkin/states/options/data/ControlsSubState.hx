@@ -14,8 +14,6 @@ class ControlsSubState extends MusicBeatSubstate
 {
 	var curSelected:Int = 0;
 	var curAlt:Bool = false;
-
-	//Show on gamepad - Display name - Save file key - Rebind display name
 	var options:Array<Dynamic> =
 	[
 		[true, 'NOTES & TAUNT'],
@@ -26,7 +24,7 @@ class ControlsSubState extends MusicBeatSubstate
 		[true, 'Taunt', 'hey_ui', 'Taunt Note'],
 		[true],
 		[true, 'MECHANICS'],
-		[true, 'Dodge', 'dodge_ui', 'Dodge Mechanic'],
+		[true, 'Dodge', 'mechanic_dodge', 'Dodge Key'],
 		[true],
 		[true, 'UI'],
 		[true, 'Left', 'ui_left', 'UI Left'],
@@ -42,7 +40,7 @@ class ControlsSubState extends MusicBeatSubstate
 		[true, 'Engine'],
 		[true, 'Reload State', 'reload_state', 'Reload State'],
 		[true, 'Capture', 'screenshot', 'Capture'],
-		[true, 'Favorites', 'favorites_ui', 'Favorites Menu'],
+		[false, 'Display', 'fps_display_toggle', 'FPS Display'],
 		[false],
 		[false, 'VOLUME'],
 		[false, 'Up', 'volume_up', 'Volume Up'],
@@ -50,11 +48,11 @@ class ControlsSubState extends MusicBeatSubstate
 		[false, 'Mute', 'volume_mute', 'Volume Mute'],
 		[false],
 		[false, 'DEBUG'],
-		[false, 'Menu', 'debug_0', 'Debug Menu'],
-		[false, 'Chart', 'debug_1', 'Chart Editor'],
-		[false, 'Stage', 'debug_2', 'Stage Editor'],
-		[false, 'Display', 'fps_display_toggle', 'FPS Display']
+		[false, 'Master Editor', 'master_menu_Key', 'Master Editor Key'],
+		[false, 'Chart', 'debug_1', 'Chart Editor Key'],
+		[false, 'Stage', 'debug_2', 'Stage Editor Key'],
 	];
+
 	static var defaultKey:String = 'Reset to Default Keys';
 	var curOptions:Array<Int>;
 	var curOptionsValid:Array<Int>;

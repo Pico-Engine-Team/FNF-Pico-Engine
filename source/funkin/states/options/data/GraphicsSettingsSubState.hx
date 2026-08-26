@@ -1,7 +1,7 @@
 package funkin.states.options.data;
 
-import funkin.states.options.config.*;
 import funkin.data.objects.game.characters.Character;
+import funkin.states.options.config.*;
 
 class GraphicsSettingsSubState extends BaseOptionsMenu
 {
@@ -12,7 +12,7 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 		title = Language.getPhrase('graphics_menu', 'Graphics Settings');
 		rpcTitle = 'Graphics Settings Menu';
 
-		boyfriend = new Character(0, 350, 'bf', true);
+		boyfriend = new Character(840, 170, 'bf', true);
 		boyfriend.setGraphicSize(Std.int(boyfriend.width * 0.9));
 		boyfriend.updateHitbox();
 		boyfriend.dance();
@@ -26,7 +26,7 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 			['Low', 'High']);
 		addOption(option);
 
-		var option:Option = new Option('Anti-Aliasing',
+		var option:Option = new Option('Anti Aliasing',
 			'If unchecked, disables anti-aliasing, increases performance\nat the cost of sharper visuals.',
 			'antialiasing',
 			BOOL);
@@ -45,21 +45,13 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 			'cacheOnGPU',
 			BOOL);
 		addOption(option);
-
-		var option:Option = new Option('VSync',
-			"Synchronizes the game's frame rate with your monitor's refresh rate.\nOn = Always on\nOff = Always off\nAdaptive = Turns on only when FPS is high enough (reduces tearing + less input lag).",
-			'vsync',
-			STRING);
-		addOption(option);
-		option.options = ['On', 'Off', 'Adaptive'];
-		option.onChange = onChangeVSync;
 		
-	#if !html5
+		#if !html5
 		var option:Option = new Option('Framerate',
 			"Pretty self explanatory, isn't it?",
 			'framerate',
 			INT);
-		option.onChange = onChangeFramerate;
+		addOption(option);
 
 		final refreshRate:Int = FlxG.stage.application.window.displayMode.refreshRate;
 		option.minValue = 30;
@@ -69,6 +61,14 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 		option.displayFormat = '%v FPS';
 		option.onChange = onChangeFramerate;
 		#end
+
+		var option:Option = new Option('VSync',
+			"Synchronizes the game's frame rate with your monitor's refresh rate.\nOn = Always on\nOff = Always off\nAdaptive = Turns on only when FPS is high enough.",
+			'vsync',
+			STRING,
+			['Adaptive', 'ON', 'OFF']);
+			option.onChange = onChangeVSync;
+		addOption(option);
 
 		super();
 		insert(1, boyfriend);

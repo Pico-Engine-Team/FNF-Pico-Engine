@@ -1,10 +1,10 @@
 package funkin.states.options.data;
 
-import funkin.data.objects.game.characters.Character;
 import funkin.data.objects.Bar;
-import funkin.states.options.OptionsState;
 import funkin.stages.StageData;
-import funkin.stages.data.levels.week1.StageWeek1 as BackgroundStage;
+import funkin.states.options.OptionsState;
+import funkin.data.objects.game.characters.Character;
+import funkin.stages.data.week1.StageWeek1 as BackgroundStage;
 
 import flixel.addons.display.shapes.FlxShapeCircle;
 
@@ -63,16 +63,16 @@ class NoteOffsetState extends MusicBeatState
 		gf.x += gf.positionArray[0];
 		gf.y += gf.positionArray[1];
 		gf.scrollFactor.set(0.95, 0.95);
+		add(gf);
 
 		boyfriend = new Character(770.0, 100.0, 'bf', true);
 		boyfriend.x += boyfriend.positionArray[0];
 		boyfriend.y += boyfriend.positionArray[1];
+		add(boyfriend);
 
-		dad = new Character(100, 100, 'pico', true);
+		dad = new Character(100, 100, 'dad');
 		dad.x += dad.positionArray[0];
 		dad.y += dad.positionArray[1];
-		add(gf);
-		add(boyfriend);
 		add(dad);
 
 		// Combo stuff
@@ -80,7 +80,7 @@ class NoteOffsetState extends MusicBeatState
 		coolText.screenCenter();
 		coolText.x = FlxG.width * 0.35;
 
-		rating = new FlxSprite().loadGraphic(Paths.image('sick'));
+		rating = new FlxSprite().loadGraphic(Paths.image('ui/popup/funkin/marvelous'));
 		rating.cameras = [camHUD];
 		rating.antialiasing = ClientPrefs.data.antialiasing;
 		rating.setGraphicSize(Std.int(rating.width * 0.7));
@@ -134,7 +134,7 @@ class NoteOffsetState extends MusicBeatState
 		barPercent = ClientPrefs.data.noteOffset;
 		updateNoteDelay();
 		
-		timeBar = new Bar(0, timeTxt.y + (timeTxt.height / 3), 'healthBar', function() return barPercent, delayMin, delayMax);
+		timeBar = new Bar(0, timeTxt.y + (timeTxt.height / 3), 'ui/healthBar', function() return barPercent, delayMin, delayMax);
 		timeBar.scrollFactor.set();
 		timeBar.screenCenter(X);
 		timeBar.visible = false;
@@ -166,8 +166,7 @@ class NoteOffsetState extends MusicBeatState
 		_lastControllerMode = true;
 
 		Conductor.bpm = 128.0;
-		FlxG.sound.playMusic(Paths.music('offsetSong'), 1, true);
-
+		FlxG.sound.playMusic(Paths.music('options/offsetSong'), 1, true);
 		super.create();
 	}
 
@@ -411,7 +410,7 @@ class NoteOffsetState extends MusicBeatState
 				else
 					FlxG.sound.music.volume = 0;
 			}
-			else FlxG.sound.playMusic(Paths.music('freakyMenu'));
+			else FlxG.sound.playMusic(Paths.music('menu/freakyMenu'));
 			FlxG.mouse.visible = false;
 		}
 
@@ -432,8 +431,8 @@ class NoteOffsetState extends MusicBeatState
 
 		if(curBeat % 2 == 0)
 		{
-			boyfriend.dance();
 			gf.dance();
+			boyfriend.dance();
 			dad.dance();
 		}
 		

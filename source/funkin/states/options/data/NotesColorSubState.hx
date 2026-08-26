@@ -1,9 +1,9 @@
 package funkin.states.options.data;
 
 import funkin.data.shaders.RGBPalette;
+import funkin.data.objects.game.notes.data.Note;
 import funkin.data.shaders.RGBPalette.RGBShaderReference;
-import funkin.data.objects.game.notes.config.Note;
-import funkin.data.objects.game.notes.data.StrumNote;
+import funkin.data.objects.game.notes.config.StrumNote;
 
 import flixel.addons.display.FlxBackdrop;
 import flixel.addons.display.FlxGridOverlay;
