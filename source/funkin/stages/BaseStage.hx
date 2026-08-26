@@ -1,7 +1,7 @@
 package funkin.stages;
 
 import funkin.data.shaders.ReflectedChar;
-import funkin.data.objects.game.notes.config.Note;
+import funkin.data.objects.game.notes.data.Note;
 import funkin.data.objects.game.characters.Character;
 
 import flixel.FlxBasic;

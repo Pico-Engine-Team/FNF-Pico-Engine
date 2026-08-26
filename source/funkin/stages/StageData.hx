@@ -7,8 +7,7 @@ import funkin.modding.scripting.psychlua.ModchartSprite;
 import openfl.utils.Assets;
 import haxe.Json;
 
-typedef StageFile =
-{
+typedef StageFile = {
 	var directory:String;
 	var defaultZoom:Float;
 	@:optional var isPixelStage:Null<Bool>;
