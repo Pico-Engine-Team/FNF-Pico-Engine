@@ -1,7 +1,7 @@
 package funkin.data.editors;
 
-import funkin.data.objects.game.notes.config.Note;
-import funkin.data.objects.game.notes.data.StrumNote;
+import funkin.data.objects.game.notes.data.Note;
+import funkin.data.objects.game.notes.config.StrumNote;
 
 import haxe.Json;
 import openfl.events.Event;

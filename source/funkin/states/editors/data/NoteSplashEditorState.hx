@@ -1,8 +1,8 @@
 package funkin.states.editors.data;
 
+import funkin.data.objects.game.notes.data.Note;
 import funkin.data.objects.game.notes.data.NoteSplash;
-import funkin.data.objects.game.notes.data.StrumNote;
-import funkin.data.objects.game.notes.config.Note;
+import funkin.data.objects.game.notes.config.StrumNote;
 
 import flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup;
 import flixel.input.keyboard.FlxKey;

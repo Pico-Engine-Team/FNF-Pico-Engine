@@ -471,7 +471,7 @@ class WeekEditorState extends MusicBeatState implements PsychUIEventHandler.Psyc
 				if(!unsavedProgress)
 				{
 					MusicBeatState.switchState(new funkin.states.editors.EditorsMenus());
-					FlxG.sound.playMusic(Paths.music('freakyMenu'));
+					FlxG.sound.playMusic(Paths.music('menu/freakyMenu'));
 				}
 				else openSubState(new funkin.utils.editors.Prompt.ExitConfirmationPrompt(function() unsavedProgress = false));
 			}
@@ -856,7 +856,7 @@ class WeekEditorFreeplayState extends MusicBeatState implements PsychUIEventHand
 				if(!WeekEditorState.unsavedProgress)
 				{
 					MusicBeatState.switchState(new funkin.states.editors.EditorsMenus());
-					FlxG.sound.playMusic(Paths.music('freakyMenu'));
+					FlxG.sound.playMusic(Paths.music('menu/freakyMenu'));
 				}
 				else openSubState(new funkin.utils.editors.Prompt.ExitConfirmationPrompt());
 			}
